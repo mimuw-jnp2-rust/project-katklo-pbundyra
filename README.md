@@ -1,27 +1,23 @@
-# Frobnicator
+# Placeholder na chadowy tytuł
 
 ## Autorzy
-- Andrzej Głuszak (gr 9, @agluszak na githubie)
-- Linus Torvalds (Uniwersytet Helsiński, @torvalds na githubie)
+[Katarzyna Kloc](https://github.com/KatKlo) - kk429317@students.mimuw.edu.pl\
+[Patryk Bundyra](https://github.com/PBundyra) - pb429159@students.mimuw.edu.pl
 
 ## Opis
-Od zawsze chcieliśmy napisać grę komputerową.
-Frobnicator będzie to gra platformowa, w której chodzi o to, żeby...
+Odkąd CLion wypluł pierwsze segfaulty chcieliśmy napisać grę komputerową inspirowaną studencką przygodą na MIMie.\
+GigaChadTytuł będzie to gra platformowa, w której chodzi o to, żeby… zdać.
 
-Z grubsza będziemy wzorować się na [tym tutorialu](https://dev.to/sbelzile/rust-platformer-part-1-bevy-and-ecs-2pci).
+Z grubsza będziemy wzorować się na [tym tutorialu].
 
 ## Funkcjonalność
-- Generowanie map
-- Strzelanie
-- AI dla wrogów (bardziej rozbudowane niż w tutorialu)
-- Możliwość zapisywania i wczytywania stanu gry
-- Punktacja
+TBD gdy poznamy możliwości implementacyjne oraz określimy tech stack
 
 ## Propozycja podziału na części
-W pierwszej części stworzymy grę opartą na tutorialu (z lepszym AI) i jedną zahardcodowaną planszą.
+W pierwszej części stworzymy grę opartą na tutorialu z podstawowymi funkcjonalnościami, przeciwnikami i jednym poziomem.
 
-W drugiej części dodamy do tego losowy generator map, zapisywanie/wczytywanie stanu gry oraz system punktacji.
+W drugiej części dodamy więcej poziomów, zdeployujemy grę używając WebAssembly i dodamy kolejne funkcjonalności dotyczące bohatera i przeciwników.
 
 ## Biblioteki
-- Bevy
-- może coś do serializacji danych? (czy mógłby Pan coś polecić?)
+- Bevy/ggez/ może mógłby Pan pomóc dobrać odpowiednią libkę
+
