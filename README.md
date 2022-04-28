@@ -11,6 +11,9 @@ GigaChadTytuł będzie to gra platformowa, w której chodzi o to, żeby… zdać
 Z grubsza będziemy wzorować się na [tym tutorialu](https://dev.to/sbelzile/rust-platformer-part-1-bevy-and-ecs-2pci) oraz [oficjalnych przykładach uzycia](https://github.com/bevyengine/bevy/tree/latest/examples) 
 
 ## Funkcjonalność
+- ruch gracza po mapie z przeszkodami
+- pokonywanie łatwych przeciwników
+- zbieranie wzmocnien (np. szybszy ruch/dalszy skok)
 
 ## Propozycja podziału na części
 W pierwszej części stworzymy grę opartą na tutorialu z podstawowymi funkcjonalnościami, przeciwnikami i jednym poziomem.
