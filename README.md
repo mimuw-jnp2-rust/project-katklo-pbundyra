@@ -1,5 +1,5 @@
 # Placeholder na chadowy tytuł
-
+/ggez/ może mógłby Pan pomóc dobrać odpowiednią libkę
 ## Autorzy
 [Katarzyna Kloc](https://github.com/KatKlo) - kk429317@students.mimuw.edu.pl\
 [Patryk Bundyra](https://github.com/PBundyra) - pb429159@students.mimuw.edu.pl
@@ -19,5 +19,5 @@ W pierwszej części stworzymy grę opartą na tutorialu z podstawowymi funkcjon
 W drugiej części dodamy więcej poziomów, zdeployujemy grę używając WebAssembly i dodamy kolejne funkcjonalności dotyczące bohatera i przeciwników.
 
 ## Biblioteki
-- Bevy/ggez/ może mógłby Pan pomóc dobrać odpowiednią libkę
+- Bevy
 
