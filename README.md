@@ -10,16 +10,32 @@ GigaChadTytuł będzie to gra platformowa, w której chodzi o to, żeby… zdać
 
 Z grubsza będziemy wzorować się na [tym tutorialu](https://dev.to/sbelzile/rust-platformer-part-1-bevy-and-ecs-2pci) oraz [oficjalnych przykładach uzycia](https://github.com/bevyengine/bevy/tree/latest/examples) 
 
-## Funkcjonalność
+## Funkcjonalności
+- generowanie losowych map
 - ruch gracza po mapie z przeszkodami
 - pokonywanie łatwych przeciwników
-- zbieranie wzmocnien (np. szybszy ruch/dalszy skok)
+- zbieranie wzmocnień (np. szybszy ruch/dalszy skok)
+- walka z finałowym bossem
+- checkpointy
 
 ## Propozycja podziału na części
-W pierwszej części stworzymy grę opartą na tutorialu z podstawowymi funkcjonalnościami, przeciwnikami i jednym poziomem.
+W pierwszej części stworzymy grę opartą na tutorialu z podstawowymi funkcjonalnościami takimi jak:
+- generowanie mapy
+- generowanie przeciwnikow
+- interakcja z przeciwnikami
+- wzmocnienia
+- menu początowe
 
-W drugiej części dodamy więcej poziomów, zdeployujemy grę używając WebAssembly i dodamy kolejne funkcjonalności dotyczące bohatera i przeciwników.
+W drugiej części dodamy:
+- nowy rodzaj łatwych przeciwników
+- finałowego bossa
+- podział na poziomu na checkpointy z rosnącym poziomem trudności
+- menu końcowe
+- efekty dzwiękowe
+- zdeployujemy grę używając WebAssembly
+- parę easter eggów ;)
 
 ## Biblioteki
 - Bevy
+
 
