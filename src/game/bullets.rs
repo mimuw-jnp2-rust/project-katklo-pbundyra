@@ -1,7 +1,8 @@
-use crate::game::{Booster, Bullet, Enemy, Player, StrongBullet};
-use crate::GameTextures;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+
+use crate::game::{Bullet, Enemy, Player, StrongBullet};
+use crate::GameTextures;
 
 use super::{GameDirection, WeakBullet};
 
@@ -105,19 +106,18 @@ pub fn destroy_bullet_on_contact(
     bullets: Query<Entity, With<Bullet>>,
     mut collision_events: EventReader<CollisionEvent>,
     players: Query<Entity, With<Player>>,
-    boosters: Query<Entity, With<Booster>>,
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(h1, h2, _) = collision_event {
             for bullet in bullets.iter() {
-                for booster in boosters.iter() {
-                    for player in players.iter() {
-                        if (*h1 == bullet && *h2 != booster && *h2 != player && *h2 != bullet)
-                            || (*h2 == bullet && *h1 != booster && *h1 != player && *h1 != bullet)
-                        {
-                            commands.entity(bullet).despawn_recursive();
-                        }
-                    }
+                if (*h1 == bullet
+                    && !players.iter().any(|b| *h2 == b)
+                    && !bullets.iter().any(|b| *h2 == b))
+                    || (*h2 == bullet
+                        && !players.iter().any(|b| *h1 == b)
+                        && !bullets.iter().any(|b| *h1 == b))
+                {
+                    commands.entity(bullet).despawn_recursive();
                 }
             }
         }
