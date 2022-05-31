@@ -1,0 +1,12 @@
+[package]
+name = "mario_mim"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = "0.7"
+bevy_rapier2d = "0.13.2"
+rand = "*"
+
+[profile.dev.package.bevy_rapier2d]
+opt-level = 3
