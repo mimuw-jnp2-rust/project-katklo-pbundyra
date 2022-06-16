@@ -3,9 +3,9 @@ use bevy_rapier2d::prelude::*;
 
 use crate::game::{Bullet, Enemy, Player, StrongBullet};
 use crate::GameTextures;
-use super::utils::*;
 
 use super::{GameDirection, WeakBullet};
+use super::utils::*;
 
 const WEAK_BULLET_SPEED: f32 = 8.25;
 const STRONG_BULLET_SPEED: f32 = 18.5;
@@ -44,7 +44,7 @@ pub fn insert_weak_bullet_at(
         ),
         Some(vel_x),
         Some(0.0),
-        Collider::round_cuboid(0.25, 0.05, 0.1),
+        (0.25, 0.05, 0.1),
         Bullet,
         WeakBullet);
 }
@@ -75,7 +75,7 @@ pub fn insert_strong_bullet_at(
         ),
         Some(vel_x),
         Some(0.0),
-        Collider::round_cuboid(0.25, 0.05, 0.1),
+        (0.25, 0.05, 0.1),
         Bullet,
         StrongBullet);
 }

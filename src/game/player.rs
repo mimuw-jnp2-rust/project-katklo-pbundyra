@@ -61,7 +61,6 @@ impl Plugin for PlayerPlugin {
                     .with_system(finish)
                     .with_system(fire_controller)
                     .with_system(destroy_bullet_on_contact)
-                    .with_system(death_by_falling)
                     .with_system(death_by_enemy)
                     .with_system(camera_follow_player)
                     .with_system(killing_enemies)
@@ -79,7 +78,7 @@ pub fn spawn_player(mut commands: Commands, game_textures: Res<GameTextures>) {
                                       (0.0, 2.0, 0.0)),
                  None,
                  None,
-                 Collider::round_cuboid(0.20, 0.20, 0.1),
+                 (0.20, 0.20, 0.1),
                  Jumper {
                      jump_impulse: 12.0,
                      is_jumping: false,
@@ -190,21 +189,6 @@ pub fn finish(
                     }
                 }
             }
-        }
-    }
-}
-
-pub fn death_by_falling(
-    mut commands: Commands,
-    positions: Query<(Entity, &mut Transform, &RigidBody), With<Player>>,
-    mut state: ResMut<State<AppState>>,
-) {
-    for (entity, pos, _) in positions.iter() {
-        if pos.translation.y < -10.0 {
-            commands.entity(entity).despawn_recursive();
-            state
-                .set(AppState::DeathMenu)
-                .expect("Couldn't switch state to InGame");
         }
     }
 }

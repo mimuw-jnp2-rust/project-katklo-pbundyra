@@ -3,7 +3,7 @@ use bevy_rapier2d::prelude::*;
 use rand::{Rng, thread_rng};
 
 use crate::{AppState, GameTextures};
-use crate::game::{Enemy, GameDirection, Monster, Player};
+use crate::game::{Enemy, GameDirection, Monster, Player, SAFE_ZONE_WIDTH};
 use crate::game::utils::*;
 
 const CHANCE_OF_SPAWNING: f64 = 0.1;
@@ -20,7 +20,7 @@ pub fn insert_monster_at(
                                       (x, y + 0.5, 10.0)),
                  None,
                  None,
-                 Collider::round_cuboid(0.25, 0.25, 0.1),
+                 (0.25, 0.25, 0.1),
                  Enemy,
                  Monster {
                      speed: 2.0,
@@ -52,16 +52,16 @@ pub fn death_by_enemy(
     }
 }
 
-pub fn add_enemies(commands: &mut Commands, world: &[usize], player_texture: &Res<GameTextures>) {
-    world.iter().enumerate().for_each(|(x, height)| {
+pub fn add_enemies(commands: &mut Commands, world: &[(i32, usize)], player_texture: &Res<GameTextures>) {
+    world.iter().for_each(|&(x, height)| {
         if should_add_enemy(x) {
-            insert_monster_at(commands, player_texture, x as f32, (*height + 1) as f32);
+            insert_monster_at(commands, player_texture, x as f32, (height + 1) as f32);
         }
     });
 }
 
-fn should_add_enemy(x: usize) -> bool {
-    if x <= 5 {
+fn should_add_enemy(x: i32) -> bool {
+    if x <= SAFE_ZONE_WIDTH as i32 {
         return false;
     }
     thread_rng().gen_bool(CHANCE_OF_SPAWNING)

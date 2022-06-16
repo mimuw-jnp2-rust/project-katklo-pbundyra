@@ -21,7 +21,7 @@ pub fn create_sprite_bundle(texture: Handle<Image>,
 
 pub fn spawn_object<T1, T2>(commands: &mut Commands, sprite: SpriteBundle, x_velocity: Option<f32>,
                             gravity_scale: Option<f32>,
-                            collider: Collider, object_kind: T1, object_type: T2)
+                            (x_col, y_col, z_col): (f32, f32, f32), object_kind: T1, object_type: T2)
     where T1: Component,
           T2: Component {
     commands
@@ -32,8 +32,26 @@ pub fn spawn_object<T1, T2>(commands: &mut Commands, sprite: SpriteBundle, x_vel
         .insert(GravityScale(gravity_scale.unwrap_or(GRAVITY_SCALE_DEFAULT)))
         .insert(Ccd::enabled())
         .insert(Velocity::linear(Vec2::new(x_velocity.unwrap_or(VELOCITY_DEFAULT), VELOCITY_DEFAULT)))
-        .insert(collider)
+        .insert(Collider::round_cuboid(x_col, y_col, z_col))
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(object_kind)
         .insert(object_type);
+}
+
+pub fn spawn_static_collider<T>(commands: &mut Commands, left_down: (f32, f32), right_up: (f32, f32), kind: T) where T: Component {
+    let width = right_up.0 - left_down.0;
+    let half_width = width / 2.;
+    let height = right_up.1 - left_down.1;
+    let half_height = height / 2.;
+
+    commands
+        .spawn()
+        .insert(Transform::from_xyz(
+            left_down.0 + half_width,
+            left_down.1 + half_height,
+            0.0,
+        ))
+        .insert(RigidBody::Fixed)
+        .insert(Collider::cuboid(half_width, half_height))
+        .insert(kind);
 }

@@ -23,7 +23,7 @@ pub fn insert_coffee_at(
                                       (x, y, 10.0)),
                  None,
                  None,
-                 Collider::round_cuboid(0.05, 0.05, 0.1),
+                 (0.05, 0.05, 0.1),
                  Booster,
                  Coffee,
     );
@@ -41,7 +41,7 @@ pub fn insert_rust_at(
                                       (x, y, 10.0)),
                  None,
                  None,
-                 Collider::round_cuboid(0.05, 0.05, 0.1),
+                 (0.05, 0.05, 0.1),
                  Booster,
                  Rust,
     );
@@ -91,24 +91,24 @@ pub fn learn_rust(
     }
 }
 
-pub fn add_boosters(commands: &mut Commands, world: &[usize], player_texture: Res<GameTextures>) {
-    world.iter().enumerate().for_each(|(x, height)| {
+pub fn add_boosters(commands: &mut Commands, world: &[(i32, usize)], player_texture: Res<GameTextures>) {
+    world.iter().for_each(|&(x, height)| {
         if should_add_coffee(x) {
-            insert_coffee_at(commands, &player_texture, x as f32, *height as f32 + 0.25);
+            insert_coffee_at(commands, &player_texture, x as f32, height as f32 + 0.25);
         } else if should_add_rust(x) {
-            insert_rust_at(commands, &player_texture, x as f32, *height as f32 + 0.25);
+            insert_rust_at(commands, &player_texture, x as f32, height as f32 + 0.25);
         }
     });
 }
 
-fn should_add_coffee(x: usize) -> bool {
+fn should_add_coffee(x: i32) -> bool {
     if x <= 5 {
         return false;
     }
     thread_rng().gen_bool(CHANCE_OF_SPAWNING_COFFEE)
 }
 
-fn should_add_rust(x: usize) -> bool {
+fn should_add_rust(x: i32) -> bool {
     if x <= 15 {
         return false;
     }
