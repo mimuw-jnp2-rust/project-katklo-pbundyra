@@ -1,11 +1,5 @@
 use bevy::prelude::*;
 
-#[derive(Default)]
-pub struct Colors {
-    pub player_color: Handle<ColorMaterial>,
-    pub floor_color: Handle<ColorMaterial>,
-}
-
 #[derive(Component, Copy, Clone)]
 pub enum GameDirection {
     Left,

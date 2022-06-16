@@ -1,8 +1,10 @@
-use crate::game::{Enemy, GameDirection, Monster, Player};
-use crate::GameTextures;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use rand::{thread_rng, Rng};
+use rand::{Rng, thread_rng};
+
+use crate::game::{Enemy, GameDirection, Monster, Player};
+use crate::GameTextures;
+use crate::utils::{create_sprite_bundle, spawn_object};
 
 const CHANCE_OF_SPAWNING: f64 = 0.1;
 
@@ -12,32 +14,19 @@ pub fn insert_monster_at(
     x: f32,
     y: f32,
 ) {
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: player_textures.bug.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(0.9, 0.9)),
-                ..default()
-            },
-            ..default()
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(Transform::from_xyz(x, y + 0.5, 10.0))
-        .insert(LockedAxes::ROTATION_LOCKED)
-        .insert(Sleeping::disabled())
-        .insert(GravityScale(0.3))
-        .insert(Velocity {
-            linvel: Vec2::new(0.0, 0.0),
-            ..default()
-        })
-        .insert(Ccd::enabled())
-        .insert(Collider::round_cuboid(0.25, 0.25, 0.1))
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(Monster {
-            speed: 2.0,
-            facing_direction: GameDirection::Right,
-        })
-        .insert(Enemy);
+    spawn_object(commands,
+                 create_sprite_bundle(player_textures.bug.clone(),
+                                      (0.9, 0.9),
+                                      (x, y + 0.5, 10.0)),
+                 None,
+                 None,
+                 Collider::round_cuboid(0.25, 0.25, 0.1),
+                 Enemy,
+                 Monster {
+                     speed: 2.0,
+                     facing_direction: GameDirection::Right,
+                 },
+    );
 }
 
 pub fn death_by_enemy(

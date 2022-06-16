@@ -1,18 +1,20 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
+use crate::game::{camera_follow_player, GameDirection, Weapon};
 use crate::game::boosters::{drink_coffee, learn_rust};
 use crate::game::bullets::{
-    destroy_bullet_on_contact, insert_strong_bullet_at, insert_weak_bullet_at, killing_enemies,
-    BulletOptions,
+    BulletOptions, destroy_bullet_on_contact, insert_strong_bullet_at, insert_weak_bullet_at,
+    killing_enemies,
 };
 use crate::game::monster::death_by_enemy;
-use crate::game::{camera_follow_player, GameDirection, Weapon};
 use crate::GameTextures;
+use crate::utils::spawn_object;
 
-use super::super::AppState;
 use super::camera::new_camera_2d;
 use super::components::Jumper;
+use super::super::AppState;
+use super::super::utils::create_sprite_bundle;
 
 pub struct PlayerPlugin;
 
@@ -71,37 +73,23 @@ impl Plugin for PlayerPlugin {
 }
 
 pub fn spawn_player(mut commands: Commands, game_textures: Res<GameTextures>) {
-    commands
-        .spawn_bundle(SpriteBundle {
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(0.9, 0.9)),
-                ..default()
-            },
-            // cloning only id of resource, not entire resource
-            texture: game_textures.player.clone(),
-            transform: Transform {
-                translation: Vec3::new(0.0, 2.0, 0.0),
-                ..default()
-            },
-            ..default()
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(LockedAxes::ROTATION_LOCKED)
-        .insert(Sleeping::disabled())
-        .insert(GravityScale(0.3))
-        .insert(Ccd::enabled())
-        .insert(Collider::round_cuboid(0.20, 0.20, 0.1))
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(Velocity::default())
-        .insert(Player {
-            speed: 7.0,
-            weapon: Weapon::WeakBullet,
-            direction: GameDirection::Right,
-        })
-        .insert(Jumper {
-            jump_impulse: 12.0,
-            is_jumping: false,
-        });
+    spawn_object(&mut commands,
+                 create_sprite_bundle(game_textures.player.clone(),
+                                      (0.9, 0.9),
+                                      (0.0, 2.0, 0.0)),
+                 None,
+                 None,
+                 Collider::round_cuboid(0.20, 0.20, 0.1),
+                 Jumper {
+                     jump_impulse: 12.0,
+                     is_jumping: false,
+                 },
+                 Player {
+                     speed: 7.0,
+                     weapon: Weapon::WeakBullet,
+                     direction: GameDirection::Right,
+                 },
+    );
 
     commands.spawn_bundle(new_camera_2d());
 }

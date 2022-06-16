@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::window::PresentMode;
 
+pub mod utils;
 mod game;
 mod main_menu;
 
@@ -43,5 +44,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         bug: asset_server.load("bug.png"),
         coffee: asset_server.load("coffee.png"),
         rust: asset_server.load("rust.png"),
+        floor: asset_server.load("floor.png"),
     });
 }
