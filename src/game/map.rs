@@ -6,7 +6,7 @@ use crate::{AppState, GameTextures};
 use crate::game::{FinishLine, Wall};
 use crate::game::boosters::add_boosters;
 use crate::game::monster::add_enemies;
-use crate::utils::create_sprite_bundle;
+use super::utils::*;
 
 pub const SAFE_ZONE_WIDTH: usize = 20;
 pub const GAME_WIDTH: usize = 150;

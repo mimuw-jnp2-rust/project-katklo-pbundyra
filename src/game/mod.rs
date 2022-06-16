@@ -17,6 +17,7 @@ mod map;
 mod monster;
 mod moster_ai;
 mod player;
+mod utils;
 
 pub struct GameTextures {
     pub player: Handle<Image>,

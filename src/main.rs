@@ -6,7 +6,6 @@ use menu::MenuPlugin;
 
 use crate::game::{GameTextures, MapPlugin, MonsterAiPlugin, PlayerPlugin};
 
-pub mod utils;
 mod game;
 mod menu;
 
