@@ -4,7 +4,7 @@ use rand::{Rng, thread_rng};
 
 use crate::game::{Enemy, GameDirection, Monster, Player};
 use crate::GameTextures;
-use crate::utils::{create_sprite_bundle, spawn_object};
+use super::utils::*;
 
 const CHANCE_OF_SPAWNING: f64 = 0.1;
 

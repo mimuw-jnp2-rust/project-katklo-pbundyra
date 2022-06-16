@@ -9,12 +9,11 @@ use crate::game::bullets::{
 };
 use crate::game::monster::death_by_enemy;
 use crate::GameTextures;
-use crate::utils::spawn_object;
 
 use super::camera::new_camera_2d;
 use super::components::Jumper;
 use super::super::AppState;
-use super::super::utils::create_sprite_bundle;
+use super::utils::*;
 
 pub struct PlayerPlugin;
 

@@ -5,7 +5,7 @@ use rand::prelude::*;
 use crate::{AppState, GameTextures};
 use crate::game::boosters::add_boosters;
 use crate::game::monster::add_enemies;
-use crate::utils::create_sprite_bundle;
+use super::utils::*;
 
 const MAP_WIDTH: usize = 150;
 const END_WALL_HEIGHT: usize = 20;

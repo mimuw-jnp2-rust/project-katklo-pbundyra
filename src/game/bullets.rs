@@ -3,7 +3,7 @@ use bevy_rapier2d::prelude::*;
 
 use crate::game::{Bullet, Enemy, Player, StrongBullet};
 use crate::GameTextures;
-use crate::utils::{create_sprite_bundle, spawn_object};
+use super::utils::*;
 
 use super::{GameDirection, WeakBullet};
 

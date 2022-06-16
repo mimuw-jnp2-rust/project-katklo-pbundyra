@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy::window::PresentMode;
 
-pub mod utils;
 mod game;
 mod main_menu;
 
