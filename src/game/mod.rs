@@ -25,26 +25,20 @@ pub struct GameTextures {
     pub bug: Handle<Image>,
     pub coffee: Handle<Image>,
     pub rust: Handle<Image>,
+    pub floor: Handle<Image>,
 }
 
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup)
+        app
             .add_system_set(
                 SystemSet::on_update(AppState::InGame).with_system(back_to_main_menu_controls),
             )
             .add_system_set(SystemSet::on_exit(AppState::InGame).with_system(cleanup_all))
             .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(1.0));
     }
-}
-
-fn setup(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
-    commands.insert_resource(Colors {
-        player_color: materials.add(Color::rgb(0.969, 0.769, 0.784).into()),
-        floor_color: materials.add(Color::rgb(0.7, 0.7, 0.7).into()),
-    });
 }
 
 fn back_to_main_menu_controls(

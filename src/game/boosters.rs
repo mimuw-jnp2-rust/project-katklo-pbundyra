@@ -1,8 +1,10 @@
-use crate::game::{Booster, Coffee, Player, Rust};
-use crate::GameTextures;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use rand::{thread_rng, Rng};
+use rand::{Rng, thread_rng};
+
+use crate::game::{Booster, Coffee, Player, Rust};
+use crate::GameTextures;
+use crate::utils::{create_sprite_bundle, spawn_object};
 
 const CHANCE_OF_SPAWNING_COFFEE: f64 = 0.1;
 const CHANCE_OF_SPAWNING_RUST: f64 = 0.03;
@@ -13,29 +15,16 @@ pub fn insert_coffee_at(
     x: f32,
     y: f32,
 ) {
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: player_textures.coffee.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(0.99, 0.99)),
-                ..default()
-            },
-            ..default()
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(Transform::from_xyz(x, y, 10.0))
-        .insert(LockedAxes::ROTATION_LOCKED)
-        .insert(Sleeping::disabled())
-        .insert(GravityScale(0.3))
-        .insert(Velocity {
-            linvel: Vec2::new(0.0, 0.0),
-            ..default()
-        })
-        .insert(Ccd::enabled())
-        .insert(Collider::round_cuboid(0.05, 0.05, 0.1))
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(Coffee)
-        .insert(Booster);
+    spawn_object(commands,
+                 create_sprite_bundle(player_textures.coffee.clone(),
+                                      (0.99, 0.99),
+                                      (x, y, 10.0)),
+                 None,
+                 None,
+                 Collider::round_cuboid(0.05, 0.05, 0.1),
+                 Booster,
+                 Coffee,
+    );
 }
 
 pub fn insert_rust_at(
@@ -44,29 +33,16 @@ pub fn insert_rust_at(
     x: f32,
     y: f32,
 ) {
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: player_textures.rust.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(0.99, 0.99)),
-                ..default()
-            },
-            ..default()
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(Transform::from_xyz(x, y, 10.0))
-        .insert(LockedAxes::ROTATION_LOCKED)
-        .insert(Sleeping::disabled())
-        .insert(GravityScale(0.3))
-        .insert(Velocity {
-            linvel: Vec2::new(0.0, 0.0),
-            ..default()
-        })
-        .insert(Ccd::enabled())
-        .insert(Collider::round_cuboid(0.05, 0.05, 0.1))
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(Rust)
-        .insert(Booster);
+    spawn_object(commands,
+                 create_sprite_bundle(player_textures.rust.clone(),
+                                      (0.99, 0.99),
+                                      (x, y, 10.0)),
+                 None,
+                 None,
+                 Collider::round_cuboid(0.05, 0.05, 0.1),
+                 Booster,
+                 Rust,
+    );
 }
 
 pub fn drink_coffee(
