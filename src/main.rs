@@ -12,8 +12,8 @@ mod menu;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum AppState {
-    MainMenu,
     InGame,
+    MainMenu,
     DeathMenu,
     EndMenu,
 }
@@ -48,5 +48,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         coffee: asset_server.load("coffee.png"),
         rust: asset_server.load("rust.png"),
         floor: asset_server.load("floor.png"),
+        finish: asset_server.load("finish.png"),
     });
 }

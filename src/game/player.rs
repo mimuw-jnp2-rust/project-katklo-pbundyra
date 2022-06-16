@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::game::{camera_follow_player, GameDirection, Weapon};
+use crate::game::{camera_follow_player, FinishLine, GameDirection, Weapon};
 use crate::game::boosters::{drink_coffee, learn_rust};
 use crate::game::bullets::{
     BulletOptions, destroy_bullet_on_contact, insert_strong_bullet_at, insert_weak_bullet_at,
@@ -59,6 +59,7 @@ impl Plugin for PlayerPlugin {
                     .with_system(player_jumps)
                     .with_system(player_movement)
                     .with_system(jump_reset)
+                    .with_system(finish)
                     .with_system(fire_controller)
                     .with_system(destroy_bullet_on_contact)
                     .with_system(death_by_falling)
@@ -168,6 +169,26 @@ pub fn jump_reset(
             if let CollisionEvent::Started(h1, h2, _) = contact_event {
                 if *h1 == entity || *h2 == entity {
                     jumper.is_jumping = false
+                }
+            }
+        }
+    }
+}
+
+// TODO zrobić lepiej
+pub fn finish(
+    mut players: Query<(Entity, &mut Jumper)>,
+    mut lines: Query<(Entity, &mut FinishLine)>,
+    mut contact_events: EventReader<CollisionEvent>,
+    mut state: ResMut<State<AppState>>,
+) {
+    for contact_event in contact_events.iter() {
+        for (entity1, _) in players.iter_mut() {
+            for (entity2, _) in lines.iter_mut() {
+                if let CollisionEvent::Started(h1, h2, _) = contact_event {
+                    if (*h1 == entity1 && *h2 == entity2) || (*h1 == entity2 && *h2 == entity1) {
+                        state.set(AppState::EndMenu).unwrap();
+                    }
                 }
             }
         }

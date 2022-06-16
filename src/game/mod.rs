@@ -26,6 +26,7 @@ pub struct GameTextures {
     pub coffee: Handle<Image>,
     pub rust: Handle<Image>,
     pub floor: Handle<Image>,
+    pub finish: Handle<Image>,
 }
 
 pub struct GamePlugin;

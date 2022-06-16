@@ -6,6 +6,13 @@ pub enum GameDirection {
     Right,
 }
 
+
+#[derive(Component)]
+pub struct FinishLine;
+
+#[derive(Component)]
+pub struct Wall;
+
 #[derive(Component)]
 pub struct WeakBullet;
 

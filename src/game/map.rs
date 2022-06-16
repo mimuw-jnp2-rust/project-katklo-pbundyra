@@ -3,12 +3,15 @@ use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
 
 use crate::{AppState, GameTextures};
+use crate::game::{FinishLine, Wall};
 use crate::game::boosters::add_boosters;
 use crate::game::monster::add_enemies;
 use crate::utils::create_sprite_bundle;
 
-const MAP_WIDTH: usize = 150;
-const END_WALL_HEIGHT: usize = 20;
+pub const SAFE_ZONE_WIDTH: usize = 20;
+pub const GAME_WIDTH: usize = 150;
+const MAP_WIDTH: usize = GAME_WIDTH + SAFE_ZONE_WIDTH;
+const WALL_HEIGHT: f32 = 20.0;
 
 pub struct MapPlugin;
 
@@ -22,21 +25,22 @@ fn spawn_map(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
 ) {
-    let world = create_world(MAP_WIDTH);
+    let world = create_world();
     add_sprites(&mut commands, &game_textures, &world);
     add_colliders(&world, &mut commands);
+    add_finish_line(&mut commands, &game_textures, &world);
     add_enemies(&mut commands, &world, &game_textures);
     add_boosters(&mut commands, &world, game_textures);
 }
 
-fn create_world(width: usize) -> Vec<usize> {
-    let mut heights: Vec<usize> = Vec::with_capacity(width);
-    let mut height = 1;
-    (0..width - 1).for_each(|_| {
+fn create_world() -> Vec<usize> {
+    let mut heights: Vec<usize> = Vec::with_capacity(MAP_WIDTH);
+    let mut height: usize = 0;
+    (0..MAP_WIDTH).for_each(|_| {
         heights.push(height);
         height = get_next_height(height)
     });
-    heights.push(height + END_WALL_HEIGHT);
+
     heights
 }
 
@@ -63,10 +67,10 @@ fn get_random_height_delta() -> i8 {
 
 fn get_next_height(current_height: usize) -> usize {
     let next_height = current_height as i8 + get_random_height_delta();
-    if next_height > 0 {
+    if next_height >= 0 {
         next_height as usize
     } else {
-        1
+        0
     }
 }
 
@@ -76,11 +80,11 @@ fn add_tile(
     x: f32,
     height: usize,
 ) {
-    for h in 0..height {
+    for h in 0..=height {
         commands.spawn_bundle(create_sprite_bundle(
             game_textures.floor.clone(),
             (1.0, 1.0),
-            (x, h as f32 + 0.5, 0.),
+            (x, h as f32, 0.),
         ));
     }
 }
@@ -90,37 +94,60 @@ fn add_colliders(world: &[usize], commands: &mut Commands) {
         Some(m) => m,
         _ => panic!("add_colliders: World is empty"),
     };
-    (1..=*max).for_each(|floor_height| {
+
+    (0..=*max).for_each(|height| {
         let mut start: Option<usize> = None;
+        let floor_height = height as f32;
         world
             .iter()
             .enumerate()
             .for_each(|(index, height_at_index)| {
-                if *height_at_index >= floor_height && start.is_none() {
+                if *height_at_index >= height && start.is_none() {
                     start = Some(index);
-                } else if *height_at_index < floor_height && start.is_some() {
-                    add_collider(commands, floor_height, *start.get_or_insert(0), index);
-                    start = None
+                } else if *height_at_index < height {
+                    if let Some(s) = start {
+                        add_collider(commands, (s as f32 - 0.5, floor_height - 0.5), (index as f32 - 0.5, floor_height + 0.5), Wall);
+                        start = None
+                    }
                 }
             });
 
-        if start.is_some() {
-            add_collider(commands, floor_height, *start.get_or_insert(0), world.len());
+        if let Some(s) = start {
+            add_collider(commands, (s as f32 - 0.5, floor_height - 0.5), (world.len() as f32 - 0.5, floor_height + 0.5), Wall);
         }
     })
 }
 
-fn add_collider(commands: &mut Commands, height: usize, from: usize, to: usize) {
-    let width = to - from;
-    let half_width = width as f32 / 2.;
+fn add_collider<T>(commands: &mut Commands, left_down: (f32, f32), right_up: (f32, f32), kind: T) where T: Component {
+    let width = right_up.0 - left_down.0;
+    let half_width = width / 2.;
+    let height = right_up.1 - left_down.1;
+    let half_height = height / 2.;
 
     commands
         .spawn()
         .insert(Transform::from_xyz(
-            from as f32 + half_width - 0.5,
-            height as f32 - 0.5,
+            left_down.0 + half_width,
+            left_down.1 + half_height,
             0.0,
         ))
         .insert(RigidBody::Fixed)
-        .insert(Collider::cuboid(half_width, 0.5));
+        .insert(Collider::cuboid(half_width, half_height))
+        .insert(kind);
 }
+
+fn add_finish_line(commands: &mut Commands, game_textures: &Res<GameTextures>, world: &[usize]) {
+    let last_height = world.last().map(|h| *h as f32).unwrap_or(0.0);
+    let finish_x_position = world.len() as f32 - 1.0;
+
+    for h in 0..=WALL_HEIGHT as usize {
+        commands.spawn_bundle(create_sprite_bundle(
+            game_textures.finish.clone(),
+            (1.0, 1.0),
+            (finish_x_position, last_height + h as f32 + 1., 0.),
+        ));
+    }
+
+    add_collider(commands, (finish_x_position - 0.5, last_height), (finish_x_position + 0.5, last_height + WALL_HEIGHT), FinishLine);
+}
+
