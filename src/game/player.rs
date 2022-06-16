@@ -177,10 +177,14 @@ pub fn jump_reset(
 pub fn death_by_falling(
     mut commands: Commands,
     positions: Query<(Entity, &mut Transform, &RigidBody), With<Player>>,
+    mut state: ResMut<State<AppState>>,
 ) {
     for (entity, pos, _) in positions.iter() {
         if pos.translation.y < -10.0 {
             commands.entity(entity).despawn_recursive();
+            state
+                .set(AppState::DeathMenu)
+                .expect("Couldn't switch state to InGame");
         }
     }
 }

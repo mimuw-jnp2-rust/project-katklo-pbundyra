@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::{Rng, thread_rng};
 
+use crate::{AppState, GameTextures};
 use crate::game::{Enemy, GameDirection, Monster, Player};
-use crate::GameTextures;
 use crate::utils::{create_sprite_bundle, spawn_object};
 
 const CHANCE_OF_SPAWNING: f64 = 0.1;
@@ -34,6 +34,7 @@ pub fn death_by_enemy(
     mut players: Query<Entity, With<Player>>,
     enemies: Query<Entity, With<Enemy>>,
     mut collision_events: EventReader<CollisionEvent>,
+    mut state: ResMut<State<AppState>>,
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(h1, h2, _) = collision_event {
@@ -41,6 +42,9 @@ pub fn death_by_enemy(
                 for enemy in enemies.iter() {
                     if (*h1 == player && *h2 == enemy) || (*h1 == enemy && *h2 == player) {
                         commands.entity(player).despawn_recursive();
+                        state
+                            .set(AppState::DeathMenu)
+                            .expect("Couldn't switch state to InGame");
                     }
                 }
             }

@@ -1,18 +1,21 @@
 use bevy::prelude::*;
 use bevy::window::PresentMode;
 
-pub mod utils;
-mod game;
-mod main_menu;
+use game::GamePlugin;
+use menu::MenuPlugin;
 
 use crate::game::{GameTextures, MapPlugin, MonsterAiPlugin, PlayerPlugin};
-use game::GamePlugin;
-use main_menu::MainMenuPlugin;
+
+pub mod utils;
+mod game;
+mod menu;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
-enum AppState {
+pub enum AppState {
     MainMenu,
     InGame,
+    DeathMenu,
+    EndMenu,
 }
 
 fn main() {
@@ -31,7 +34,7 @@ fn main() {
         .add_plugin(PlayerPlugin)
         .add_plugin(MapPlugin)
         .add_plugin(GamePlugin)
-        .add_plugin(MainMenuPlugin)
+        .add_plugin(MenuPlugin)
         .add_plugin(MonsterAiPlugin)
         .run();
 }

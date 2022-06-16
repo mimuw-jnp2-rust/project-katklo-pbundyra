@@ -1,15 +1,17 @@
-use bevy::{app::AppExit, prelude::*};
+use bevy::prelude::*;
 
-use super::AppState;
+use crate::menu::MenuButton;
 
-pub struct MainMenuPlugin;
-
-struct MainMenuData {
+pub struct MenuData {
     menu_entity: Entity,
     camera_entity: Entity,
 }
 
-struct MenuMaterials {
+// Tag component used to mark which setting is currently selected
+#[derive(Component)]
+struct SelectedOption;
+
+pub struct MenuMaterials {
     root: UiColor,
     border: UiColor,
     button: UiColor,
@@ -33,44 +35,8 @@ impl Default for MenuMaterials {
     }
 }
 
-#[derive(Component)]
-enum MenuButton {
-    Play,
-    Quit,
-}
 
-// Tag component used to mark which setting is currently selected
-#[derive(Component)]
-struct SelectedOption;
-
-impl Plugin for MainMenuPlugin {
-    fn build(&self, app: &mut App) {
-        app.init_resource::<MenuMaterials>()
-            .add_system(button_press_system)
-            .add_system(button_system)
-            .add_system_set(SystemSet::on_enter(AppState::MainMenu).with_system(setup))
-            .add_system_set(SystemSet::on_exit(AppState::MainMenu).with_system(cleanup_main_menu));
-    }
-}
-
-fn button_press_system(
-    buttons: Query<(&Interaction, &MenuButton, Changed<Interaction>), With<Button>>,
-    mut state: ResMut<State<AppState>>,
-    mut exit: EventWriter<AppExit>,
-) {
-    for (interaction, button, _) in buttons.iter() {
-        if *interaction == Interaction::Clicked {
-            match button {
-                MenuButton::Play => state
-                    .set(AppState::InGame)
-                    .expect("Couldn't switch state to InGame"),
-                MenuButton::Quit => exit.send(AppExit),
-            };
-        }
-    }
-}
-
-fn button_system(
+pub fn button_system(
     mut buttons: Query<(&Interaction, &mut UiColor, Changed<Interaction>), With<Button>>,
     materials: Res<MenuMaterials>,
 ) {
@@ -83,7 +49,10 @@ fn button_system(
     }
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>, materials: Res<MenuMaterials>) {
+pub fn setup(mut commands: Commands,
+             asset_server: Res<AssetServer>,
+             materials: Res<MenuMaterials>,
+             buttons: Vec<(&'static str, MenuButton)>) {
     let menu_entity = commands
         .spawn_bundle(root(&materials))
         .with_children(|parent| {
@@ -93,26 +62,18 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, materials: Res<
                     parent
                         .spawn_bundle(menu_background(&materials))
                         .with_children(|parent| {
-                            parent
-                                .spawn_bundle(button(&materials))
-                                .with_children(|parent| {
-                                    parent.spawn_bundle(button_text(
-                                        &asset_server,
-                                        &materials,
-                                        "New Game",
-                                    ));
-                                })
-                                .insert(MenuButton::Play);
-                            parent
-                                .spawn_bundle(button(&materials))
-                                .with_children(|parent| {
-                                    parent.spawn_bundle(button_text(
-                                        &asset_server,
-                                        &materials,
-                                        "Quit",
-                                    ));
-                                })
-                                .insert(MenuButton::Quit);
+                            for (text, b) in buttons {
+                                parent
+                                    .spawn_bundle(button(&materials))
+                                    .with_children(|parent| {
+                                        parent.spawn_bundle(button_text(
+                                            &asset_server,
+                                            &materials,
+                                            text,
+                                        ));
+                                    })
+                                    .insert(b);
+                            }
                         });
                 });
         })
@@ -120,7 +81,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, materials: Res<
 
     let camera_entity = commands.spawn_bundle(UiCameraBundle::default()).id();
 
-    commands.insert_resource(MainMenuData {
+    commands.insert_resource(MenuData {
         menu_entity,
         camera_entity,
     });
@@ -202,7 +163,7 @@ fn button_text(
     }
 }
 
-fn cleanup_main_menu(mut commands: Commands, menu_data: Res<MainMenuData>) {
+pub fn cleanup_menu(mut commands: Commands, menu_data: Res<MenuData>) {
     commands.entity(menu_data.menu_entity).despawn_recursive();
     commands.entity(menu_data.camera_entity).despawn_recursive();
 }
