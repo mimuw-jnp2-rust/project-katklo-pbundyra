@@ -75,3 +75,5 @@ impl Default for Bug {
 #[derive(Component)]
 pub struct Enemy;
 
+#[derive(Component, Default)]
+pub struct LivingBeing;

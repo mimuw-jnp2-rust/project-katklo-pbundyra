@@ -18,6 +18,7 @@ mod monster;
 mod moster_ai;
 mod player;
 mod utils;
+mod living_being;
 
 pub struct GameTextures {
     pub player: Handle<Image>,

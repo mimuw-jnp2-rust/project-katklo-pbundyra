@@ -2,6 +2,7 @@ use bevy::core::FixedTimestep;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::{thread_rng, Rng};
+use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
 
 use super::super::AppState;
 use super::{GameDirection, Jumper, Bug};
@@ -25,7 +26,8 @@ impl Plugin for MonsterAiPlugin {
                 SystemSet::new()
                     .with_run_criteria(FixedTimestep::step(2.0))
                     .with_system(monster_jumps),
-            );
+            ).add_event::<LivingBeingHitEvent>()
+            .add_event::<LivingBeingDeathEvent>();
     }
 }
 

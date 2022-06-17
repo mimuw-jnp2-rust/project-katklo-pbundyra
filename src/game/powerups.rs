@@ -19,11 +19,12 @@ fn spawn_powerup<T>(commands: &mut Commands, texture: Handle<Image>, powerup_typ
                  None,
                  Powerup,
                  powerup_type,
+                 Option::None,
     );
 }
 
 fn spawn_coffee(commands: &mut Commands, game_textures: &Res<GameTextures>, x: f32, y: f32) {
-   spawn_powerup(commands, game_textures.coffee.clone(), Coffee, x, y);
+    spawn_powerup(commands, game_textures.coffee.clone(), Coffee, x, y);
 }
 
 fn spawn_rust(commands: &mut Commands, game_textures: &Res<GameTextures>, x: f32, y: f32) {

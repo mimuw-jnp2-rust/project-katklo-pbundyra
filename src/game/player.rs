@@ -4,11 +4,12 @@ use bevy_rapier2d::prelude::*;
 use crate::game::{camera_follow_player, FinishLine, GameDirection, Weapon};
 use crate::game::powerups::{drink_coffee, learn_rust};
 use crate::game::bullets::{BulletOptions, destroy_bullet_on_contact, killing_enemies, spawn_strong_bullet, spawn_weak_bullet};
+use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent, on_living_being_dead};
 use crate::game::monster::death_by_enemy;
 use crate::GameTextures;
 
 use super::camera::new_camera_2d;
-use super::components::Jumper;
+use super::components::{LivingBeing, Jumper};
 use super::super::AppState;
 use super::utils::*;
 
@@ -44,6 +45,7 @@ impl Player {
                      Some(Friction::coefficient(3.)),
                      Jumper::default(),
                      Player::default(),
+                     Option::Some(LivingBeing),
         );
     }
 
@@ -87,14 +89,16 @@ impl Plugin for PlayerPlugin {
                     .with_system(killing_enemies)
                     .with_system(changing_weapon)
                     .with_system(drink_coffee)
-                    .with_system(learn_rust),
-            );
+                    .with_system(learn_rust)
+                    .with_system(on_living_being_dead),
+            )
+            .add_event::<LivingBeingHitEvent>()
+            .add_event::<LivingBeingDeathEvent>();
     }
 }
 
 pub fn spawn_player(mut commands: Commands, game_textures: Res<GameTextures>) {
     Player::spawn(&mut commands, game_textures);
-
     commands.spawn_bundle(new_camera_2d());
 }
 

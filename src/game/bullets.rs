@@ -36,6 +36,7 @@ fn spawn_bullet(commands: &mut Commands, texture: Handle<Image>, bullet_type: We
                  None,
                  Bullet,
                  bullet_type,
+                Option::None,
     );
 }
 
