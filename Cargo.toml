@@ -4,8 +4,18 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = "0.7"
-bevy_rapier2d = "0.13.2"
+bevy = { version = "0.7", features = [
+    "render",
+    "animation",
+    "bevy_winit",
+    "bevy_gilrs",
+    "png",
+    "hdr",
+    "filesystem_watcher",
+    "x11"
+] }
+bevy_rapier2d = "0.13"
+bevy_kira_audio = { version = "0.8", features = ["ogg", "wav"] }
 rand = "*"
 
 [profile.dev.package.bevy_rapier2d]

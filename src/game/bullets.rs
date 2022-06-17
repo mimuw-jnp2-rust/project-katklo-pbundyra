@@ -57,11 +57,13 @@ pub fn destroy_bullet_on_contact(
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(h1, h2, _) = collision_event {
+            println!("{:?}", collision_event);
             for bullet in bullets.iter() {
-                if (*h1 == bullet
-                    && !players.iter().any(|b| *h2 == b)
-                    && !bullets.iter().any(|b| *h2 == b))
-                    || (*h2 == bullet
+                // if (*h1 == bullet
+                //     && !players.iter().any(|b| *h2 == b)
+                //     && !bullets.iter().any(|b| *h2 == b))
+                //     ||
+                   if (*h2 == bullet
                     && !players.iter().any(|b| *h1 == b)
                     && !bullets.iter().any(|b| *h1 == b))
                 {
