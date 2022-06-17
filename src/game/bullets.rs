@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::game::{Bullet, Enemy, Player, Weapon};
+use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
 use crate::GameTextures;
 
 use super::{GameDirection};
@@ -21,10 +22,10 @@ pub struct BulletOptions {
 fn spawn_bullet(commands: &mut Commands, texture: Handle<Image>, bullet_type: Weapon, options: BulletOptions, def_vel : f32) {
     let (vel_x, spawn_x) = match options.direction {
         GameDirection::Left => {
-            (-def_vel + options.player_vex * 0.15, -0.75)
+            (-def_vel, -0.75)
         }
         GameDirection::Right => {
-            (def_vel + options.player_vex * 0.15,  0.75)
+            (def_vel,  0.75)
         }
     };
 
@@ -32,7 +33,7 @@ fn spawn_bullet(commands: &mut Commands, texture: Handle<Image>, bullet_type: We
                  create_sprite_bundle(texture, (0.5, 0.2), (options.x + spawn_x, options.y, 0.0)),
                  Some(vel_x),
                  Some(0.0),
-                 Collider::round_cuboid(0.25, 0.05, 0.1),
+                 Collider::round_cuboid(0.0, 0.0, 0.0),
                  None,
                  Bullet,
                  bullet_type,
@@ -71,18 +72,18 @@ pub fn destroy_bullet_on_contact(
     }
 }
 
-pub fn killing_enemies(
-    mut commands: Commands,
+pub fn kill_enemy(
     bullets: Query<Entity, With<Bullet>>,
     enemies: Query<Entity, With<Enemy>>,
     mut collision_event: EventReader<CollisionEvent>,
+    mut send_hit_event: EventWriter<LivingBeingDeathEvent>,
 ) {
     for collision_event in collision_event.iter() {
-        if let CollisionEvent::Started(h1, h2, _) = collision_event {
+        if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
             for bullet in bullets.iter() {
                 for enemy in enemies.iter() {
-                    if (*h1 == bullet && *h2 == enemy) || (*h1 == enemy && *h2 == bullet) {
-                        commands.entity(enemy).despawn_recursive();
+                    if (*ent1 == bullet && *ent2 == enemy) || (*ent1 == enemy && *ent2 == bullet) {
+                        send_hit_event.send(LivingBeingDeathEvent { entity: enemy });
                     }
                 }
             }

@@ -29,14 +29,3 @@ pub fn on_living_being_dead(
         commands.entity(event.entity).despawn_recursive()
     }
 }
-//
-// pub fn death_by_height(
-//     mut send_death_event: EventWriter<LivingBeingDeathEvent>,
-//     living_being: Query<(Entity, &RigidBodyPosition), With<LivingBeing>>,
-// ) {
-//     for (entity, position) in living_being.iter() {
-//         if position.position.translation.y < -1. {
-//             send_death_event.send(LivingBeingDeathEvent { entity })
-//         }
-//     }
-// }

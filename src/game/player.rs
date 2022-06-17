@@ -3,8 +3,8 @@ use bevy_rapier2d::prelude::*;
 
 use crate::game::{camera_follow_player, FinishLine, GameDirection, Weapon};
 use crate::game::powerups::{drink_coffee, learn_rust};
-use crate::game::bullets::{BulletOptions, destroy_bullet_on_contact, killing_enemies, spawn_strong_bullet, spawn_weak_bullet};
-use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent, on_living_being_dead};
+use crate::game::bullets::{BulletOptions, destroy_bullet_on_contact, kill_enemy, spawn_strong_bullet, spawn_weak_bullet};
+use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent, on_living_being_dead, on_living_being_hit};
 use crate::game::monster::death_by_enemy;
 use crate::GameTextures;
 
@@ -86,11 +86,12 @@ impl Plugin for PlayerPlugin {
                     .with_system(destroy_bullet_on_contact)
                     .with_system(death_by_enemy)
                     .with_system(camera_follow_player)
-                    .with_system(killing_enemies)
+                    .with_system(kill_enemy)
                     .with_system(changing_weapon)
                     .with_system(drink_coffee)
                     .with_system(learn_rust)
-                    .with_system(on_living_being_dead),
+                    .with_system(on_living_being_dead)
+                    .with_system(on_living_being_hit),
             )
             .add_event::<LivingBeingHitEvent>()
             .add_event::<LivingBeingDeathEvent>();
@@ -165,11 +166,11 @@ pub fn fire_controller(
 
 pub fn jump_reset(
     mut query: Query<(Entity, &mut Jumper)>,
-    mut contact_events: EventReader<CollisionEvent>,
+    mut collision_events: EventReader<CollisionEvent>,
 ) {
-    for contact_event in contact_events.iter() {
+    for collision_event in collision_events.iter() {
         for (entity, mut jumper) in query.iter_mut() {
-            if let CollisionEvent::Started(h1, h2, _) = contact_event {
+            if let CollisionEvent::Started(h1, h2, _) = collision_event {
                 if *h1 == entity || *h2 == entity {
                     jumper.is_jumping = false
                 }

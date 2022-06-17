@@ -34,10 +34,10 @@ pub fn death_by_enemy(
     mut send_dead_event: EventWriter<LivingBeingDeathEvent>,
 ) {
     for collision_event in collision_events.iter() {
-        if let CollisionEvent::Started(h1, h2, _) = collision_event {
+        if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
             for player in players.iter_mut() {
                 for enemy in enemies.iter() {
-                    if (*h1 == player && *h2 == enemy) || (*h1 == enemy && *h2 == player) {
+                    if (*ent1 == player && *ent2 == enemy) || (*ent1 == enemy && *ent2 == player) {
                         send_dead_event.send(LivingBeingDeathEvent { entity: player });
                         state
                             .set(AppState::DeathMenu)
