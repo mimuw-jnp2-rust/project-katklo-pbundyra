@@ -121,14 +121,13 @@ fn add_colliders(world: &[(i32, usize)], commands: &mut Commands) {
             });
 
         if let Some(s) = start {
-            spawn_static_collider(commands, (s as f32 - 0.5, floor_height - 0.5), (world.len() as f32 - 0.5, floor_height + 0.5), Wall);
+            spawn_static_collider(commands, (s as f32 - 0.5, floor_height - 0.5), (GAME_WIDTH as f32 - 0.5, floor_height + 0.5), Wall);
         }
     })
 }
 
 fn add_finish_line(commands: &mut Commands, game_textures: &Res<GameTextures>, world: &[(i32, usize)]) {
-    let last_height = world.last().map(|&(_, y)| y as f32).unwrap_or(0.0);
-    let finish_x_position = world.len() as f32 - 1.0;
+    let (finish_x_position, last_height) = world.last().map(|&(x, y)| (x as f32, y as f32)).unwrap_or((0., 0.));
 
     for h in 0..=WALL_HEIGHT as usize {
         commands.spawn_bundle(create_sprite_bundle(

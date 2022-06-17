@@ -4,7 +4,7 @@ use bevy_rapier2d::prelude::*;
 use rand::{thread_rng, Rng};
 
 use super::super::AppState;
-use super::{GameDirection, Jumper, Monster};
+use super::{GameDirection, Jumper, Bug};
 
 struct MonsterWalkedIntoWallEvent {
     entity: Entity,
@@ -29,7 +29,7 @@ impl Plugin for MonsterAiPlugin {
     }
 }
 
-fn monster_walking_system(mut monsters: Query<(&Monster, &mut Velocity)>) {
+fn monster_walking_system(mut monsters: Query<(&Bug, &mut Velocity)>) {
     for (monster, mut velocity) in monsters.iter_mut() {
         let speed = match monster.facing_direction {
             GameDirection::Left => -monster.speed,
@@ -41,7 +41,7 @@ fn monster_walking_system(mut monsters: Query<(&Monster, &mut Velocity)>) {
 }
 
 fn monster_wall_contact_detection(
-    monsters: Query<Entity, With<Monster>>,
+    monsters: Query<Entity, With<Bug>>,
     mut collision_events: EventReader<CollisionEvent>,
     mut send_monster_walked_into_wall: EventWriter<MonsterWalkedIntoWallEvent>,
 ) {
@@ -59,7 +59,7 @@ fn monster_wall_contact_detection(
 
 fn monster_change_direction_on_contact(
     mut events: EventReader<MonsterWalkedIntoWallEvent>,
-    mut monster_query: Query<&mut Monster>,
+    mut monster_query: Query<&mut Bug>,
 ) {
     for event in events.iter() {
         // bullet contacts may destroy monster before running this system.
@@ -72,7 +72,7 @@ fn monster_change_direction_on_contact(
     }
 }
 
-fn monster_jumps(mut monsters: Query<(&mut Jumper, &mut Velocity), With<Monster>>) {
+fn monster_jumps(mut monsters: Query<(&mut Jumper, &mut Velocity), With<Bug>>) {
     for (monster, mut velocity) in monsters.iter_mut() {
         if should_jump() {
             velocity.linvel = Vec2::new(0., monster.jump_impulse);

@@ -34,6 +34,15 @@ pub struct Jumper {
     pub is_jumping: bool,
 }
 
+impl Default for Jumper {
+    fn default() -> Self {
+        Jumper {
+            jump_impulse: 13.0,
+            is_jumping: false,
+        }
+    }
+}
+
 #[derive(Component)]
 pub struct Velocity {
     pub x: f32,
@@ -50,10 +59,20 @@ pub struct Coffee;
 pub struct Rust;
 
 #[derive(Component)]
-pub struct Monster {
+pub struct Bug {
     pub speed: f32,
     pub facing_direction: GameDirection,
 }
 
+impl Default for Bug {
+    fn default() -> Self {
+        Bug {
+            speed: 2.0,
+            facing_direction: GameDirection::Right,
+        }
+    }
+}
+
 #[derive(Component)]
 pub struct Enemy;
+

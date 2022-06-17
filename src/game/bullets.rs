@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::game::{Bullet, Enemy, Player, StrongBullet};
+use crate::game::{Bullet, Enemy, Player, Weapon};
 use crate::GameTextures;
 
-use super::{GameDirection, WeakBullet};
+use super::{GameDirection};
 use super::utils::*;
 
 const WEAK_BULLET_SPEED: f32 = 8.25;
@@ -18,66 +18,33 @@ pub struct BulletOptions {
     pub player_vex: f32,
 }
 
-pub fn insert_weak_bullet_at(
-    commands: &mut Commands,
-    options: BulletOptions,
-    game_textures: &mut Res<GameTextures>,
-) {
-    let vel_x: f32;
-    let spawn_x: f32;
-    match options.direction {
+fn spawn_bullet(commands: &mut Commands, texture: Handle<Image>, bullet_type: Weapon, options: BulletOptions, def_vel : f32) {
+    let (vel_x, spawn_x) = match options.direction {
         GameDirection::Left => {
-            vel_x = -WEAK_BULLET_SPEED + options.player_vex * 0.15;
-            spawn_x = -0.75;
+            (-def_vel + options.player_vex * 0.15, -0.75)
         }
         GameDirection::Right => {
-            vel_x = WEAK_BULLET_SPEED + options.player_vex * 0.15;
-            spawn_x = 0.75
+            (def_vel + options.player_vex * 0.15,  0.75)
         }
-    }
+    };
 
-    spawn_object(
-        commands,
-        create_sprite_bundle(game_textures.weak_laser.clone(),
-                             (0.5, 0.2),
-                             (options.x + spawn_x, options.y, 10.0),
-        ),
-        Some(vel_x),
-        Some(0.0),
-        (0.25, 0.05, 0.1),
-        Bullet,
-        WeakBullet);
+    spawn_object(commands,
+                 create_sprite_bundle(texture, (0.5, 0.2), (options.x + spawn_x, options.y, 0.0)),
+                 Some(vel_x),
+                 Some(0.0),
+                 Collider::round_cuboid(0.25, 0.05, 0.1),
+                 None,
+                 Bullet,
+                 bullet_type,
+    );
 }
 
-pub fn insert_strong_bullet_at(
-    commands: &mut Commands,
-    options: BulletOptions,
-    game_textures: &mut Res<GameTextures>,
-) {
-    let vel_x: f32;
-    let spawn_x: f32;
-    match options.direction {
-        GameDirection::Left => {
-            vel_x = -STRONG_BULLET_SPEED + options.player_vex * 0.15;
-            spawn_x = -0.75;
-        }
-        GameDirection::Right => {
-            vel_x = STRONG_BULLET_SPEED + options.player_vex * 0.15;
-            spawn_x = 0.75
-        }
-    }
+pub fn spawn_strong_bullet(commands: &mut Commands, game_textures: &Res<GameTextures>, options: BulletOptions) {
+    spawn_bullet(commands, game_textures.strong_laser.clone(), Weapon::StrongBullet, options, STRONG_BULLET_SPEED);
+}
 
-    spawn_object(
-        commands,
-        create_sprite_bundle(game_textures.strong_laser.clone(),
-                             (0.5, 0.2),
-                             (options.x + spawn_x, options.y, 10.0),
-        ),
-        Some(vel_x),
-        Some(0.0),
-        (0.25, 0.05, 0.1),
-        Bullet,
-        StrongBullet);
+pub fn spawn_weak_bullet(commands: &mut Commands, game_textures: &Res<GameTextures>, options: BulletOptions) {
+    spawn_bullet(commands, game_textures.weak_laser.clone(), Weapon::WeakBullet, options, WEAK_BULLET_SPEED);
 }
 
 pub fn destroy_bullet_on_contact(

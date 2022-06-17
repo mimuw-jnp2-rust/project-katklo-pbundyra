@@ -3,30 +3,25 @@ use bevy_rapier2d::prelude::*;
 use rand::{Rng, thread_rng};
 
 use crate::{AppState, GameTextures};
-use crate::game::{Enemy, GameDirection, Monster, Player, SAFE_ZONE_WIDTH};
+use crate::game::{Enemy, Bug, Player, SAFE_ZONE_WIDTH};
 use crate::game::utils::*;
 
 const CHANCE_OF_SPAWNING: f64 = 0.1;
 
-pub fn insert_monster_at(
-    commands: &mut Commands,
-    player_textures: &Res<GameTextures>,
-    x: f32,
-    y: f32,
-) {
+fn spawn_enemy<T>(commands: &mut Commands, texture: Handle<Image>, enemy_type: T, x: f32, y: f32) where T: Component {
     spawn_object(commands,
-                 create_sprite_bundle(player_textures.bug.clone(),
-                                      (0.9, 0.9),
-                                      (x, y + 0.5, 10.0)),
+                 create_sprite_bundle(texture, (0.9, 0.9), (x, y, 10.0)),
                  None,
                  None,
-                 (0.25, 0.25, 0.1),
+                 Collider::round_cuboid(0.25, 0.25, 0.1),
+                 None,
                  Enemy,
-                 Monster {
-                     speed: 2.0,
-                     facing_direction: GameDirection::Right,
-                 },
+                 enemy_type,
     );
+}
+
+fn spawn_bug(commands: &mut Commands, game_textures: &Res<GameTextures>, x: f32, y: f32) {
+    spawn_enemy(commands, game_textures.bug.clone(), Bug::default(), x, y);
 }
 
 pub fn death_by_enemy(
@@ -55,8 +50,8 @@ pub fn death_by_enemy(
 pub fn add_enemies(commands: &mut Commands, world: &[(i32, usize)], player_texture: &Res<GameTextures>) {
     world.iter().for_each(|&(x, height)| {
         if should_add_enemy(x) {
-            insert_monster_at(commands, player_texture, x as f32, (height + 1) as f32);
-        }
+            spawn_bug(commands, player_texture, x as f32, height as f32 + 1.5 );
+            }
     });
 }
 

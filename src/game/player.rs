@@ -3,10 +3,7 @@ use bevy_rapier2d::prelude::*;
 
 use crate::game::{camera_follow_player, FinishLine, GameDirection, Weapon};
 use crate::game::boosters::{drink_coffee, learn_rust};
-use crate::game::bullets::{
-    BulletOptions, destroy_bullet_on_contact, insert_strong_bullet_at, insert_weak_bullet_at,
-    killing_enemies,
-};
+use crate::game::bullets::{BulletOptions, destroy_bullet_on_contact, killing_enemies, spawn_strong_bullet, spawn_weak_bullet};
 use crate::game::monster::death_by_enemy;
 use crate::GameTextures;
 
@@ -24,8 +21,32 @@ pub struct Player {
     pub direction: GameDirection,
 }
 
+impl Default for Player {
+    fn default() -> Self {
+        Player {
+            speed: 7.0,
+            weapon: Weapon::WeakBullet,
+            direction: GameDirection::Right,
+        }
+    }
+}
+
 #[allow(dead_code)]
 impl Player {
+    pub fn spawn(commands: &mut Commands, game_textures: Res<GameTextures>) {
+        spawn_object(commands,
+                     create_sprite_bundle(game_textures.player.clone(),
+                                          (0.9, 0.9),
+                                          (0.0, 2.0, 0.0)),
+                     None,
+                     None,
+                     Collider::round_cuboid(0.2, 0.2, 0.1),
+                     Some(Friction::coefficient(3.)),
+                     Jumper::default(),
+                     Player::default(),
+        );
+    }
+
     pub fn change_weapon(&mut self) {
         match self.weapon {
             Weapon::WeakBullet => self.weapon = Weapon::StrongBullet,
@@ -72,23 +93,7 @@ impl Plugin for PlayerPlugin {
 }
 
 pub fn spawn_player(mut commands: Commands, game_textures: Res<GameTextures>) {
-    spawn_object(&mut commands,
-                 create_sprite_bundle(game_textures.player.clone(),
-                                      (0.9, 0.9),
-                                      (0.0, 2.0, 0.0)),
-                 None,
-                 None,
-                 (0.20, 0.20, 0.1),
-                 Jumper {
-                     jump_impulse: 12.0,
-                     is_jumping: false,
-                 },
-                 Player {
-                     speed: 7.0,
-                     weapon: Weapon::WeakBullet,
-                     direction: GameDirection::Right,
-                 },
-    );
+    Player::spawn(&mut commands, game_textures);
 
     commands.spawn_bundle(new_camera_2d());
 }
@@ -147,12 +152,8 @@ pub fn fire_controller(
                 player_vex: vel.linvel.x,
             };
             match player.weapon {
-                Weapon::WeakBullet => {
-                    insert_weak_bullet_at(&mut commands, options, &mut game_textures);
-                }
-                Weapon::StrongBullet => {
-                    insert_strong_bullet_at(&mut commands, options, &mut game_textures);
-                }
+                Weapon::WeakBullet => spawn_weak_bullet(&mut commands, &mut game_textures, options),
+                Weapon::StrongBullet => spawn_strong_bullet(&mut commands, &mut game_textures, options),
             }
         }
     }
@@ -173,7 +174,7 @@ pub fn jump_reset(
     }
 }
 
-// TODO zrobić lepiej
+// TODO zrobić lepiej przy okazji collision eventow
 pub fn finish(
     mut players: Query<(Entity, &mut Jumper)>,
     mut lines: Query<(Entity, &mut FinishLine)>,

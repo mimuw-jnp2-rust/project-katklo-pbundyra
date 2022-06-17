@@ -3,7 +3,6 @@ use bevy_rapier2d::prelude::*;
 use rand::{Rng, thread_rng};
 
 use crate::game::{Booster, Coffee, Player, Rust};
-use crate::game::utils::create_sprite_bundle;
 use crate::GameTextures;
 
 use super::utils::*;
@@ -11,40 +10,24 @@ use super::utils::*;
 const CHANCE_OF_SPAWNING_COFFEE: f64 = 0.1;
 const CHANCE_OF_SPAWNING_RUST: f64 = 0.03;
 
-pub fn insert_coffee_at(
-    commands: &mut Commands,
-    player_textures: &Res<GameTextures>,
-    x: f32,
-    y: f32,
-) {
+fn spawn_booster<T>(commands: &mut Commands, texture: Handle<Image>, booster_type: T, x: f32, y: f32) where T: Component {
     spawn_object(commands,
-                 create_sprite_bundle(player_textures.coffee.clone(),
-                                      (0.99, 0.99),
-                                      (x, y, 10.0)),
+                 create_sprite_bundle(texture, (0.99, 0.99), (x, y, 10.0)),
                  None,
                  None,
-                 (0.05, 0.05, 0.1),
+                 Collider::round_cuboid(0.05, 0.05, 0.1),
+                 None,
                  Booster,
-                 Coffee,
+                 booster_type,
     );
 }
 
-pub fn insert_rust_at(
-    commands: &mut Commands,
-    player_textures: &Res<GameTextures>,
-    x: f32,
-    y: f32,
-) {
-    spawn_object(commands,
-                 create_sprite_bundle(player_textures.rust.clone(),
-                                      (0.99, 0.99),
-                                      (x, y, 10.0)),
-                 None,
-                 None,
-                 (0.05, 0.05, 0.1),
-                 Booster,
-                 Rust,
-    );
+fn spawn_coffee(commands: &mut Commands, game_textures: &Res<GameTextures>, x: f32, y: f32) {
+   spawn_booster(commands, game_textures.coffee.clone(), Coffee, x, y);
+}
+
+fn spawn_rust(commands: &mut Commands, game_textures: &Res<GameTextures>, x: f32, y: f32) {
+    spawn_booster(commands, game_textures.rust.clone(), Rust, x, y);
 }
 
 pub fn drink_coffee(
@@ -94,9 +77,9 @@ pub fn learn_rust(
 pub fn add_boosters(commands: &mut Commands, world: &[(i32, usize)], player_texture: Res<GameTextures>) {
     world.iter().for_each(|&(x, height)| {
         if should_add_coffee(x) {
-            insert_coffee_at(commands, &player_texture, x as f32, height as f32 + 0.25);
+            spawn_coffee(commands, &player_texture, x as f32, height as f32 + 0.25);
         } else if should_add_rust(x) {
-            insert_rust_at(commands, &player_texture, x as f32, height as f32 + 0.25);
+            spawn_rust(commands, &player_texture, x as f32, height as f32 + 0.25);
         }
     });
 }

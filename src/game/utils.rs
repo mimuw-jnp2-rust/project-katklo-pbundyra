@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-const GRAVITY_SCALE_DEFAULT: f32 = 0.3;
+const GRAVITY_SCALE_DEFAULT: f32 = 0.4;
 const VELOCITY_DEFAULT: f32 = 0.0;
 
 pub fn create_sprite_bundle(texture: Handle<Image>,
@@ -21,7 +21,7 @@ pub fn create_sprite_bundle(texture: Handle<Image>,
 
 pub fn spawn_object<T1, T2>(commands: &mut Commands, sprite: SpriteBundle, x_velocity: Option<f32>,
                             gravity_scale: Option<f32>,
-                            (x_col, y_col, z_col): (f32, f32, f32), object_kind: T1, object_type: T2)
+                            collider: Collider, friction: Option<Friction>, object_kind: T1, object_type: T2)
     where T1: Component,
           T2: Component {
     commands
@@ -32,7 +32,8 @@ pub fn spawn_object<T1, T2>(commands: &mut Commands, sprite: SpriteBundle, x_vel
         .insert(GravityScale(gravity_scale.unwrap_or(GRAVITY_SCALE_DEFAULT)))
         .insert(Ccd::enabled())
         .insert(Velocity::linear(Vec2::new(x_velocity.unwrap_or(VELOCITY_DEFAULT), VELOCITY_DEFAULT)))
-        .insert(Collider::round_cuboid(x_col, y_col, z_col))
+        .insert(collider)
+        .insert(friction.unwrap_or(Friction::default()))
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(object_kind)
         .insert(object_type);
