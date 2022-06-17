@@ -9,7 +9,7 @@ pub use player::*;
 
 use super::AppState;
 
-mod boosters;
+mod powerups;
 mod bullets;
 mod camera;
 mod components;

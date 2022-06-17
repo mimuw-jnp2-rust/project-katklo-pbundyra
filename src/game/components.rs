@@ -6,7 +6,6 @@ pub enum GameDirection {
     Right,
 }
 
-
 #[derive(Component)]
 pub struct FinishLine;
 
@@ -50,7 +49,7 @@ pub struct Velocity {
 }
 
 #[derive(Component)]
-pub struct Booster;
+pub struct Powerup;
 
 #[derive(Component)]
 pub struct Coffee;

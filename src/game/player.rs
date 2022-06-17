@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::game::{camera_follow_player, FinishLine, GameDirection, Weapon};
-use crate::game::boosters::{drink_coffee, learn_rust};
+use crate::game::powerups::{drink_coffee, learn_rust};
 use crate::game::bullets::{BulletOptions, destroy_bullet_on_contact, killing_enemies, spawn_strong_bullet, spawn_weak_bullet};
 use crate::game::monster::death_by_enemy;
 use crate::GameTextures;

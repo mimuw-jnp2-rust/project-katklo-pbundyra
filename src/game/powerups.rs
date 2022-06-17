@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::{Rng, thread_rng};
 
-use crate::game::{Booster, Coffee, Player, Rust};
+use crate::game::{Powerup, Coffee, Player, Rust};
 use crate::GameTextures;
 
 use super::utils::*;
@@ -10,24 +10,24 @@ use super::utils::*;
 const CHANCE_OF_SPAWNING_COFFEE: f64 = 0.1;
 const CHANCE_OF_SPAWNING_RUST: f64 = 0.03;
 
-fn spawn_booster<T>(commands: &mut Commands, texture: Handle<Image>, booster_type: T, x: f32, y: f32) where T: Component {
+fn spawn_powerup<T>(commands: &mut Commands, texture: Handle<Image>, powerup_type: T, x: f32, y: f32) where T: Component {
     spawn_object(commands,
                  create_sprite_bundle(texture, (0.99, 0.99), (x, y, 10.0)),
                  None,
                  None,
                  Collider::round_cuboid(0.05, 0.05, 0.1),
                  None,
-                 Booster,
-                 booster_type,
+                 Powerup,
+                 powerup_type,
     );
 }
 
 fn spawn_coffee(commands: &mut Commands, game_textures: &Res<GameTextures>, x: f32, y: f32) {
-   spawn_booster(commands, game_textures.coffee.clone(), Coffee, x, y);
+   spawn_powerup(commands, game_textures.coffee.clone(), Coffee, x, y);
 }
 
 fn spawn_rust(commands: &mut Commands, game_textures: &Res<GameTextures>, x: f32, y: f32) {
-    spawn_booster(commands, game_textures.rust.clone(), Rust, x, y);
+    spawn_powerup(commands, game_textures.rust.clone(), Rust, x, y);
 }
 
 pub fn drink_coffee(
@@ -74,7 +74,7 @@ pub fn learn_rust(
     }
 }
 
-pub fn add_boosters(commands: &mut Commands, world: &[(i32, usize)], game_textures: Res<GameTextures>) {
+pub fn add_powerups(commands: &mut Commands, world: &[(i32, usize)], game_textures: Res<GameTextures>) {
     world.iter().for_each(|&(x, height)| {
         if should_add_coffee(x) {
             spawn_coffee(commands, &game_textures, x as f32, height as f32 + 0.25);

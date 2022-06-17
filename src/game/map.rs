@@ -3,7 +3,7 @@ use rand::prelude::*;
 
 use crate::{AppState, GameTextures};
 use crate::game::{FinishLine, Wall};
-use crate::game::boosters::add_boosters;
+use crate::game::powerups::add_powerups;
 use crate::game::monster::add_enemies;
 
 use super::utils::*;
@@ -31,7 +31,7 @@ fn spawn_map(
     add_colliders(&world, &mut commands);
     add_finish_line(&mut commands, &game_textures, &world);
     add_enemies(&mut commands, &world, &game_textures);
-    add_boosters(&mut commands, &world, game_textures);
+    add_powerups(&mut commands, &world, game_textures);
 }
 
 fn create_world() -> Vec<(i32, usize)> {
