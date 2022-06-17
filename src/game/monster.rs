@@ -47,10 +47,10 @@ pub fn death_by_enemy(
     }
 }
 
-pub fn add_enemies(commands: &mut Commands, world: &[(i32, usize)], player_texture: &Res<GameTextures>) {
+pub fn add_enemies(commands: &mut Commands, world: &[(i32, usize)], game_textures: &Res<GameTextures>) {
     world.iter().for_each(|&(x, height)| {
         if should_add_enemy(x) {
-            spawn_bug(commands, player_texture, x as f32, height as f32 + 1.5 );
+            spawn_bug(commands, game_textures, x as f32, height as f32 + 1.5 );
             }
     });
 }

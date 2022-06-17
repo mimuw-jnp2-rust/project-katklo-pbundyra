@@ -74,12 +74,12 @@ pub fn learn_rust(
     }
 }
 
-pub fn add_boosters(commands: &mut Commands, world: &[(i32, usize)], player_texture: Res<GameTextures>) {
+pub fn add_boosters(commands: &mut Commands, world: &[(i32, usize)], game_textures: Res<GameTextures>) {
     world.iter().for_each(|&(x, height)| {
         if should_add_coffee(x) {
-            spawn_coffee(commands, &player_texture, x as f32, height as f32 + 0.25);
+            spawn_coffee(commands, &game_textures, x as f32, height as f32 + 0.25);
         } else if should_add_rust(x) {
-            spawn_rust(commands, &player_texture, x as f32, height as f32 + 0.25);
+            spawn_rust(commands, &game_textures, x as f32, height as f32 + 0.25);
         }
     });
 }
