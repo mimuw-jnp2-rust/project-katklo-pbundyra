@@ -6,6 +6,7 @@ pub use components::*;
 pub use map::*;
 pub use moster_ai::*;
 pub use player::*;
+pub use audio::*;
 
 use super::AppState;
 
@@ -19,6 +20,7 @@ mod moster_ai;
 mod player;
 mod utils;
 mod living_being;
+mod audio;
 
 pub struct GameTextures {
     pub player: Handle<Image>,
