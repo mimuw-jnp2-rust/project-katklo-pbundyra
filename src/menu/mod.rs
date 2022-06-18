@@ -1,7 +1,7 @@
 use bevy::{app::AppExit, prelude::*};
 
 use crate::AppState;
-use crate::menu::utils::{button_system, cleanup_menu, MenuMaterials, setup};
+use crate::menu::utils::{button_system, cleanup_menu, MenuColors, setup};
 
 mod utils;
 
@@ -14,10 +14,17 @@ pub enum MenuButton {
     MainMenu,
 }
 
+pub struct MenuTextures {
+    pub play: Handle<Image>,
+    pub exit: Handle<Image>,
+    pub main: Handle<Image>,
+    pub font: Handle<Font>,
+}
+
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app
-            .init_resource::<MenuMaterials>()
+            .init_resource::<MenuColors>()
             .add_system(button_press_system)
             .add_system(button_system)
             .add_system_set(SystemSet::on_enter(AppState::MainMenu).with_system(setup_main_menu))
@@ -30,21 +37,21 @@ impl Plugin for MenuPlugin {
 }
 
 fn setup_main_menu(commands: Commands,
-                   asset_server: Res<AssetServer>,
-                   materials: Res<MenuMaterials>) {
-    setup(commands, asset_server, materials, vec![("New game", MenuButton::Play), ("Quit", MenuButton::Quit)]);
+                   colors: Res<MenuColors>,
+                   textures: Res<MenuTextures>) {
+    setup(commands, colors, textures, "Mario MIM", vec![("New game", MenuButton::Play), ("Quit", MenuButton::Quit)]);
 }
 
 fn setup_death_menu(commands: Commands,
-                    asset_server: Res<AssetServer>,
-                    materials: Res<MenuMaterials>) {
-    setup(commands, asset_server, materials, vec![("Try again", MenuButton::Play), ("Go to main menu", MenuButton::MainMenu)]);
+                    colors: Res<MenuColors>,
+                    textures: Res<MenuTextures>) {
+    setup(commands, colors, textures, "Segmentation fault (core dumped)", vec![("Try again", MenuButton::Play), ("Go to main menu", MenuButton::MainMenu)]);
 }
 
 fn setup_end_menu(commands: Commands,
-                  asset_server: Res<AssetServer>,
-                  materials: Res<MenuMaterials>) {
-    setup(commands, asset_server, materials, vec![("Play again", MenuButton::Play), ("Go to main menu", MenuButton::MainMenu)]);
+                  colors: Res<MenuColors>,
+                  textures: Res<MenuTextures>) {
+    setup(commands, colors, textures, "Process finished with exit code 0", vec![("Play again", MenuButton::Play), ("Go to main menu", MenuButton::MainMenu)]);
 }
 
 fn button_press_system(

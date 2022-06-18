@@ -6,6 +6,7 @@ use menu::MenuPlugin;
 
 use crate::game::{GameTextures, MapPlugin, MonsterAiPlugin, PlayerPlugin};
 use crate::game::Random;
+use crate::menu::MenuTextures;
 
 mod game;
 mod menu;
@@ -42,13 +43,20 @@ fn main() {
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(GameTextures {
-        player: asset_server.load("player.png"),
-        weak_laser: asset_server.load("weak_laser.png"),
-        strong_laser: asset_server.load("strong_laser.png"),
-        bug: asset_server.load("bug.png"),
-        coffee: asset_server.load("coffee.png"),
-        rust: asset_server.load("rust.png"),
-        floor: asset_server.load("floor.png"),
-        finish: asset_server.load("finish.png"),
+        player: asset_server.load("game/player.png"),
+        weak_laser: asset_server.load("game/weak_laser.png"),
+        strong_laser: asset_server.load("game/strong_laser.png"),
+        bug: asset_server.load("game/bug.png"),
+        coffee: asset_server.load("game/coffee.png"),
+        rust: asset_server.load("game/rust.png"),
+        floor: asset_server.load("game/floor.png"),
+        finish: asset_server.load("game/finish.png"),
+    });
+
+    commands.insert_resource(MenuTextures {
+        play: asset_server.load("menu/play.png"),
+        exit: asset_server.load("menu/exit.png"),
+        main: asset_server.load("menu/main.png"),
+        font: asset_server.load("fonts/FiraSans-LightItalic.ttf"),
     });
 }
