@@ -29,10 +29,10 @@ fn main() {
         })
         .insert_resource(ClearColor(Color::rgb(0.71, 2.13, 2.44)))
         .add_state(AppState::MainMenu)
+        .add_plugin(GamePlugin)
         .add_plugin(GameAudioPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(MapPlugin)
-        .add_plugin(GamePlugin)
         .add_plugin(MenuPlugin)
         .add_plugin(MonsterAiPlugin)
         .run();

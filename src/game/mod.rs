@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::window::WindowCommand::SetPresentMode;
 use bevy_rapier2d::prelude::*;
 
 pub use audio::*;
@@ -38,12 +39,16 @@ pub struct GameTextures {
     pub finish_line: Handle<Image>,
 }
 
+pub struct LastDespawnedEntity {
+    pub entity: Entity,
+}
+
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_startup_system_to_stage(StartupStage::PreStartup, load_textures)
+            .add_startup_system_to_stage(StartupStage::PreStartup, setup)
             .add_system_set(
                 SystemSet::on_update(AppState::InGame).with_system(back_to_main_menu_controls),
             )
@@ -68,7 +73,7 @@ fn cleanup_all(mut commands: Commands, query: Query<Entity>) {
     }
 }
 
-fn load_textures(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(GameTextures {
         player: asset_server.load("images/wojownik.png"),
         weak_laser: asset_server.load("images/weak_laser.png"),
@@ -79,5 +84,6 @@ fn load_textures(mut commands: Commands, asset_server: Res<AssetServer>) {
         floor: asset_server.load("images/cobblestone.png"),
         finish_line: asset_server.load("images/finish_line.png"),
     });
+    commands.spawn_bundle(SpriteBundle { ..default() }).insert(PhantomEntity);
 }
 

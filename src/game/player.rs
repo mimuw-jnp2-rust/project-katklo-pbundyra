@@ -2,7 +2,7 @@ use bevy::core::FixedTimestep;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::game::{camera_follow_player, FastShootEvent, FinishLine, GameDirection, ShootEvent, Weapon};
+use crate::game::{camera_follow_player, FastShootEvent, FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, ShootEvent, Weapon};
 use crate::game::powerups::{drink_coffee, learn_rust};
 use crate::game::bullets::{BulletOptions, destroy_bullet_on_contact, kill_enemy, spawn_strong_bullet, spawn_weak_bullet};
 use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent, on_living_being_dead, on_living_being_hit};
@@ -99,10 +99,6 @@ impl Plugin for PlayerPlugin {
                     .with_system(fire_controller)
                     .with_system(on_living_being_hit)
             )
-            // .add_system_set(
-            //     SystemSet::new()
-            //         .with_run_criteria(FixedTimestep::step(SHOOTING_TIMESTEP))
-            // )
             .add_event::<LivingBeingHitEvent>()
             .add_event::<LivingBeingDeathEvent>()
             .add_event::<DeadPlayerEvent>()
@@ -111,9 +107,16 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-pub fn spawn_player(mut commands: Commands, game_textures: Res<GameTextures>) {
+pub fn spawn_player(
+    mut commands: Commands,
+    game_textures: Res<GameTextures>,
+    phantom_entity: Query<Entity, With<PhantomEntity>>,
+) {
     Player::spawn(&mut commands, game_textures);
     commands.spawn_bundle(new_camera_2d());
+    for entity in phantom_entity.iter() {
+        commands.insert_resource(LastDespawnedEntity { entity });
+    }
 }
 
 pub fn player_jumps(

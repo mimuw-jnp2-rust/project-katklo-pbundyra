@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crate::game::LastDespawnedEntity;
 
 pub struct LivingBeingHitEvent {
     pub entity: Entity,
@@ -22,13 +23,12 @@ pub fn on_living_being_hit(
 pub fn on_living_being_dead(
     mut living_being_death_events: EventReader<LivingBeingDeathEvent>,
     mut commands: Commands,
+    mut last_despawned_entity: ResMut<LastDespawnedEntity>,
 ) {
     for event in living_being_death_events.iter() {
-        /*
-         There is a simple despawn instead of despawn_recursively() as simple despawn() handles
-         double despawns for a single enitity and despawn_recursively() panics.
-         */
-        println!("LivingBeingDeathEvent: {:?}", event.entity);
-        commands.entity(event.entity).despawn();
+        if event.entity != last_despawned_entity.entity {
+            commands.entity(event.entity).despawn_recursive();
+            last_despawned_entity.entity = event.entity;
+        }
     }
 }
