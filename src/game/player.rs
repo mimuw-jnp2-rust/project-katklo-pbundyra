@@ -41,7 +41,7 @@ impl Player {
     pub fn spawn(commands: &mut Commands, game_textures: Res<GameTextures>) {
         spawn_object(commands,
                      create_sprite_bundle(game_textures.player.clone(),
-                                          (0.9, 0.9),
+                                          (0.9, 1.5),
                                           (0.0, 2.0, 0.0)),
                      None,
                      None,
