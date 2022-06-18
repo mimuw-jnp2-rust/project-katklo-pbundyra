@@ -6,7 +6,6 @@ use menu::MenuPlugin;
 
 use crate::game::{GameTextures, MapPlugin, MonsterAiPlugin, PlayerPlugin};
 use crate::game::Random;
-use crate::menu::MenuTextures;
 
 mod game;
 mod menu;
@@ -30,8 +29,8 @@ fn main() {
             ..default()
         })
         .add_startup_system(setup)
-        .insert_resource(ClearColor(Color::rgb(0.71, 2.13, 2.44)))
-        .insert_resource(Random::with_random_seed())
+        .insert_resource(ClearColor(Color::BEIGE))
+        .insert_resource(Random::new())
         .add_state(AppState::MainMenu)
         .add_plugin(PlayerPlugin)
         .add_plugin(MapPlugin)
@@ -51,12 +50,5 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         rust: asset_server.load("game/rust.png"),
         floor: asset_server.load("game/floor.png"),
         finish: asset_server.load("game/finish.png"),
-    });
-
-    commands.insert_resource(MenuTextures {
-        play: asset_server.load("menu/play.png"),
-        exit: asset_server.load("menu/exit.png"),
-        main: asset_server.load("menu/main.png"),
-        font: asset_server.load("fonts/FiraSans-LightItalic.ttf"),
     });
 }

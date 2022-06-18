@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rand::{Rng, thread_rng};
+use rand::{Rng, SeedableRng, thread_rng};
 use rand::distributions::Alphanumeric;
 use rand_pcg::Pcg64;
 use rand_seeder::Seeder;
@@ -84,26 +84,43 @@ pub struct Enemy;
 pub struct Random {
     pub generator: Pcg64,
     pub seed: String,
+    pub can_change: bool,
 }
 
 impl Random {
-    pub fn generate_random_seed() -> String {
+    pub fn new() -> Self {
+        Random {
+            generator: Pcg64::from_entropy(),
+            seed: String::new(),
+            can_change: false,
+        }
+    }
+
+    fn generate_random_seed() -> String {
         thread_rng()
             .sample_iter(&Alphanumeric)
-            .take(30)
+            .take(8)
             .map(char::from)
             .collect()
     }
 
-    pub fn with_random_seed() -> Self {
-        Random::from_seed(Random::generate_random_seed())
+    pub fn add_char(&mut self, c: char) {
+        if self.can_change {
+            self.seed.push(c);
+        }
     }
 
-
-    pub fn from_seed(seed: String) -> Self {
-        Random {
-            generator: Seeder::from(&seed).make_rng(),
-            seed,
+    pub fn delete_last(&mut self) {
+        if self.can_change {
+            self.seed.pop();
         }
+    }
+
+    pub fn new_random_seed(&mut self) {
+        self.seed = Random::generate_random_seed();
+    }
+
+    pub fn reset(&mut self) {
+        self.generator = Seeder::from(&self.seed).make_rng();
     }
 }
