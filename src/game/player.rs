@@ -96,13 +96,13 @@ impl Plugin for PlayerPlugin {
                     .with_system(drink_coffee)
                     .with_system(learn_rust)
                     .with_system(on_living_being_dead)
-                    .with_system(on_living_being_hit),
-            )
-            .add_system_set(
-                SystemSet::new()
-                    .with_run_criteria(FixedTimestep::step(SHOOTING_TIMESTEP))
                     .with_system(fire_controller)
+                    .with_system(on_living_being_hit)
             )
+            // .add_system_set(
+            //     SystemSet::new()
+            //         .with_run_criteria(FixedTimestep::step(SHOOTING_TIMESTEP))
+            // )
             .add_event::<LivingBeingHitEvent>()
             .add_event::<LivingBeingDeathEvent>()
             .add_event::<DeadPlayerEvent>()
