@@ -28,6 +28,7 @@ pub fn on_living_being_dead(
          There is a simple despawn instead of despawn_recursively() as simple despawn() handles
          double despawns for a single enitity and despawn_recursively() panics.
          */
+        println!("LivingBeingDeathEvent: {:?}", event.entity);
         commands.entity(event.entity).despawn();
     }
 }

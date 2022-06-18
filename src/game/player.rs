@@ -1,3 +1,4 @@
+use bevy::core::FixedTimestep;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
@@ -18,6 +19,8 @@ pub struct PlayerPlugin;
 pub struct DeadPlayerEvent {
     pub entity: Entity,
 }
+
+const SHOOTING_TIMESTEP: f64 = 0.1;
 
 #[derive(Component)]
 pub struct Player {
@@ -85,7 +88,6 @@ impl Plugin for PlayerPlugin {
                     .with_system(player_movement)
                     .with_system(jump_reset)
                     .with_system(finish)
-                    .with_system(fire_controller)
                     .with_system(destroy_bullet_on_contact)
                     .with_system(death_by_enemy)
                     .with_system(camera_follow_player)
@@ -95,6 +97,11 @@ impl Plugin for PlayerPlugin {
                     .with_system(learn_rust)
                     .with_system(on_living_being_dead)
                     .with_system(on_living_being_hit),
+            )
+            .add_system_set(
+                SystemSet::new()
+                    .with_run_criteria(FixedTimestep::step(SHOOTING_TIMESTEP))
+                    .with_system(fire_controller)
             )
             .add_event::<LivingBeingHitEvent>()
             .add_event::<LivingBeingDeathEvent>()
