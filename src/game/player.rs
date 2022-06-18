@@ -1,8 +1,9 @@
+use std::time::Duration;
 use bevy::core::FixedTimestep;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::game::{camera_follow_player, FastShootEvent, FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, ShootEvent, Weapon};
+use crate::game::{camera_follow_player, degrade_weapon, finish_coffee, FastShootEvent, FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, ShootEvent, Weapon, COFFEE_DURATION, RUST_DURATION};
 use crate::game::powerups::{drink_coffee, learn_rust};
 use crate::game::bullets::{BulletOptions, destroy_bullet_on_contact, kill_enemy, spawn_strong_bullet, spawn_weak_bullet};
 use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent, on_living_being_dead, on_living_being_hit};
@@ -21,20 +22,26 @@ pub struct DeadPlayerEvent {
 }
 
 const SHOOTING_TIMESTEP: f64 = 0.1;
+const PLAYER_NORMAL_SPEED: f32 = 7.0;
+const PLAYER_INCREASE_SPEED: f32 = 11.0;
 
 #[derive(Component)]
 pub struct Player {
     pub speed: f32,
     pub weapon: Weapon,
     pub direction: GameDirection,
+    pub weapon_upgrade_timer: Timer,
+    pub coffee_timer: Timer,
 }
 
 impl Default for Player {
     fn default() -> Self {
         Player {
-            speed: 7.0,
+            speed: PLAYER_NORMAL_SPEED,
             weapon: Weapon::WeakBullet,
             direction: GameDirection::Right,
+            weapon_upgrade_timer: Timer::new(Duration::from_secs(0), false),
+            coffee_timer: Timer::new(Duration::from_secs(0), false),
         }
     }
 }
@@ -63,11 +70,12 @@ impl Player {
     }
 
     pub fn increase_speed(&mut self) {
-        self.speed += 0.25
+        self.coffee_timer = Timer::new(Duration::from_secs(COFFEE_DURATION), false);
+        self.speed = PLAYER_INCREASE_SPEED;
     }
 
     pub fn decrease_speed(&mut self) {
-        self.speed -= 0.25;
+        self.speed = PLAYER_NORMAL_SPEED;
     }
 
     pub fn degrade_weapon(&mut self) {
@@ -76,6 +84,7 @@ impl Player {
 
     pub fn powerup_weapon(&mut self) {
         self.weapon = Weapon::StrongBullet;
+        self.weapon_upgrade_timer = Timer::new(Duration::from_secs(RUST_DURATION), false);
     }
 }
 
@@ -94,7 +103,9 @@ impl Plugin for PlayerPlugin {
                     .with_system(kill_enemy)
                     .with_system(changing_weapon)
                     .with_system(drink_coffee)
+                    .with_system(finish_coffee)
                     .with_system(learn_rust)
+                    .with_system(degrade_weapon)
                     .with_system(on_living_being_dead)
                     .with_system(fire_controller)
                     .with_system(on_living_being_hit)

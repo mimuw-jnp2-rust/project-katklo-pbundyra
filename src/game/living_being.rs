@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::game::LastDespawnedEntity;
+use crate::game::{AudioHitEvent, LastDespawnedEntity};
 
 pub struct LivingBeingHitEvent {
     pub entity: Entity,
@@ -12,11 +12,13 @@ pub struct LivingBeingDeathEvent {
 pub fn on_living_being_hit(
     mut living_being_hit_events: EventReader<LivingBeingHitEvent>,
     mut send_living_being_death: EventWriter<LivingBeingDeathEvent>,
+    mut send_audio_hit_event: EventWriter<AudioHitEvent>,
 ) {
     for event in living_being_hit_events.iter() {
         send_living_being_death.send(LivingBeingDeathEvent {
             entity: event.entity,
-        })
+        });
+        send_audio_hit_event.send(AudioHitEvent);
     }
 }
 

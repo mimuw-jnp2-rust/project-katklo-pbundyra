@@ -10,6 +10,8 @@ use crate::game::{FastShootEvent, RustEvent, ShootEvent};
 
 pub struct GameAudioPlugin;
 
+pub struct AudioHitEvent;
+
 pub struct AudioAssets {
     bg: Handle<AudioSource>,
     menu: Handle<AudioSource>,
@@ -48,7 +50,7 @@ impl Plugin for GameAudioPlugin {
 pub fn play_hit_sfx(
     audio: Res<Audio>,
     audio_state: Res<AudioAssets>,
-    mut hit_events: EventReader<LivingBeingHitEvent>,
+    mut hit_events: EventReader<AudioHitEvent>,
 ) {
     for _ in hit_events.iter() {
         audio.set_volume(SFX_VOLUME);

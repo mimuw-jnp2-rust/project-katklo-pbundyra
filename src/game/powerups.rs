@@ -8,11 +8,12 @@ use crate::GameTextures;
 use super::utils::*;
 
 pub struct CoffeeEvent;
-
 pub struct RustEvent;
 
 const SPAWNING_COFFEE_PROBABILITY: f64 = 0.1;
 const SPAWNING_RUST_PROBABILITY: f64 = 0.03;
+pub const COFFEE_DURATION: u64 = 10;
+pub const RUST_DURATION: u64 = 7;
 const SAFE_ZONE_WIDTH: i32 = 5;
 
 fn spawn_powerup<T>(commands: &mut Commands, texture: Handle<Image>, powerup_type: T, x: f32, y: f32) where T: Component {
@@ -58,6 +59,16 @@ pub fn drink_coffee(
     }
 }
 
+pub fn finish_coffee(mut players: Query<&mut Player>, time: Res<Time>) {
+    for mut player in players.iter_mut() {
+        player.coffee_timer.tick(time.delta());
+        if player.coffee_timer.finished() {
+            player.decrease_speed();
+        }
+    }
+}
+
+
 pub fn learn_rust(
     mut commands: Commands,
     mut players: Query<(Entity, &mut Player)>,
@@ -78,6 +89,15 @@ pub fn learn_rust(
                     }
                 }
             }
+        }
+    }
+}
+
+pub fn degrade_weapon(mut players: Query<&mut Player>, time: Res<Time>) {
+    for mut player in players.iter_mut() {
+        player.weapon_upgrade_timer.tick(time.delta());
+        if player.weapon_upgrade_timer.finished() {
+            player.degrade_weapon();
         }
     }
 }

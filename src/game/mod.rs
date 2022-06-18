@@ -53,7 +53,8 @@ impl Plugin for GamePlugin {
                 SystemSet::on_update(AppState::InGame).with_system(back_to_main_menu_controls),
             )
             .add_system_set(SystemSet::on_exit(AppState::InGame).with_system(cleanup_all))
-            .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(1.0));
+            .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(1.0))
+            .add_event::<AudioHitEvent>();
     }
 }
 
