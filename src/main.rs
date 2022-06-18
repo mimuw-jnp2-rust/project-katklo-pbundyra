@@ -5,6 +5,7 @@ use game::GamePlugin;
 use menu::MenuPlugin;
 
 use crate::game::{GameAudioPlugin, GameTextures, MapPlugin, MonsterAiPlugin, PlayerPlugin};
+use crate::game::Random;
 
 mod game;
 mod menu;
@@ -27,7 +28,8 @@ fn main() {
             present_mode: PresentMode::Fifo,
             ..default()
         })
-        .insert_resource(ClearColor(Color::rgb(0.71, 2.13, 2.44)))
+        .insert_resource(ClearColor(Color::BEIGE))
+        .insert_resource(Random::new())
         .add_state(AppState::MainMenu)
         .add_plugin(GamePlugin)
         .add_plugin(GameAudioPlugin)

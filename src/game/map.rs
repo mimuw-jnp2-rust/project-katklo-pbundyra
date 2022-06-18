@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rand::prelude::*;
 
-use crate::{AppState, GameTextures};
+use crate::{AppState, GameTextures, Random};
 use crate::game::{CoffeeEvent, FinishLine, RustEvent, Wall};
 use crate::game::powerups::add_powerups;
 use crate::game::monster::add_enemies;
@@ -25,18 +25,19 @@ impl Plugin for MapPlugin {
 }
 
 fn spawn_map(
+    mut rng: ResMut<Random>,
     mut commands: Commands,
     game_textures: Res<GameTextures>,
 ) {
-    let world = create_world();
+    let world = create_world(&mut rng);
     add_sprites(&mut commands, &game_textures, &world);
     add_colliders(&world, &mut commands);
     add_finish_line(&mut commands, &game_textures, &world);
-    add_enemies(&mut commands, &world, &game_textures);
-    add_powerups(&mut commands, &world, game_textures);
+    add_enemies(&mut commands, &world, &game_textures, &mut rng);
+    add_powerups(&mut commands, &world, game_textures, &mut rng);
 }
 
-fn create_world() -> Vec<(i32, usize)> {
+fn create_world(rng: &mut ResMut<Random>) -> Vec<(i32, usize)> {
     let mut heights: Vec<(i32, usize)> = Vec::with_capacity(MAP_WIDTH);
     let mut height: usize = 0;
     let beg = -(BEGIN_WIDTH as i32);
@@ -49,7 +50,7 @@ fn create_world() -> Vec<(i32, usize)> {
 
     (SAFE_ZONE_WIDTH..GAME_WIDTH).for_each(|i| {
         heights.push((i as i32, height));
-        height = get_next_height(height)
+        height = get_next_height(rng, height)
     });
 
     heights
@@ -65,9 +66,8 @@ fn add_sprites(
     });
 }
 
-fn get_random_height_delta() -> i8 {
-    let mut rng = thread_rng();
-    let random_number: u32 = rng.gen_range(0..100);
+fn get_random_height_delta(rng: &mut ResMut<Random>) -> i8 {
+    let random_number: u32 = rng.generator.gen_range(0..100);
     match random_number {
         0..=70 => 0,
         71..=80 => -1,
@@ -76,8 +76,8 @@ fn get_random_height_delta() -> i8 {
     }
 }
 
-fn get_next_height(current_height: usize) -> usize {
-    let next_height = current_height as i8 + get_random_height_delta();
+fn get_next_height(rng: &mut ResMut<Random>, current_height: usize) -> usize {
+    let next_height = current_height as i8 + get_random_height_delta(rng);
     if next_height >= 0 {
         next_height as usize
     } else {

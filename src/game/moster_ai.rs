@@ -4,8 +4,10 @@ use bevy_rapier2d::prelude::*;
 use rand::{thread_rng, Rng};
 use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
 
+use crate::Random;
+
+use super::{Bug, GameDirection, Jumper};
 use super::super::AppState;
-use super::{GameDirection, Jumper, Bug};
 
 const JUMP_PROBABILITY: f64 = 0.25;
 const CHANGE_DIRECTION_PROBABILITY: f64 = 0.25;
@@ -54,9 +56,9 @@ fn monster_changes_direction(
     }
 }
 
-fn monster_jumps(mut monsters: Query<(&mut Jumper, &mut Velocity), With<Bug>>) {
+fn monster_jumps(mut monsters: Query<(&mut Jumper, &mut Velocity), With<Bug>>, mut rng: ResMut<Random>) {
     for (mut jumper, mut velocity) in monsters.iter_mut() {
-        if should_jump() {
+        if should_jump(&mut rng) {
             velocity.linvel = Vec2::new(0., jumper.jump_impulse);
             jumper.is_jumping = true
         }
@@ -67,6 +69,6 @@ fn should_change_direction() -> bool {
     thread_rng().gen_bool(CHANGE_DIRECTION_PROBABILITY)
 }
 
-fn should_jump() -> bool {
-    thread_rng().gen_bool(JUMP_PROBABILITY)
+fn should_jump(rng: &mut ResMut<Random>) -> bool {
+    rng.generator.gen_bool(JUMP_PROBABILITY)
 }

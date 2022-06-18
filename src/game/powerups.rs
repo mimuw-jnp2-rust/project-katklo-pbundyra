@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use rand::{Rng, thread_rng};
+use rand::Rng;
 
 use crate::game::{Powerup, Coffee, Player, Rust};
-use crate::GameTextures;
+use crate::{GameTextures, Random};
 
 use super::utils::*;
 
@@ -102,27 +102,28 @@ pub fn degrade_weapon(mut players: Query<&mut Player>, time: Res<Time>) {
     }
 }
 
-pub fn add_powerups(commands: &mut Commands, world: &[(i32, usize)], game_textures: Res<GameTextures>) {
+
+pub fn add_powerups(commands: &mut Commands, world: &[(i32, usize)], game_textures: Res<GameTextures>, rng: &mut ResMut<Random>) {
     world.iter().for_each(|&(x, height)| {
-        if should_add_coffee(x) {
+        if should_add_coffee(x, rng) {
             spawn_coffee(commands, &game_textures, x as f32, height as f32 + 0.25);
         }
-        if should_add_rust(x) {
+        if should_add_rust(x, rng) {
             spawn_rust(commands, &game_textures, x as f32, height as f32 + 0.25);
         }
     });
 }
 
-fn should_add_coffee(x: i32) -> bool {
+fn should_add_coffee(x: i32, rng: &mut ResMut<Random>) -> bool {
     if x <= SAFE_ZONE_WIDTH {
         return false;
     }
-    thread_rng().gen_bool(SPAWNING_COFFEE_PROBABILITY)
+    rng.generator.gen_bool(SPAWNING_COFFEE_PROBABILITY)
 }
 
-fn should_add_rust(x: i32) -> bool {
+fn should_add_rust(x: i32, rng: &mut ResMut<Random>) -> bool {
     if x <= SAFE_ZONE_WIDTH {
         return false;
     }
-    thread_rng().gen_bool(SPAWNING_RUST_PROBABILITY)
+    rng.generator.gen_bool(SPAWNING_RUST_PROBABILITY)
 }
