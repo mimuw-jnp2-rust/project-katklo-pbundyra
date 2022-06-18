@@ -63,6 +63,7 @@ pub fn learn_rust(
     mut players: Query<(Entity, &mut Player)>,
     rusts: Query<Entity, With<Rust>>,
     mut collision_events: EventReader<CollisionEvent>,
+    mut send_event: EventWriter<RustEvent>,
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(h1, h2, _) = collision_event {
@@ -71,6 +72,7 @@ pub fn learn_rust(
                     if (*h1 == player_entity && *h2 == rust)
                         || (*h1 == rust && *h2 == player_entity)
                     {
+                        send_event.send(RustEvent);
                         player.powerup_weapon();
                         commands.entity(rust).despawn_recursive();
                     }

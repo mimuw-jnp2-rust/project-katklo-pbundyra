@@ -76,7 +76,7 @@ fn load_textures(mut commands: Commands, asset_server: Res<AssetServer>) {
         bug: asset_server.load("images/bug.png"),
         coffee: asset_server.load("images/coffee.png"),
         rust: asset_server.load("images/rust.png"),
-        floor: asset_server.load("images/floor.png"),
+        floor: asset_server.load("images/cobblestone.png"),
         finish_line: asset_server.load("images/finish_line.png"),
     });
 }

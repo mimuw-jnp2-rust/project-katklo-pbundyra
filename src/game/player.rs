@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::game::{camera_follow_player, FinishLine, GameDirection, Weapon};
+use crate::game::{camera_follow_player, FastShootEvent, FinishLine, GameDirection, ShootEvent, Weapon};
 use crate::game::powerups::{drink_coffee, learn_rust};
 use crate::game::bullets::{BulletOptions, destroy_bullet_on_contact, kill_enemy, spawn_strong_bullet, spawn_weak_bullet};
 use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent, on_living_being_dead, on_living_being_hit};
@@ -99,7 +99,9 @@ impl Plugin for PlayerPlugin {
             )
             .add_event::<LivingBeingHitEvent>()
             .add_event::<LivingBeingDeathEvent>()
-            .add_event::<DeadPlayerEvent>();
+            .add_event::<DeadPlayerEvent>()
+            .add_event::<ShootEvent>()
+            .add_event::<FastShootEvent>();
     }
 }
 
@@ -152,6 +154,8 @@ pub fn fire_controller(
     mut commands: Commands,
     mut game_textures: Res<GameTextures>,
     positions: Query<(&mut Transform, &RigidBody, &mut Player, &mut Velocity), With<Player>>,
+    mut send_shoot_event: EventWriter<ShootEvent>,
+    mut send_fast_shoot_event: EventWriter<FastShootEvent>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Space) {
         for (pos, _, player, vel) in positions.iter() {
@@ -162,8 +166,14 @@ pub fn fire_controller(
                 player_vex: vel.linvel.x,
             };
             match player.weapon {
-                Weapon::WeakBullet => spawn_weak_bullet(&mut commands, &mut game_textures, options),
-                Weapon::StrongBullet => spawn_strong_bullet(&mut commands, &mut game_textures, options),
+                Weapon::WeakBullet => {
+                    send_shoot_event.send(ShootEvent);
+                    spawn_weak_bullet(&mut commands, &mut game_textures, options);
+                }
+                Weapon::StrongBullet => {
+                    send_fast_shoot_event.send(FastShootEvent);
+                    spawn_strong_bullet(&mut commands, &mut game_textures, options);
+                }
             }
         }
     }

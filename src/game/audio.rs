@@ -6,6 +6,7 @@ use crate::{AppState};
 use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
 use crate::game::player::{DeadPlayerEvent, Player};
 use crate::game::powerups::CoffeeEvent;
+use crate::game::{FastShootEvent, RustEvent, ShootEvent};
 
 pub struct GameAudioPlugin;
 
@@ -19,6 +20,8 @@ pub struct AudioAssets {
     eat1: Handle<AudioSource>,
     eat2: Handle<AudioSource>,
     eat3: Handle<AudioSource>,
+    shoot: Handle<AudioSource>,
+    fast_shoot: Handle<AudioSource>,
     lvlup: Handle<AudioSource>,
     bg_channel: AudioChannel,
     menu_channel: AudioChannel,
@@ -33,7 +36,9 @@ impl Plugin for GameAudioPlugin {
             .add_system(play_hit_sfx)
             .add_system(play_death_sfx)
             .add_system(play_eat_sfx)
-            // .add_system(play_lvlup_sfx)
+            .add_system(play_lvlup_sfx)
+            .add_system(play_shoot_sfx)
+            .add_system(play_fast_shoot_sfx)
             .add_startup_system(play_menu_music);
     }
 }
@@ -70,12 +75,36 @@ pub fn play_eat_sfx(
     }
 }
 
-
 pub fn play_lvlup_sfx(
     audio: Res<Audio>,
     audio_state: Res<AudioAssets>,
+    mut lvlup_events: EventReader<RustEvent>,
 ) {
-    audio.play(audio_state.lvlup.clone());
+    for _ in lvlup_events.iter() {
+        audio.play(audio_state.lvlup.clone());
+    }
+}
+
+pub fn play_shoot_sfx(
+    audio: Res<Audio>,
+    audio_state: Res<AudioAssets>,
+    mut shoot_events: EventReader<ShootEvent>,
+) {
+    for _ in shoot_events.iter() {
+        audio.set_volume(0.35);
+        audio.play(audio_state.shoot.clone());
+    }
+}
+
+pub fn play_fast_shoot_sfx(
+    audio: Res<Audio>,
+    audio_state: Res<AudioAssets>,
+    mut fast_shoot_events: EventReader<FastShootEvent>,
+) {
+    for _ in fast_shoot_events.iter() {
+        audio.set_volume(0.35);
+        audio.play(audio_state.fast_shoot.clone());
+    }
 }
 
 pub fn play_death_sfx(
@@ -88,13 +117,6 @@ pub fn play_death_sfx(
         audio.play(audio_state.death.clone());
         state.set(AppState::DeathMenu).expect("Could not set state to DeathMenu");
     }
-    // death_events.iter().for_each(|_| {
-    //     audio.set_volume(0.35);
-    //     audio.play(audio_state.death.clone());
-    //     state
-    //         .set(AppState::DeathMenu)
-    //         .expect("Couldn't switch state to InGame");
-    // });
 }
 
 
@@ -119,6 +141,8 @@ fn load_audio(mut commands: Commands, assets: Res<AssetServer>) {
         eat1: assets.load("audio/eat1.ogg"),
         eat2: assets.load("audio/eat2.ogg"),
         eat3: assets.load("audio/eat3.ogg"),
+        shoot: assets.load("audio/shoot.ogg"),
+        fast_shoot: assets.load("audio/fast_shoot.ogg"),
         lvlup: assets.load("audio/levelup.ogg"),
         bg_channel: AudioChannel::new("bg".to_string()),
         menu_channel: AudioChannel::new("menu".to_string()),
