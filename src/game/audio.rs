@@ -27,6 +27,8 @@ pub struct AudioAssets {
     menu_channel: AudioChannel,
 }
 
+const SFX_VOLUME: f32 = 0.35;
+
 impl Plugin for GameAudioPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(AudioPlugin)
@@ -49,7 +51,7 @@ pub fn play_hit_sfx(
     mut hit_events: EventReader<LivingBeingHitEvent>,
 ) {
     for _ in hit_events.iter() {
-        audio.set_volume(0.35);
+        audio.set_volume(SFX_VOLUME);
         let mut rng = thread_rng();
         match rng.gen_range(0..100) {
             0..=33 => audio.play(audio_state.hit1.clone()),
@@ -65,7 +67,7 @@ pub fn play_eat_sfx(
     mut coffee_events: EventReader<CoffeeEvent>,
 ) {
     for _ in coffee_events.iter() {
-        audio.set_volume(0.35);
+        audio.set_volume(SFX_VOLUME);
         let mut rng = thread_rng();
         match rng.gen_range(0..100) {
             0..=33 => audio.play(audio_state.eat1.clone()),
@@ -91,7 +93,7 @@ pub fn play_shoot_sfx(
     mut shoot_events: EventReader<ShootEvent>,
 ) {
     for _ in shoot_events.iter() {
-        audio.set_volume(0.35);
+        audio.set_volume(SFX_VOLUME);
         audio.play(audio_state.shoot.clone());
     }
 }
@@ -102,7 +104,7 @@ pub fn play_fast_shoot_sfx(
     mut fast_shoot_events: EventReader<FastShootEvent>,
 ) {
     for _ in fast_shoot_events.iter() {
-        audio.set_volume(0.35);
+        audio.set_volume(SFX_VOLUME);
         audio.play(audio_state.fast_shoot.clone());
     }
 }
@@ -115,6 +117,7 @@ pub fn play_death_sfx(
 ) {
     for _ in death_events.iter() {
         audio.play(audio_state.death.clone());
+        println!("Player died");
         state.set(AppState::DeathMenu).expect("Could not set state to DeathMenu");
     }
 }

@@ -3,13 +3,14 @@ use bevy_rapier2d::prelude::*;
 use rand::{Rng, thread_rng};
 
 use crate::{AppState, GameTextures};
-use crate::game::{Enemy, Bug, Player, SAFE_ZONE_WIDTH, LivingBeing, DeadPlayerEvent};
+use crate::game::{Enemy, Bug, Player, SAFE_ZONE_WIDTH, LivingBeing, DeadPlayerEvent, Jumper};
 use crate::game::living_being::LivingBeingDeathEvent;
 use crate::game::utils::*;
 
-const CHANCE_OF_SPAWNING: f64 = 0.1;
+const SPAWNING_PROBABILITY: f64 = 0.1;
 
-fn spawn_enemy<T>(commands: &mut Commands, texture: Handle<Image>, enemy_type: T, x: f32, y: f32) where T: Component {
+fn spawn_enemy<T>(commands: &mut Commands, texture: Handle<Image>, enemy_type: T, x: f32, y: f32)
+    where T: Component {
     spawn_object(commands,
                  create_sprite_bundle(texture, (0.9, 0.9), (x, y, 10.0)),
                  None,
@@ -18,7 +19,6 @@ fn spawn_enemy<T>(commands: &mut Commands, texture: Handle<Image>, enemy_type: T
                  None,
                  Enemy,
                  enemy_type,
-                 Option::Some(LivingBeing),
     );
 }
 
@@ -59,5 +59,5 @@ fn should_add_enemy(x: i32) -> bool {
     if x <= SAFE_ZONE_WIDTH as i32 {
         return false;
     }
-    thread_rng().gen_bool(CHANCE_OF_SPAWNING)
+    thread_rng().gen_bool(SPAWNING_PROBABILITY)
 }

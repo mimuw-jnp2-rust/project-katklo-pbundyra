@@ -138,7 +138,6 @@ fn add_finish_line(commands: &mut Commands, game_textures: &Res<GameTextures>, w
             (finish_x_position, last_height + h as f32 + 1., 0.),
         ));
     }
-
     spawn_static_collider(commands, (finish_x_position - 0.5, last_height), (finish_x_position + 0.5, last_height + WALL_HEIGHT), FinishLine);
 }
 

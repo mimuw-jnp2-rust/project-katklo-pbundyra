@@ -8,10 +8,12 @@ use crate::GameTextures;
 use super::utils::*;
 
 pub struct CoffeeEvent;
+
 pub struct RustEvent;
 
-const CHANCE_OF_SPAWNING_COFFEE: f64 = 0.1;
-const CHANCE_OF_SPAWNING_RUST: f64 = 0.03;
+const SPAWNING_COFFEE_PROBABILITY: f64 = 0.1;
+const SPAWNING_RUST_PROBABILITY: f64 = 0.03;
+const SAFE_ZONE_WIDTH: i32 = 5;
 
 fn spawn_powerup<T>(commands: &mut Commands, texture: Handle<Image>, powerup_type: T, x: f32, y: f32) where T: Component {
     spawn_object(commands,
@@ -22,7 +24,6 @@ fn spawn_powerup<T>(commands: &mut Commands, texture: Handle<Image>, powerup_typ
                  None,
                  Powerup,
                  powerup_type,
-                 Option::None,
     );
 }
 
@@ -46,8 +47,7 @@ pub fn drink_coffee(
             for (player_entity, mut player) in players.iter_mut() {
                 for coffee in coffees.iter() {
                     if (*h1 == player_entity && *h2 == coffee)
-                        || (*h1 == coffee && *h2 == player_entity)
-                    {
+                        || (*h1 == coffee && *h2 == player_entity) {
                         player.increase_speed();
                         commands.entity(coffee).despawn_recursive();
                         send_event.send(CoffeeEvent);
@@ -86,22 +86,23 @@ pub fn add_powerups(commands: &mut Commands, world: &[(i32, usize)], game_textur
     world.iter().for_each(|&(x, height)| {
         if should_add_coffee(x) {
             spawn_coffee(commands, &game_textures, x as f32, height as f32 + 0.25);
-        } else if should_add_rust(x) {
+        }
+        if should_add_rust(x) {
             spawn_rust(commands, &game_textures, x as f32, height as f32 + 0.25);
         }
     });
 }
 
 fn should_add_coffee(x: i32) -> bool {
-    if x <= 5 {
+    if x <= SAFE_ZONE_WIDTH {
         return false;
     }
-    thread_rng().gen_bool(CHANCE_OF_SPAWNING_COFFEE)
+    thread_rng().gen_bool(SPAWNING_COFFEE_PROBABILITY)
 }
 
 fn should_add_rust(x: i32) -> bool {
-    if x <= 15 {
+    if x <= SAFE_ZONE_WIDTH {
         return false;
     }
-    thread_rng().gen_bool(CHANCE_OF_SPAWNING_RUST)
+    thread_rng().gen_bool(SPAWNING_RUST_PROBABILITY)
 }

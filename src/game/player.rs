@@ -47,9 +47,8 @@ impl Player {
                      None,
                      Collider::round_cuboid(0.2, 0.2, 0.1),
                      Some(Friction::coefficient(3.)),
-                     Jumper::default(),
                      Player::default(),
-                     Option::Some(LivingBeing),
+                     LivingBeing::default(),
         );
     }
 
@@ -196,7 +195,7 @@ pub fn jump_reset(
 
 // TODO zrobić lepiej przy okazji collision eventow
 pub fn finish(
-    mut players: Query<(Entity, &mut Jumper)>,
+    mut players: Query<(Entity, &mut Player)>,
     mut lines: Query<(Entity, &mut FinishLine)>,
     mut contact_events: EventReader<CollisionEvent>,
     mut state: ResMut<State<AppState>>,

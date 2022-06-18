@@ -32,7 +32,6 @@ fn spawn_bullet(commands: &mut Commands, texture: Handle<Image>, bullet_type: We
             (def_vel, 0.75)
         }
     };
-
     spawn_object(commands,
                  create_sprite_bundle(texture, (0.5, 0.2), (options.x + spawn_x, options.y, 0.0)),
                  Some(vel_x),
@@ -41,7 +40,6 @@ fn spawn_bullet(commands: &mut Commands, texture: Handle<Image>, bullet_type: We
                  None,
                  Bullet,
                  bullet_type,
-                 Option::None,
     );
 }
 
