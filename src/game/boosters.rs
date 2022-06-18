@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use rand::{Rng, thread_rng};
+use rand::Rng;
 
+use crate::{GameTextures, Random};
 use crate::game::{Booster, Coffee, Player, Rust};
-use crate::GameTextures;
 
 use super::utils::*;
 
@@ -23,7 +23,7 @@ fn spawn_booster<T>(commands: &mut Commands, texture: Handle<Image>, booster_typ
 }
 
 fn spawn_coffee(commands: &mut Commands, game_textures: &Res<GameTextures>, x: f32, y: f32) {
-   spawn_booster(commands, game_textures.coffee.clone(), Coffee, x, y);
+    spawn_booster(commands, game_textures.coffee.clone(), Coffee, x, y);
 }
 
 fn spawn_rust(commands: &mut Commands, game_textures: &Res<GameTextures>, x: f32, y: f32) {
@@ -74,26 +74,26 @@ pub fn learn_rust(
     }
 }
 
-pub fn add_boosters(commands: &mut Commands, world: &[(i32, usize)], player_texture: Res<GameTextures>) {
+pub fn add_boosters(commands: &mut Commands, world: &[(i32, usize)], player_texture: Res<GameTextures>, rng: &mut ResMut<Random>) {
     world.iter().for_each(|&(x, height)| {
-        if should_add_coffee(x) {
+        if should_add_coffee(x, rng) {
             spawn_coffee(commands, &player_texture, x as f32, height as f32 + 0.25);
-        } else if should_add_rust(x) {
+        } else if should_add_rust(x, rng) {
             spawn_rust(commands, &player_texture, x as f32, height as f32 + 0.25);
         }
     });
 }
 
-fn should_add_coffee(x: i32) -> bool {
+fn should_add_coffee(x: i32, rng: &mut ResMut<Random>) -> bool {
     if x <= 5 {
         return false;
     }
-    thread_rng().gen_bool(CHANCE_OF_SPAWNING_COFFEE)
+    rng.generator.gen_bool(CHANCE_OF_SPAWNING_COFFEE)
 }
 
-fn should_add_rust(x: i32) -> bool {
+fn should_add_rust(x: i32, rng: &mut ResMut<Random>) -> bool {
     if x <= 15 {
         return false;
     }
-    thread_rng().gen_bool(CHANCE_OF_SPAWNING_RUST)
+    rng.generator.gen_bool(CHANCE_OF_SPAWNING_RUST)
 }

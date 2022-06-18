@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use rand::{Rng, thread_rng};
+use rand::Rng;
 
-use crate::{AppState, GameTextures};
-use crate::game::{Enemy, Bug, Player, SAFE_ZONE_WIDTH};
+use crate::{AppState, GameTextures, Random};
+use crate::game::{Bug, Enemy, Player, SAFE_ZONE_WIDTH};
 use crate::game::utils::*;
 
 const CHANCE_OF_SPAWNING: f64 = 0.1;
@@ -47,17 +47,17 @@ pub fn death_by_enemy(
     }
 }
 
-pub fn add_enemies(commands: &mut Commands, world: &[(i32, usize)], player_texture: &Res<GameTextures>) {
+pub fn add_enemies(commands: &mut Commands, world: &[(i32, usize)], player_texture: &Res<GameTextures>, rng: &mut ResMut<Random>) {
     world.iter().for_each(|&(x, height)| {
-        if should_add_enemy(x) {
-            spawn_bug(commands, player_texture, x as f32, height as f32 + 1.5 );
-            }
+        if should_add_enemy(x, rng) {
+            spawn_bug(commands, player_texture, x as f32, height as f32 + 1.5);
+        }
     });
 }
 
-fn should_add_enemy(x: i32) -> bool {
+fn should_add_enemy(x: i32, rng: &mut ResMut<Random>) -> bool {
     if x <= SAFE_ZONE_WIDTH as i32 {
         return false;
     }
-    thread_rng().gen_bool(CHANCE_OF_SPAWNING)
+    rng.generator.gen_bool(CHANCE_OF_SPAWNING)
 }

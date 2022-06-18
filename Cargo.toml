@@ -7,6 +7,8 @@ edition = "2021"
 bevy = "0.7"
 bevy_rapier2d = "0.13.2"
 rand = "*"
+rand_pcg = "0.3.1"
+rand_seeder = "0.2.3"
 
 [profile.dev.package.bevy_rapier2d]
 opt-level = 3

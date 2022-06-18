@@ -5,6 +5,7 @@ use game::GamePlugin;
 use menu::MenuPlugin;
 
 use crate::game::{GameTextures, MapPlugin, MonsterAiPlugin, PlayerPlugin};
+use crate::game::Random;
 
 mod game;
 mod menu;
@@ -29,6 +30,7 @@ fn main() {
         })
         .add_startup_system(setup)
         .insert_resource(ClearColor(Color::rgb(0.71, 2.13, 2.44)))
+        .insert_resource(Random::with_random_seed())
         .add_state(AppState::MainMenu)
         .add_plugin(PlayerPlugin)
         .add_plugin(MapPlugin)

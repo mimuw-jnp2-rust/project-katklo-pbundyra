@@ -1,10 +1,12 @@
 use bevy::core::FixedTimestep;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use rand::{thread_rng, Rng};
+use rand::Rng;
 
+use crate::Random;
+
+use super::{Bug, GameDirection, Jumper};
 use super::super::AppState;
-use super::{GameDirection, Jumper, Bug};
 
 struct MonsterWalkedIntoWallEvent {
     entity: Entity,
@@ -72,15 +74,14 @@ fn monster_change_direction_on_contact(
     }
 }
 
-fn monster_jumps(mut monsters: Query<(&mut Jumper, &mut Velocity), With<Bug>>) {
+fn monster_jumps(mut monsters: Query<(&mut Jumper, &mut Velocity), With<Bug>>, mut rng: ResMut<Random>) {
     for (monster, mut velocity) in monsters.iter_mut() {
-        if should_jump() {
+        if should_jump(&mut rng) {
             velocity.linvel = Vec2::new(0., monster.jump_impulse);
         }
     }
 }
 
-fn should_jump() -> bool {
-    let mut rng = thread_rng();
-    rng.gen_bool(0.1)
+fn should_jump(rng: &mut ResMut<Random>) -> bool {
+    rng.generator.gen_bool(0.1)
 }
