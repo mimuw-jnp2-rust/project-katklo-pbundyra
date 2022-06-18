@@ -7,6 +7,9 @@ use crate::GameTextures;
 
 use super::utils::*;
 
+pub struct CoffeeEvent;
+pub struct RustEvent;
+
 const CHANCE_OF_SPAWNING_COFFEE: f64 = 0.1;
 const CHANCE_OF_SPAWNING_RUST: f64 = 0.03;
 
@@ -36,6 +39,7 @@ pub fn drink_coffee(
     mut players: Query<(Entity, &mut Player)>,
     coffees: Query<Entity, With<Coffee>>,
     mut collision_events: EventReader<CollisionEvent>,
+    mut send_event: EventWriter<CoffeeEvent>,
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(h1, h2, _) = collision_event {
@@ -46,6 +50,7 @@ pub fn drink_coffee(
                     {
                         player.increase_speed();
                         commands.entity(coffee).despawn_recursive();
+                        send_event.send(CoffeeEvent);
                     }
                 }
             }

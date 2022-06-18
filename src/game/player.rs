@@ -15,6 +15,10 @@ use super::utils::*;
 
 pub struct PlayerPlugin;
 
+pub struct DeadPlayerEvent {
+    pub entity: Entity,
+}
+
 #[derive(Component)]
 pub struct Player {
     pub speed: f32,
@@ -94,7 +98,8 @@ impl Plugin for PlayerPlugin {
                     .with_system(on_living_being_hit),
             )
             .add_event::<LivingBeingHitEvent>()
-            .add_event::<LivingBeingDeathEvent>();
+            .add_event::<LivingBeingDeathEvent>()
+            .add_event::<DeadPlayerEvent>();
     }
 }
 

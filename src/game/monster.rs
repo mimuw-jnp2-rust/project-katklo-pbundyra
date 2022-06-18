@@ -3,7 +3,7 @@ use bevy_rapier2d::prelude::*;
 use rand::{Rng, thread_rng};
 
 use crate::{AppState, GameTextures};
-use crate::game::{Enemy, Bug, Player, SAFE_ZONE_WIDTH, LivingBeing};
+use crate::game::{Enemy, Bug, Player, SAFE_ZONE_WIDTH, LivingBeing, DeadPlayerEvent};
 use crate::game::living_being::LivingBeingDeathEvent;
 use crate::game::utils::*;
 
@@ -30,8 +30,8 @@ pub fn death_by_enemy(
     mut players: Query<Entity, With<Player>>,
     enemies: Query<Entity, With<Enemy>>,
     mut collision_events: EventReader<CollisionEvent>,
-    mut state: ResMut<State<AppState>>,
     mut send_dead_event: EventWriter<LivingBeingDeathEvent>,
+    mut send_dead_player_event: EventWriter<DeadPlayerEvent>,
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
@@ -39,9 +39,7 @@ pub fn death_by_enemy(
                 for enemy in enemies.iter() {
                     if (*ent1 == player && *ent2 == enemy) || (*ent1 == enemy && *ent2 == player) {
                         send_dead_event.send(LivingBeingDeathEvent { entity: player });
-                        state
-                            .set(AppState::DeathMenu)
-                        .expect("Couldn't switch state to InGame");
+                        send_dead_player_event.send(DeadPlayerEvent { entity: player });
                     }
                 }
             }

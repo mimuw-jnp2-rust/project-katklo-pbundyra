@@ -27,7 +27,6 @@ fn main() {
             present_mode: PresentMode::Fifo,
             ..default()
         })
-        .add_startup_system(setup)
         .insert_resource(ClearColor(Color::rgb(0.71, 2.13, 2.44)))
         .add_state(AppState::MainMenu)
         .add_plugin(GameAudioPlugin)
@@ -37,17 +36,4 @@ fn main() {
         .add_plugin(MenuPlugin)
         .add_plugin(MonsterAiPlugin)
         .run();
-}
-
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.insert_resource(GameTextures {
-        player: asset_server.load("images/player.png"),
-        weak_laser: asset_server.load("images/weak_laser.png"),
-        strong_laser: asset_server.load("images/strong_laser.png"),
-        bug: asset_server.load("images/bug.png"),
-        coffee: asset_server.load("images/coffee.png"),
-        rust: asset_server.load("images/rust.png"),
-        floor: asset_server.load("images/floor.png"),
-        finish: asset_server.load("images/finish.png"),
-    });
 }

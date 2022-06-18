@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use rand::prelude::*;
 
 use crate::{AppState, GameTextures};
-use crate::game::{FinishLine, Wall};
+use crate::game::{CoffeeEvent, FinishLine, RustEvent, Wall};
 use crate::game::powerups::add_powerups;
 use crate::game::monster::add_enemies;
 
@@ -18,7 +18,9 @@ pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_enter(AppState::InGame).with_system(spawn_map));
+        app.add_system_set(SystemSet::on_enter(AppState::InGame).with_system(spawn_map))
+            .add_event::<CoffeeEvent>()
+            .add_event::<RustEvent>();
     }
 }
 
@@ -131,7 +133,7 @@ fn add_finish_line(commands: &mut Commands, game_textures: &Res<GameTextures>, w
 
     for h in 0..=WALL_HEIGHT as usize {
         commands.spawn_bundle(create_sprite_bundle(
-            game_textures.finish.clone(),
+            game_textures.finish_line.clone(),
             (1.0, 1.0),
             (finish_x_position, last_height + h as f32 + 1., 0.),
         ));

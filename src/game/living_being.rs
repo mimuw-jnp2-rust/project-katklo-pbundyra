@@ -1,6 +1,4 @@
 use bevy::prelude::*;
-// use bevy_rapier2d::prelude::RigidBodyPosition;
-// use crate::game::LivingBeing;
 
 pub struct LivingBeingHitEvent {
     pub entity: Entity,
