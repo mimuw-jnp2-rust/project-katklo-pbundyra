@@ -4,8 +4,10 @@ use bevy::window::PresentMode;
 use game::GamePlugin;
 use menu::MenuPlugin;
 
-use crate::game::Random;
-use crate::game::{GameAudioPlugin, GameTextures, Level, MapPlugin, MonsterAiPlugin, PlayerPlugin};
+use crate::game::{
+    GameAudioPlugin, GameTextures, Level, MapPlugin, MonsterAiPlugin, PlayerPlugin, PowerupsPlugin,
+    Random,
+};
 
 mod game;
 mod menu;
@@ -34,6 +36,7 @@ fn main() {
         .add_state(AppState::MainMenu)
         .add_plugin(GamePlugin)
         .add_plugin(GameAudioPlugin)
+        .add_plugin(PowerupsPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(MapPlugin)
         .add_plugin(MenuPlugin)
