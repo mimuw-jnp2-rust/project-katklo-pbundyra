@@ -25,9 +25,7 @@ use super::utils::*;
 
 pub struct PlayerPlugin;
 
-pub struct DeadPlayerEvent {
-    pub entity: Entity,
-}
+pub struct DeadPlayerEvent;
 
 const PLAYER_NORMAL_SPEED: f32 = 7.0;
 const PLAYER_INCREASE_SPEED: f32 = 11.0;

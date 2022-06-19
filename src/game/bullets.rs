@@ -32,20 +32,17 @@ fn spawn_bullet(
         GameDirection::Left => (-def_vel, -0.75),
         GameDirection::Right => (def_vel, 0.75),
     };
-
     let mut bullet_entity = spawn_dynamic_object(
         commands,
         create_sprite_bundle(texture, (0.5, 0.2), (options.x + spawn_x, options.y, 0.0)),
         Some(vel_x),
         Some(0.0),
     );
-
     bullet_entity = spawn_sensor_collider(
         commands,
         bullet_entity,
         Collider::round_cuboid(0.0, 0.0, 0.0),
     );
-
     commands
         .entity(bullet_entity)
         .insert(Bullet)
@@ -59,7 +56,7 @@ pub fn spawn_strong_bullet(
 ) {
     spawn_bullet(
         commands,
-        game_textures.strong_laser.clone(),
+        game_textures.strong_bullet.clone(),
         Weapon::StrongBullet,
         options,
         STRONG_BULLET_SPEED,
@@ -73,7 +70,7 @@ pub fn spawn_weak_bullet(
 ) {
     spawn_bullet(
         commands,
-        game_textures.weak_laser.clone(),
+        game_textures.weak_bullet.clone(),
         Weapon::WeakBullet,
         options,
         WEAK_BULLET_SPEED,

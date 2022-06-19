@@ -19,14 +19,12 @@ where
         None,
         None,
     );
-
     enemy_entity = spawn_solid_collider(
         commands,
         enemy_entity,
         Collider::round_cuboid(0.25, 0.25, 0.1),
         None,
     );
-
     commands
         .entity(enemy_entity)
         .insert(Enemy)
@@ -47,14 +45,26 @@ pub fn death_by_enemy(
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-            if let Ok(player) = players.get_single() {
-                for enemy in enemies.iter() {
-                    if (*ent1 == player && *ent2 == enemy) || (*ent1 == enemy && *ent2 == player) {
-                        send_dead_event.send(LivingBeingDeathEvent { entity: player });
-                        send_dead_player_event.send(DeadPlayerEvent { entity: player });
-                    }
+            match (
+                players.get(*ent1),
+                enemies.get(*ent2),
+                players.get(*ent2),
+                enemies.get(*ent1),
+            ) {
+                (Ok(_), Ok(_), _, _) | (_, _, Ok(_), Ok(_)) => {
+                    send_dead_player_event.send(DeadPlayerEvent)
                 }
+                _ => {}
             }
+
+            // if let Ok(player) = players.get_single() {
+            //     for enemy in enemies.iter() {
+            //         if (*ent1 == player && *ent2 == enemy) || (*ent1 == enemy && *ent2 == player) {
+            //             send_dead_event.send(LivingBeingDeathEvent { entity: player });
+            //             send_dead_player_event.send(DeadPlayerEvent { entity: player });
+            //         }
+            //     }
+            // }
         }
     }
 }
