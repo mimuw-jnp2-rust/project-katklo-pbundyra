@@ -33,13 +33,13 @@ fn spawn_bullet(commands: &mut Commands, texture: Handle<Image>, bullet_type: We
         }
     };
 
-    let bullet_entity = spawn_object(commands,
-                                     create_sprite_bundle(texture, (0.5, 0.2), (options.x + spawn_x, options.y, 0.0)),
-                                     Some(vel_x),
-                                     Some(0.0),
-                                     Collider::round_cuboid(0.0, 0.0, 0.0),
-                                     None,
+    let mut bullet_entity = spawn_dynamic_object(commands,
+                                                 create_sprite_bundle(texture, (0.5, 0.2), (options.x + spawn_x, options.y, 0.0)),
+                                                 Some(vel_x),
+                                                 Some(0.0),
     );
+
+    bullet_entity = spawn_sensor_collider(commands, bullet_entity, Collider::round_cuboid(0.0, 0.0, 0.0));
 
     commands.entity(bullet_entity)
         .insert(Bullet)
@@ -71,12 +71,8 @@ pub fn destroy_bullet_on_contact(
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(h1, h2, _) = collision_event {
             for bullet in bullets.iter() {
-                if (*h1 == bullet
-                    && !players.iter().any(|b| *h2 == b)
-                    && !bullets.iter().any(|b| *h2 == b))
-                    || (*h2 == bullet
-                    && !players.iter().any(|b| *h1 == b)
-                    && !bullets.iter().any(|b| *h1 == b))
+                if (*h1 == bullet && !players.iter().any(|b| *h2 == b))
+                    || (*h2 == bullet && !players.iter().any(|b| *h1 == b))
                 {
                     commands.entity(bullet).despawn_recursive();
                 }

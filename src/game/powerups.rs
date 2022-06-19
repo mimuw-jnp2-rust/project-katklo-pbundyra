@@ -18,13 +18,8 @@ pub const RUST_DURATION: u64 = 7;
 const SAFE_ZONE_WIDTH: i32 = 5;
 
 fn spawn_powerup<T>(commands: &mut Commands, texture: Handle<Image>, powerup_type: T, x: f32, y: f32) where T: Component {
-    let powerup_entity = spawn_object(commands,
-                                      create_sprite_bundle(texture, (0.99, 0.99), (x, y, 10.0)),
-                                      None,
-                                      None,
-                                      Collider::round_cuboid(0.05, 0.05, 0.1),
-                                      None,
-    );
+    let mut powerup_entity = spawn_static_object(commands, create_sprite_bundle(texture, (0.99, 0.99), (x, y, 10.0)));
+    powerup_entity = spawn_sensor_collider(commands, powerup_entity, Collider::round_cuboid(0.4, 0.4, 0.1));
 
     commands.entity(powerup_entity)
         .insert(Powerup)
@@ -109,10 +104,10 @@ pub fn degrade_weapon(mut players: Query<&mut Player>, time: Res<Time>) {
 pub fn add_powerups(commands: &mut Commands, world: &[(i32, usize)], game_textures: Res<GameTextures>, rng: &mut ResMut<Random>) {
     world.iter().for_each(|&(x, height)| {
         if should_add_coffee(x, rng) {
-            spawn_coffee(commands, &game_textures, x as f32, height as f32 + 0.25);
+            spawn_coffee(commands, &game_textures, x as f32, height as f32 + 0.75);
         }
         if should_add_rust(x, rng) {
-            spawn_rust(commands, &game_textures, x as f32, height as f32 + 0.25);
+            spawn_rust(commands, &game_textures, x as f32, height as f32 + 0.75);
         }
     });
 }

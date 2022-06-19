@@ -48,14 +48,18 @@ impl Default for Player {
 #[allow(dead_code)]
 impl Player {
     pub fn spawn(commands: &mut Commands, game_textures: Res<GameTextures>) {
-        let player_entity = spawn_object(commands,
-                                         create_sprite_bundle(game_textures.player.clone(),
-                                                              (0.9, 1.5),
-                                                              (0.0, 2.0, 0.0)),
-                                         None,
-                                         None,
-                                         Collider::round_cuboid(0.2, 0.2, 0.1),
-                                         Some(Friction::coefficient(3.)),
+        let mut player_entity = spawn_dynamic_object(commands,
+                                                     create_sprite_bundle(game_textures.player.clone(),
+                                                                          (0.9, 1.5),
+                                                                          (0.0, 2.0, 0.0)),
+                                                     None,
+                                                     None,
+        );
+
+        player_entity = spawn_solid_collider(commands,
+                                             player_entity,
+                                             Collider::round_cuboid(0.2, 0.2, 0.1),
+                                             Some(Friction::coefficient(3.)),
         );
 
         commands.entity(player_entity)

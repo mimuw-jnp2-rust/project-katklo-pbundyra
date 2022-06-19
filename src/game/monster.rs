@@ -11,13 +11,18 @@ const SPAWNING_PROBABILITY: f64 = 0.1;
 
 fn spawn_enemy<T>(commands: &mut Commands, texture: Handle<Image>, enemy_type: T, x: f32, y: f32)
     where T: Component {
-    let enemy_entity = spawn_object(commands,
-                                    create_sprite_bundle(texture, (0.9, 0.9), (x, y, 10.0)),
-                                    None,
-                                    None,
-                                    Collider::round_cuboid(0.25, 0.25, 0.1),
-                                    None,
+    let mut enemy_entity = spawn_dynamic_object(commands,
+                                                create_sprite_bundle(texture, (0.9, 0.9), (x, y, 10.0)),
+                                                None,
+                                                None,
     );
+
+    enemy_entity = spawn_solid_collider(commands,
+                                        enemy_entity,
+                                        Collider::round_cuboid(0.25, 0.25, 0.1),
+                                        None,
+    );
+
     commands.entity(enemy_entity)
         .insert(Enemy)
         .insert(Jumper::default())
