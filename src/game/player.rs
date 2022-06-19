@@ -1,16 +1,17 @@
 use std::time::Duration;
+
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::game::{camera_follow_player, degrade_weapon, finish_coffee, FastShootEvent, FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, ShootEvent, Weapon, COFFEE_DURATION, RUST_DURATION};
-use crate::game::powerups::{drink_coffee, learn_rust};
+use crate::game::{camera_follow_player, COFFEE_DURATION, degrade_weapon, FastShootEvent, finish_coffee, FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, RUST_DURATION, ShootEvent, Weapon};
 use crate::game::bullets::{BulletOptions, destroy_bullet_on_contact, kill_enemy, spawn_strong_bullet, spawn_weak_bullet};
 use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent, on_living_being_dead, on_living_being_hit};
 use crate::game::monster::death_by_enemy;
+use crate::game::powerups::{drink_coffee, learn_rust};
 use crate::GameTextures;
 
 use super::camera::new_camera_2d;
-use super::components::{LivingBeing, Jumper};
+use super::components::{Jumper, LivingBeing};
 use super::super::AppState;
 use super::utils::*;
 
@@ -212,21 +213,22 @@ pub fn jump_reset(
     }
 }
 
-// TODO zrobić lepiej przy okazji collision eventow
 pub fn finish(
-    mut players: Query<(Entity, &mut Player)>,
-    mut lines: Query<(Entity, &mut FinishLine)>,
+    players: Query<(Entity, &mut Player)>,
+    lines: Query<(Entity, &mut FinishLine)>,
     mut contact_events: EventReader<CollisionEvent>,
     mut state: ResMut<State<AppState>>,
 ) {
     for contact_event in contact_events.iter() {
-        for (entity1, _) in players.iter_mut() {
-            for (entity2, _) in lines.iter_mut() {
-                if let CollisionEvent::Started(h1, h2, _) = contact_event {
-                    if (*h1 == entity1 && *h2 == entity2) || (*h1 == entity2 && *h2 == entity1) {
+        if let CollisionEvent::Started(h1, h2, _) = contact_event {
+            match (players.get_single(), lines.get_single()) {
+                (Ok((player_entity, _)), Ok((line_entity, _))) => {
+                    if (*h1 == player_entity && *h2 == line_entity)
+                        || (*h1 == line_entity && *h2 == player_entity) {
                         state.set(AppState::EndMenu).unwrap();
                     }
                 }
+                _ => {}
             }
         }
     }
