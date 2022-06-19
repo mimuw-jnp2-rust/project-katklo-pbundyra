@@ -12,9 +12,9 @@ use crate::game::living_being::{
 use crate::game::monster::death_by_enemy;
 use crate::game::powerups::{drink_coffee, learn_rust};
 use crate::game::{
-    camera_follow_player, finish_coffee, finish_rust, Bullet, FastShootEvent, FinishLine,
-    GameDirection, LastDespawnedEntity, PhantomEntity, ShootEvent, Weapon, COFFEE_DURATION,
-    RUST_DURATION,
+    camera_follow_player, finish_coffee, finish_rust, AudioDeadPlayerEvent, Bullet, FastShootEvent,
+    FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, ShootEvent, Weapon,
+    COFFEE_DURATION, RUST_DURATION,
 };
 use crate::GameTextures;
 
@@ -119,7 +119,8 @@ impl Plugin for PlayerPlugin {
                     .with_system(changing_weapon)
                     .with_system(on_living_being_dead)
                     .with_system(fire_controller)
-                    .with_system(on_living_being_hit),
+                    .with_system(on_living_being_hit)
+                    .with_system(handle_death),
             )
             .add_event::<LivingBeingHitEvent>()
             .add_event::<LivingBeingDeathEvent>()
@@ -226,19 +227,23 @@ pub fn jump_reset(
                     },
                     _ => {}
                 }
-                // match (
-                //     players.get(*ent1),
-                //     bullets.get(*ent2),
-                //     players.get(*ent2),
-                //     bullets.get(*ent1),
-                // ) {
-                //     (Ok(_), Ok(_), _, _) | (_, _, Ok(_), Ok(_)) => jumper.is_jumping = true,
-                //     (Ok(_), _, _, _) | (_, _, Ok(_), _) => jumper.is_jumping = false,
-                //     _ => {}
-                // }
             }
         }
     }
+}
+
+fn handle_death(
+    mut state: ResMut<State<AppState>>,
+    mut dead_player_events: EventReader<DeadPlayerEvent>,
+    mut event_senders: EventWriter<AudioDeadPlayerEvent>,
+) {
+    dead_player_events.iter().for_each(|_| {
+        println!("Player died");
+        state
+            .set(AppState::DeathMenu)
+            .expect("Could not set state to DeathMenu");
+        event_senders.send(AudioDeadPlayerEvent);
+    });
 }
 
 pub fn finish(
