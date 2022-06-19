@@ -2,12 +2,13 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
-use crate::game::{Powerup, Coffee, Player, Rust};
 use crate::{GameTextures, Random};
+use crate::game::{Coffee, Player, Powerup, Rust};
 
 use super::utils::*;
 
 pub struct CoffeeEvent;
+
 pub struct RustEvent;
 
 const SPAWNING_COFFEE_PROBABILITY: f64 = 0.1;
@@ -17,15 +18,17 @@ pub const RUST_DURATION: u64 = 7;
 const SAFE_ZONE_WIDTH: i32 = 5;
 
 fn spawn_powerup<T>(commands: &mut Commands, texture: Handle<Image>, powerup_type: T, x: f32, y: f32) where T: Component {
-    spawn_object(commands,
-                 create_sprite_bundle(texture, (0.99, 0.99), (x, y, 10.0)),
-                 None,
-                 None,
-                 Collider::round_cuboid(0.05, 0.05, 0.1),
-                 None,
-                 Powerup,
-                 powerup_type,
+    let powerup_entity = spawn_object(commands,
+                                      create_sprite_bundle(texture, (0.99, 0.99), (x, y, 10.0)),
+                                      None,
+                                      None,
+                                      Collider::round_cuboid(0.05, 0.05, 0.1),
+                                      None,
     );
+
+    commands.entity(powerup_entity)
+        .insert(Powerup)
+        .insert(powerup_type);
 }
 
 fn spawn_coffee(commands: &mut Commands, game_textures: &Res<GameTextures>, x: f32, y: f32) {

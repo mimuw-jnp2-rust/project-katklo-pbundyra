@@ -5,7 +5,7 @@ use crate::game::{Bullet, Enemy, Player, Weapon};
 use crate::game::living_being::LivingBeingHitEvent;
 use crate::GameTextures;
 
-use super::{GameDirection};
+use super::GameDirection;
 use super::utils::*;
 
 pub struct ShootEvent;
@@ -32,15 +32,18 @@ fn spawn_bullet(commands: &mut Commands, texture: Handle<Image>, bullet_type: We
             (def_vel, 0.75)
         }
     };
-    spawn_object(commands,
-                 create_sprite_bundle(texture, (0.5, 0.2), (options.x + spawn_x, options.y, 0.0)),
-                 Some(vel_x),
-                 Some(0.0),
-                 Collider::round_cuboid(0.0, 0.0, 0.0),
-                 None,
-                 Bullet,
-                 bullet_type,
+
+    let bullet_entity = spawn_object(commands,
+                                     create_sprite_bundle(texture, (0.5, 0.2), (options.x + spawn_x, options.y, 0.0)),
+                                     Some(vel_x),
+                                     Some(0.0),
+                                     Collider::round_cuboid(0.0, 0.0, 0.0),
+                                     None,
     );
+
+    commands.entity(bullet_entity)
+        .insert(Bullet)
+        .insert(bullet_type);
 }
 
 pub fn spawn_strong_bullet(

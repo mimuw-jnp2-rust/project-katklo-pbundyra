@@ -3,7 +3,7 @@ use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
 use crate::{GameTextures, Random};
-use crate::game::{Enemy, Bug, Player, SAFE_ZONE_WIDTH, DeadPlayerEvent};
+use crate::game::{Bug, DeadPlayerEvent, Enemy, Jumper, Player, SAFE_ZONE_WIDTH};
 use crate::game::living_being::LivingBeingDeathEvent;
 use crate::game::utils::*;
 
@@ -11,15 +11,17 @@ const SPAWNING_PROBABILITY: f64 = 0.1;
 
 fn spawn_enemy<T>(commands: &mut Commands, texture: Handle<Image>, enemy_type: T, x: f32, y: f32)
     where T: Component {
-    spawn_object(commands,
-                 create_sprite_bundle(texture, (0.9, 0.9), (x, y, 10.0)),
-                 None,
-                 None,
-                 Collider::round_cuboid(0.25, 0.25, 0.1),
-                 None,
-                 Enemy,
-                 enemy_type,
+    let enemy_entity = spawn_object(commands,
+                                    create_sprite_bundle(texture, (0.9, 0.9), (x, y, 10.0)),
+                                    None,
+                                    None,
+                                    Collider::round_cuboid(0.25, 0.25, 0.1),
+                                    None,
     );
+    commands.entity(enemy_entity)
+        .insert(Enemy)
+        .insert(Jumper::default())
+        .insert(enemy_type);
 }
 
 fn spawn_bug(commands: &mut Commands, game_textures: &Res<GameTextures>, x: f32, y: f32) {
