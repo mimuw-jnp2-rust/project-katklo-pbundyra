@@ -47,6 +47,8 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app
+            .insert_resource(Random::new())
+            .insert_resource(Level::new())
             .add_startup_system_to_stage(StartupStage::PreStartup, setup)
             .add_system_set(
                 SystemSet::on_update(AppState::InGame).with_system(back_to_main_menu_controls),

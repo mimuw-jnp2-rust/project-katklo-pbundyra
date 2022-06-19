@@ -118,7 +118,6 @@ pub fn play_death_sfx(
 ) {
     for _ in death_events.iter() {
         audio.play(audio_state.death.clone());
-        println!("Player died");
         state.set(AppState::FailMenu).expect("Could not set state to DeathMenu");
     }
 }

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rand::prelude::*;
 
-use crate::{AppState, GameTextures, Random};
+use crate::{AppState, GameTextures, Level, Random};
 use crate::game::{CoffeeEvent, FinishLine, RustEvent, Wall};
 use crate::game::monster::add_enemies;
 use crate::game::powerups::add_powerups;
@@ -10,7 +10,7 @@ use super::utils::*;
 
 const BEGIN_WIDTH: usize = 10;
 pub const SAFE_ZONE_WIDTH: usize = 5;
-pub const GAME_WIDTH: usize = 150;
+pub const GAME_WIDTH: usize = 15;
 const MAP_WIDTH: usize = GAME_WIDTH + BEGIN_WIDTH;
 const WALL_HEIGHT: f32 = 20.0;
 
@@ -27,12 +27,12 @@ impl Plugin for MapPlugin {
     }
 }
 
-fn generate_map(mut rng: ResMut<Random>, mut commands: Commands, game_textures: Res<GameTextures>) {
+fn generate_map(mut rng: ResMut<Random>, mut commands: Commands, game_textures: Res<GameTextures>, level: Res<Level>) {
     let world = create_world(&mut rng);
     add_floor(&mut commands, &game_textures, &world);
     add_start_and_finish_line(&mut commands, &game_textures, &world);
-    add_enemies(&mut commands, &world, &game_textures, &mut rng);
-    add_powerups(&mut commands, &world, game_textures, &mut rng);
+    add_enemies(&mut commands, &world, &game_textures, &mut rng, &level);
+    add_powerups(&mut commands, &world, game_textures, &mut rng, &level);
 }
 
 fn create_world(rng: &mut ResMut<Random>) -> Vec<(i32, usize)> {

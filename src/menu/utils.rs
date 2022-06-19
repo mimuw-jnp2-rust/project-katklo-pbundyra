@@ -178,8 +178,8 @@ fn button_icon_bundle(icon: Handle<Image>) -> ImageBundle {
 fn image_bundle(image: Handle<Image>) -> ImageBundle {
     ImageBundle {
         style: Style {
-            max_size: Size::new(Val::Px(800.), Val::Auto),
-            min_size: Size::new(Val::Px(410.), Val::Auto),
+            max_size: Size::new(Val::Px(900.), Val::Auto),
+            min_size: Size::new(Val::Px(410.), Val::Px(50.)),
             margin: Rect::all(Val::Px(20.0)),
             ..default()
         },
@@ -206,7 +206,7 @@ pub fn start_new_game(state: &mut ResMut<State<AppState>>, rng: &mut ResMut<Rand
         rng.new_random_seed();
     }
 
-    level.level = 1;
+    level.reset_level();
     start_game_for_level(state, rng, level);
 }
 

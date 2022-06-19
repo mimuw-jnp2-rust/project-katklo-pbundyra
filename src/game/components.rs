@@ -133,11 +133,26 @@ impl Random {
 
 pub struct Level {
     pub level: usize,
+    pub difficulty: f64,
 }
 
 impl Level {
     pub fn new() -> Self {
-        Self { level: 0 }
+        Self { level: 1, difficulty: 1. }
+    }
+
+    pub fn increase_level(&mut self) {
+        self.level += 1;
+        self.update_difficulty();
+    }
+
+    pub fn reset_level(&mut self) {
+        self.level = 1;
+        self.update_difficulty();
+    }
+
+    fn update_difficulty(&mut self) {
+        self.difficulty = ((self.level - 1)/ 3) as f64 + 1.;
     }
 }
 #[derive(Component, Default)]
