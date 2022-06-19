@@ -63,15 +63,15 @@ pub struct Coffee;
 #[derive(Component)]
 pub struct Rust;
 
-#[derive(Component)]
-pub struct Bug {
-    pub speed: f32,
-    pub facing_direction: GameDirection,
-}
+#[derive(Component, Default)]
+pub struct Bug;
 
-impl Default for Bug {
+#[derive(Component, Default)]
+pub struct Valgrind;
+
+impl Default for Enemy {
     fn default() -> Self {
-        Bug {
+        Enemy {
             speed: 2.0,
             facing_direction: GameDirection::Right,
         }
@@ -79,7 +79,10 @@ impl Default for Bug {
 }
 
 #[derive(Component)]
-pub struct Enemy;
+pub struct Enemy {
+    pub speed: f32,
+    pub facing_direction: GameDirection,
+}
 
 #[derive(Debug, Component, PartialEq, Eq, Clone)]
 pub struct Random {

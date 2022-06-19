@@ -3,7 +3,7 @@ use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
 use crate::game::utils::*;
-use crate::game::{Bug, DeadPlayerEvent, Enemy, Jumper, Player, SAFE_ZONE_WIDTH};
+use crate::game::{Bug, DeadPlayerEvent, Enemy, Jumper, Player, Valgrind, SAFE_ZONE_WIDTH};
 use crate::{GameTextures, Level, Random};
 
 const SPAWNING_PROBABILITY: f64 = 0.1;
@@ -26,13 +26,23 @@ where
     );
     commands
         .entity(enemy_entity)
-        .insert(Enemy)
+        .insert(Enemy::default())
         .insert(Jumper::default())
         .insert(enemy_type);
 }
 
 fn spawn_bug(commands: &mut Commands, game_textures: &Res<GameTextures>, x: f32, y: f32) {
     spawn_enemy(commands, game_textures.bug.clone(), Bug::default(), x, y);
+}
+
+fn spawn_valgrind(commands: &mut Commands, game_textures: &Res<GameTextures>, x: f32, y: f32) {
+    spawn_enemy(
+        commands,
+        game_textures.valgrind.clone(),
+        Valgrind::default(),
+        x,
+        y,
+    );
 }
 
 pub fn death_by_enemy(
@@ -68,6 +78,9 @@ pub fn add_enemies(
     world.iter().for_each(|&(x, height)| {
         if should_add_enemy(x, rng, level) {
             spawn_bug(commands, game_textures, x as f32, height as f32 + 1.5);
+        }
+        if should_add_enemy(x, rng, level) {
+            spawn_valgrind(commands, game_textures, x as f32, height as f32 + 1.5);
         }
     });
 }

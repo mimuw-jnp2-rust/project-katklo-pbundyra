@@ -4,11 +4,11 @@ use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
 use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
-use crate::game::Powerup;
+use crate::game::{Enemy, Powerup};
 use crate::Random;
 
 use super::super::AppState;
-use super::{Bug, GameDirection, Jumper};
+use super::{GameDirection, Jumper};
 
 const JUMP_PROBABILITY: f64 = 0.25;
 const CHANGE_DIRECTION_PROBABILITY: f64 = 0.25;
@@ -39,7 +39,7 @@ impl Plugin for MonsterAiPlugin {
     }
 }
 
-fn monster_walks(mut monsters: Query<(&Bug, &mut Velocity)>) {
+fn monster_walks(mut monsters: Query<(&Enemy, &mut Velocity)>) {
     for (monster, mut velocity) in monsters.iter_mut() {
         let speed = match monster.facing_direction {
             GameDirection::Left => -monster.speed,
@@ -50,14 +50,17 @@ fn monster_walks(mut monsters: Query<(&Bug, &mut Velocity)>) {
     }
 }
 
-fn change_direction(mut monster: Mut<Bug>) {
+fn change_direction(mut monster: Mut<Enemy>) {
     monster.facing_direction = match monster.facing_direction {
         GameDirection::Left => GameDirection::Right,
         GameDirection::Right => GameDirection::Left,
     }
 }
 
-fn monster_changes_direction_randomly(mut monster_query: Query<&mut Bug>, mut rng: ResMut<Random>) {
+fn monster_changes_direction_randomly(
+    mut monster_query: Query<&mut Enemy>,
+    mut rng: ResMut<Random>,
+) {
     for monster in monster_query.iter_mut() {
         if should_change_direction(&mut rng) {
             change_direction(monster);
@@ -66,7 +69,7 @@ fn monster_changes_direction_randomly(mut monster_query: Query<&mut Bug>, mut rn
 }
 
 fn monster_contact_detection(
-    monsters: Query<Entity, With<Bug>>,
+    monsters: Query<Entity, With<Enemy>>,
     mut collision_events: EventReader<CollisionEvent>,
     mut send_monster_collision: EventWriter<MonsterCollisionEvent>,
     powerups: Query<Entity, With<Powerup>>,
@@ -88,7 +91,7 @@ fn monster_contact_detection(
 
 fn monster_change_direction_on_contact(
     mut events: EventReader<MonsterCollisionEvent>,
-    mut monster_query: Query<&mut Bug>,
+    mut monster_query: Query<&mut Enemy>,
 ) {
     for event in events.iter() {
         if let Ok(monster) = monster_query.get_mut(event.entity) {
@@ -98,7 +101,7 @@ fn monster_change_direction_on_contact(
 }
 
 fn monster_jumps(
-    mut monsters: Query<(&mut Jumper, &mut Velocity), With<Bug>>,
+    mut monsters: Query<(&mut Jumper, &mut Velocity), With<Enemy>>,
     mut rng: ResMut<Random>,
 ) {
     for (mut jumper, mut velocity) in monsters.iter_mut() {
