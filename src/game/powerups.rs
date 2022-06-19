@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
-use crate::game::{Coffee, Player, Powerup, Rust};
+use crate::game::{AudioCoffeeEvent, AudioRustEvent, Coffee, Player, Powerup, Rust};
 use crate::{GameTextures, Level, Random};
 
 use super::utils::*;

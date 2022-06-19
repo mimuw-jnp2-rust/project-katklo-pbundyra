@@ -4,7 +4,7 @@ use bevy_rapier2d::prelude::*;
 use super::utils::*;
 use super::GameDirection;
 use crate::game::living_being::LivingBeingHitEvent;
-use crate::game::{Bullet, Enemy, Player, Weapon};
+use crate::game::{spawn_dynamic_object, Bullet, Enemy, Player, Weapon};
 use crate::GameTextures;
 
 pub struct ShootEvent;

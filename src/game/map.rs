@@ -3,7 +3,7 @@ use rand::prelude::*;
 
 use crate::game::monster::add_enemies;
 use crate::game::powerups::add_powerups;
-use crate::game::{CoffeeEvent, FinishLine, RustEvent, Wall};
+use crate::game::{CoffeeEvent, FinishLine, Level, RustEvent, Wall};
 use crate::{AppState, GameTextures, Random};
 
 use super::utils::*;
@@ -13,6 +13,8 @@ pub const SAFE_ZONE_WIDTH: usize = 5;
 pub const GAME_WIDTH: usize = 150;
 const MAP_WIDTH: usize = GAME_WIDTH + BEGIN_WIDTH;
 const WALL_HEIGHT: f32 = 20.0;
+const TILE_SIZE: f32 = 1.0;
+const HALF_TILE_SIZE: f32 = TILE_SIZE / 2.0;
 
 pub struct MapPlugin;
 

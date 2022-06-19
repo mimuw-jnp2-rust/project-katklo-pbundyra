@@ -12,9 +12,9 @@ use crate::game::living_being::{
 use crate::game::monster::death_by_enemy;
 use crate::game::powerups::{drink_coffee, learn_rust};
 use crate::game::{
-    camera_follow_player, finish_coffee, finish_rust, AudioDeadPlayerEvent, Bullet, FastShootEvent,
-    FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, ShootEvent, Weapon,
-    COFFEE_DURATION, RUST_DURATION,
+    camera_follow_player, finish_coffee, finish_rust, AudioDeadPlayerEvent, AudioFastShootEvent,
+    AudioShootEvent, Bullet, FastShootEvent, FinishLine, GameDirection, LastDespawnedEntity,
+    PhantomEntity, ShootEvent, Weapon, COFFEE_DURATION, RUST_DURATION,
 };
 use crate::GameTextures;
 
@@ -119,8 +119,8 @@ impl Plugin for PlayerPlugin {
                     .with_system(changing_weapon)
                     .with_system(on_living_being_dead)
                     .with_system(fire_controller)
-                    .with_system(handle_death),
-                    .with_system(on_living_being_hit)
+                    .with_system(handle_death)
+                    .with_system(on_living_being_hit),
             )
             .add_event::<LivingBeingHitEvent>()
             .add_event::<LivingBeingDeathEvent>()
@@ -186,8 +186,8 @@ pub fn fire_controller(
     mut commands: Commands,
     mut game_textures: Res<GameTextures>,
     positions: Query<(&mut Transform, &RigidBody, &mut Player, &mut Velocity), With<Player>>,
-    mut send_shoot_event: EventWriter<ShootEvent>,
-    mut send_fast_shoot_event: EventWriter<FastShootEvent>,
+    mut send_shoot_event: EventWriter<AudioShootEvent>,
+    mut send_fast_shoot_event: EventWriter<AudioFastShootEvent>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Space) {
         for (pos, _, player, vel) in positions.iter() {
@@ -199,11 +199,11 @@ pub fn fire_controller(
             };
             match player.weapon {
                 Weapon::WeakBullet => {
-                    send_shoot_event.send(ShootEvent);
+                    send_shoot_event.send(AudioShootEvent);
                     spawn_weak_bullet(&mut commands, &mut game_textures, options);
                 }
                 Weapon::StrongBullet => {
-                    send_fast_shoot_event.send(FastShootEvent);
+                    send_fast_shoot_event.send(AudioFastShootEvent);
                     spawn_strong_bullet(&mut commands, &mut game_textures, options);
                 }
             }
@@ -238,9 +238,8 @@ fn handle_death(
     mut event_senders: EventWriter<AudioDeadPlayerEvent>,
 ) {
     dead_player_events.iter().for_each(|_| {
-        println!("Player died");
         state
-            .set(AppState::DeathMenu)
+            .set(AppState::FailMenu)
             .expect("Could not set state to DeathMenu");
         event_senders.send(AudioDeadPlayerEvent);
     });
@@ -257,7 +256,7 @@ pub fn finish(
             match (players.get_single(), lines.get_single()) {
                 (Ok((player, _)), Ok((line, _))) => {
                     if (*ent1 == player && *ent2 == line) || (*ent1 == line && *ent2 == player) {
-                        state.set(AppState::EndMenu).unwrap();
+                        state.set(AppState::WinMenu).unwrap();
                     }
                 }
                 _ => {}
