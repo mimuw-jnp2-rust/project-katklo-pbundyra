@@ -57,7 +57,7 @@ fn change_direction(mut monster: Mut<Bug>) {
 }
 
 fn monster_changes_direction_randomly(mut monster_query: Query<&mut Bug>, mut rng: ResMut<Random>) {
-    for mut monster in monster_query.iter_mut() {
+    for monster in monster_query.iter_mut() {
         if should_change_direction(&mut rng) {
             change_direction(monster);
         }

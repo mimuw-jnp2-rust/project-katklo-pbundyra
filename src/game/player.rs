@@ -12,8 +12,9 @@ use crate::game::living_being::{
 use crate::game::monster::death_by_enemy;
 use crate::game::powerups::{drink_coffee, learn_rust};
 use crate::game::{
-    camera_follow_player, degrade_weapon, finish_coffee, FastShootEvent, FinishLine, GameDirection,
-    LastDespawnedEntity, PhantomEntity, ShootEvent, Weapon, COFFEE_DURATION, RUST_DURATION,
+    camera_follow_player, degrade_weapon, finish_coffee, Bullet, FastShootEvent, FinishLine,
+    GameDirection, LastDespawnedEntity, PhantomEntity, ShootEvent, Weapon, COFFEE_DURATION,
+    RUST_DURATION,
 };
 use crate::GameTextures;
 
@@ -214,14 +215,21 @@ pub fn fire_controller(
 }
 
 pub fn jump_reset(
-    mut query: Query<(Entity, &mut Jumper)>,
+    mut jumpers: Query<(Entity, &mut Jumper)>,
+    bullets: Query<Entity, With<Bullet>>,
     mut collision_events: EventReader<CollisionEvent>,
 ) {
     for collision_event in collision_events.iter() {
-        for (entity, mut jumper) in query.iter_mut() {
-            if let CollisionEvent::Started(h1, h2, _) = collision_event {
-                if *h1 == entity || *h2 == entity {
+        for (entity, mut jumper) in jumpers.iter_mut() {
+            if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
+                if *ent1 == entity || *ent2 == entity {
                     jumper.is_jumping = false
+                }
+                if let Ok(_) = bullets.get(*ent1) {
+                    jumper.is_jumping = true
+                }
+                if let Ok(_) = bullets.get(*ent2) {
+                    jumper.is_jumping = true
                 }
             }
         }
