@@ -71,10 +71,11 @@ fn monster_contact_detection(
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-            for monster in monsters.iter() {
-                if *ent1 == monster || *ent2 == monster {
+            match (monsters.get(*ent1), monsters.get(*ent2)) {
+                (Ok(monster), _) | (_, Ok(monster)) => {
                     send_monster_walked_into_wall.send(MonsterCollisionEvent { entity: monster })
                 }
+                _ => {}
             }
         }
     }
