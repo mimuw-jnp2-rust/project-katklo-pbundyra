@@ -64,7 +64,7 @@ fn get_next_height(rng: &mut ResMut<Random>, current_height: usize) -> usize {
 }
 
 fn get_random_height_delta(rng: &mut ResMut<Random>) -> i32 {
-    match rng.generator.gen_range(0..100) {
+    match rng.generator.gen_range(0..=100) {
         0..=70 => 0,
         71..=80 => -1,
         81..=90 => 1,

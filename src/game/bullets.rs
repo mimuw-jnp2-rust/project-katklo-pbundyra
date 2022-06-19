@@ -3,12 +3,11 @@ use bevy_rapier2d::prelude::*;
 
 use super::utils::*;
 use super::GameDirection;
-use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
+use crate::game::living_being::LivingBeingHitEvent;
 use crate::game::{Bullet, Enemy, Player, Weapon};
 use crate::GameTextures;
 
 pub struct ShootEvent;
-
 pub struct FastShootEvent;
 
 const WEAK_BULLET_SPEED: f32 = 8.25;

@@ -3,7 +3,7 @@ use bevy_kira_audio::{Audio, AudioChannel, AudioPlugin, AudioSource};
 use rand::{thread_rng, Rng};
 
 use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
-use crate::game::player::{DeadPlayerEvent, Player};
+use crate::game::player::DeadPlayerEvent;
 use crate::game::powerups::CoffeeEvent;
 use crate::game::{FastShootEvent, RustEvent, ShootEvent};
 use crate::AppState;
@@ -56,6 +56,7 @@ pub fn play_hit_sfx(
         audio.set_volume(SFX_VOLUME);
         let mut rng = thread_rng();
         match rng.gen_range(0..100) {
+            // 1/3 chance of playing each sound
             0..=33 => audio.play(audio_state.hit1.clone()),
             34..=67 => audio.play(audio_state.hit2.clone()),
             _ => audio.play(audio_state.hit3.clone()),
@@ -72,6 +73,7 @@ pub fn play_eat_sfx(
         audio.set_volume(SFX_VOLUME);
         let mut rng = thread_rng();
         match rng.gen_range(0..100) {
+            // 1/3 chance of playing each sound
             0..=33 => audio.play(audio_state.eat1.clone()),
             34..=67 => audio.play(audio_state.eat2.clone()),
             _ => audio.play(audio_state.eat3.clone()),

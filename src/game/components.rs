@@ -4,6 +4,8 @@ use rand::{thread_rng, Rng, SeedableRng};
 use rand_pcg::Pcg64;
 use rand_seeder::Seeder;
 
+const JUMP_IMPULSE: f32 = 13.0;
+
 #[derive(Component, Copy, Clone)]
 pub enum GameDirection {
     Left,
@@ -40,7 +42,7 @@ pub struct Jumper {
 impl Default for Jumper {
     fn default() -> Self {
         Jumper {
-            jump_impulse: 13.0,
+            jump_impulse: JUMP_IMPULSE,
             is_jumping: false,
         }
     }
@@ -105,6 +107,7 @@ impl Random {
 
     pub fn add_char(&mut self, c: char) {
         if self.can_change && self.seed.len() <= 15 {
+            // TODO podmienic 15 na stala
             self.seed.push(c);
         }
     }
@@ -124,7 +127,7 @@ impl Random {
 
         let level_seed: String = temp_rng
             .sample_iter(&Alphanumeric)
-            .take(5 * level)
+            .take(5 * level) //TODO podmienic 5 na stala
             .map(char::from)
             .collect();
 
