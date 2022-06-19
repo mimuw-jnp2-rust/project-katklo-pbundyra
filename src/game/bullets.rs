@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::game::{Bullet, Enemy, Player, Weapon};
-use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
-use crate::GameTextures;
-use super::GameDirection;
 use super::utils::*;
+use super::GameDirection;
+use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
+use crate::game::{Bullet, Enemy, Player, Weapon};
+use crate::GameTextures;
 
 pub struct ShootEvent;
 
@@ -22,25 +22,33 @@ pub struct BulletOptions {
     pub player_vex: f32,
 }
 
-fn spawn_bullet(commands: &mut Commands, texture: Handle<Image>, bullet_type: Weapon, options: BulletOptions, def_vel: f32) {
+fn spawn_bullet(
+    commands: &mut Commands,
+    texture: Handle<Image>,
+    bullet_type: Weapon,
+    options: BulletOptions,
+    def_vel: f32,
+) {
     let (vel_x, spawn_x) = match options.direction {
-        GameDirection::Left => {
-            (-def_vel, -0.75)
-        }
-        GameDirection::Right => {
-            (def_vel, 0.75)
-        }
+        GameDirection::Left => (-def_vel, -0.75),
+        GameDirection::Right => (def_vel, 0.75),
     };
 
-    let mut bullet_entity = spawn_dynamic_object(commands,
-                                                 create_sprite_bundle(texture, (0.5, 0.2), (options.x + spawn_x, options.y, 0.0)),
-                                                 Some(vel_x),
-                                                 Some(0.0),
+    let mut bullet_entity = spawn_dynamic_object(
+        commands,
+        create_sprite_bundle(texture, (0.5, 0.2), (options.x + spawn_x, options.y, 0.0)),
+        Some(vel_x),
+        Some(0.0),
     );
 
-    bullet_entity = spawn_sensor_collider(commands, bullet_entity, Collider::round_cuboid(0.0, 0.0, 0.0));
+    bullet_entity = spawn_sensor_collider(
+        commands,
+        bullet_entity,
+        Collider::round_cuboid(0.0, 0.0, 0.0),
+    );
 
-    commands.entity(bullet_entity)
+    commands
+        .entity(bullet_entity)
         .insert(Bullet)
         .insert(bullet_type);
 }
@@ -50,7 +58,13 @@ pub fn spawn_strong_bullet(
     game_textures: &Res<GameTextures>,
     options: BulletOptions,
 ) {
-    spawn_bullet(commands, game_textures.strong_laser.clone(), Weapon::StrongBullet, options, STRONG_BULLET_SPEED);
+    spawn_bullet(
+        commands,
+        game_textures.strong_laser.clone(),
+        Weapon::StrongBullet,
+        options,
+        STRONG_BULLET_SPEED,
+    );
 }
 
 pub fn spawn_weak_bullet(
@@ -58,7 +72,13 @@ pub fn spawn_weak_bullet(
     game_textures: &Res<GameTextures>,
     options: BulletOptions,
 ) {
-    spawn_bullet(commands, game_textures.weak_laser.clone(), Weapon::WeakBullet, options, WEAK_BULLET_SPEED);
+    spawn_bullet(
+        commands,
+        game_textures.weak_laser.clone(),
+        Weapon::WeakBullet,
+        options,
+        WEAK_BULLET_SPEED,
+    );
 }
 
 pub fn destroy_bullet_on_contact(
@@ -71,7 +91,8 @@ pub fn destroy_bullet_on_contact(
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
             if let Ok(player) = players.get_single() {
                 for bullet in bullets.iter() {
-                    if (*ent1 == bullet && *ent2 != player) || (*ent2 == bullet && *ent1 != player) {
+                    if (*ent1 == bullet && *ent2 != player) || (*ent2 == bullet && *ent1 != player)
+                    {
                         commands.entity(bullet).despawn_recursive();
                     }
                 }

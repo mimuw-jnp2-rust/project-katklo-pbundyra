@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::game::{AudioHitEvent, LastDespawnedEntity};
+use bevy::prelude::*;
 
 pub struct LivingBeingHitEvent {
     pub entity: Entity,

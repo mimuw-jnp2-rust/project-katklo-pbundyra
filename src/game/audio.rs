@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 use bevy_kira_audio::{Audio, AudioChannel, AudioPlugin, AudioSource};
-use rand::{Rng, thread_rng};
+use rand::{thread_rng, Rng};
 
-use crate::{AppState};
 use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
 use crate::game::player::{DeadPlayerEvent, Player};
 use crate::game::powerups::CoffeeEvent;
 use crate::game::{FastShootEvent, RustEvent, ShootEvent};
+use crate::AppState;
 
 pub struct GameAudioPlugin;
 
@@ -120,10 +120,11 @@ pub fn play_death_sfx(
     for _ in death_events.iter() {
         audio.play(audio_state.death.clone());
         println!("Player died");
-        state.set(AppState::DeathMenu).expect("Could not set state to DeathMenu");
+        state
+            .set(AppState::DeathMenu)
+            .expect("Could not set state to DeathMenu");
     }
 }
-
 
 fn play_bg_music(audio: Res<Audio>, audio_state: Res<AudioAssets>) {
     audio.stop_channel(&audio_state.menu_channel);

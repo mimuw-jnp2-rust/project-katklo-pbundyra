@@ -1,10 +1,10 @@
+use bevy::prelude::*;
+use bevy::render::camera::Camera2d;
 use bevy::{
     math::Vec3,
     prelude::OrthographicCameraBundle,
     render::camera::{DepthCalculation, OrthographicProjection, ScalingMode},
 };
-use bevy::prelude::*;
-use bevy::render::camera::Camera2d;
 use bevy_rapier2d::prelude::*;
 
 use crate::game::Player;

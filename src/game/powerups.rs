@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
-use crate::{GameTextures, Random};
 use crate::game::{Coffee, Player, Powerup, Rust};
+use crate::{GameTextures, Random};
 
 use super::utils::*;
 
@@ -17,11 +17,27 @@ pub const COFFEE_DURATION: u64 = 10;
 pub const RUST_DURATION: u64 = 7;
 const SAFE_ZONE_WIDTH: i32 = 5;
 
-fn spawn_powerup<T>(commands: &mut Commands, texture: Handle<Image>, powerup_type: T, x: f32, y: f32) where T: Component {
-    let mut powerup_entity = spawn_static_object(commands, create_sprite_bundle(texture, (0.99, 0.99), (x, y, 10.0)));
-    powerup_entity = spawn_sensor_collider(commands, powerup_entity, Collider::round_cuboid(0.4, 0.4, 0.1));
+fn spawn_powerup<T>(
+    commands: &mut Commands,
+    texture: Handle<Image>,
+    powerup_type: T,
+    x: f32,
+    y: f32,
+) where
+    T: Component,
+{
+    let mut powerup_entity = spawn_static_object(
+        commands,
+        create_sprite_bundle(texture, (0.99, 0.99), (x, y, 10.0)),
+    );
+    powerup_entity = spawn_sensor_collider(
+        commands,
+        powerup_entity,
+        Collider::round_cuboid(0.4, 0.4, 0.1),
+    );
 
-    commands.entity(powerup_entity)
+    commands
+        .entity(powerup_entity)
         .insert(Powerup)
         .insert(powerup_type);
 }
@@ -46,7 +62,8 @@ pub fn drink_coffee(
             if let Ok((player_entity, mut player)) = players.get_single_mut() {
                 for coffee in coffees.iter() {
                     if (*h1 == player_entity && *h2 == coffee)
-                        || (*h1 == coffee && *h2 == player_entity) {
+                        || (*h1 == coffee && *h2 == player_entity)
+                    {
                         player.increase_speed();
                         commands.entity(coffee).despawn_recursive();
                         send_event.send(CoffeeEvent);
@@ -65,7 +82,6 @@ pub fn finish_coffee(mut players: Query<&mut Player>, time: Res<Time>) {
         }
     }
 }
-
 
 pub fn learn_rust(
     mut commands: Commands,
@@ -100,8 +116,12 @@ pub fn degrade_weapon(mut players: Query<&mut Player>, time: Res<Time>) {
     }
 }
 
-
-pub fn add_powerups(commands: &mut Commands, world: &[(i32, usize)], game_textures: Res<GameTextures>, rng: &mut ResMut<Random>) {
+pub fn add_powerups(
+    commands: &mut Commands,
+    world: &[(i32, usize)],
+    game_textures: Res<GameTextures>,
+    rng: &mut ResMut<Random>,
+) {
     world.iter().for_each(|&(x, height)| {
         if should_add_coffee(x, rng) {
             spawn_coffee(commands, &game_textures, x as f32, height as f32 + 0.75);

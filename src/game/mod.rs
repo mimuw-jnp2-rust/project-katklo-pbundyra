@@ -47,8 +47,7 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_startup_system_to_stage(StartupStage::PreStartup, setup)
+        app.add_startup_system_to_stage(StartupStage::PreStartup, setup)
             .add_system_set(
                 SystemSet::on_update(AppState::InGame).with_system(back_to_main_menu_controls),
             )
@@ -85,6 +84,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         floor: asset_server.load("images/cobblestone.png"),
         finish_line: asset_server.load("images/finish_line.png"),
     });
-    commands.spawn_bundle(SpriteBundle { ..default() }).insert(PhantomEntity);
+    commands
+        .spawn_bundle(SpriteBundle { ..default() })
+        .insert(PhantomEntity);
 }
-

@@ -3,16 +3,23 @@ use std::time::Duration;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::game::{camera_follow_player, COFFEE_DURATION, degrade_weapon, FastShootEvent, finish_coffee, FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, RUST_DURATION, ShootEvent, Weapon};
-use crate::game::bullets::{BulletOptions, destroy_bullet_on_contact, kill_enemy, spawn_strong_bullet, spawn_weak_bullet};
-use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent, on_living_being_dead, on_living_being_hit};
+use crate::game::bullets::{
+    destroy_bullet_on_contact, kill_enemy, spawn_strong_bullet, spawn_weak_bullet, BulletOptions,
+};
+use crate::game::living_being::{
+    on_living_being_dead, on_living_being_hit, LivingBeingDeathEvent, LivingBeingHitEvent,
+};
 use crate::game::monster::death_by_enemy;
 use crate::game::powerups::{drink_coffee, learn_rust};
+use crate::game::{
+    camera_follow_player, degrade_weapon, finish_coffee, FastShootEvent, FinishLine, GameDirection,
+    LastDespawnedEntity, PhantomEntity, ShootEvent, Weapon, COFFEE_DURATION, RUST_DURATION,
+};
 use crate::GameTextures;
 
+use super::super::AppState;
 use super::camera::new_camera_2d;
 use super::components::{Jumper, LivingBeing};
-use super::super::AppState;
 use super::utils::*;
 
 pub struct PlayerPlugin;
@@ -48,21 +55,22 @@ impl Default for Player {
 #[allow(dead_code)]
 impl Player {
     pub fn spawn(commands: &mut Commands, game_textures: Res<GameTextures>) {
-        let mut player_entity = spawn_dynamic_object(commands,
-                                                     create_sprite_bundle(game_textures.player.clone(),
-                                                                          (0.9, 1.5),
-                                                                          (0.0, 2.0, 0.0)),
-                                                     None,
-                                                     None,
+        let mut player_entity = spawn_dynamic_object(
+            commands,
+            create_sprite_bundle(game_textures.player.clone(), (0.9, 1.5), (0.0, 2.0, 0.0)),
+            None,
+            None,
         );
 
-        player_entity = spawn_solid_collider(commands,
-                                             player_entity,
-                                             Collider::round_cuboid(0.3, 0.3, 0.1),
-                                             Some(Friction::coefficient(3.)),
+        player_entity = spawn_solid_collider(
+            commands,
+            player_entity,
+            Collider::round_cuboid(0.3, 0.3, 0.1),
+            Some(Friction::coefficient(3.)),
         );
 
-        commands.entity(player_entity)
+        commands
+            .entity(player_entity)
             .insert(Player::default())
             .insert(Jumper::default())
             .insert(LivingBeing::default());
@@ -114,7 +122,7 @@ impl Plugin for PlayerPlugin {
                     .with_system(degrade_weapon)
                     .with_system(on_living_being_dead)
                     .with_system(fire_controller)
-                    .with_system(on_living_being_hit)
+                    .with_system(on_living_being_hit),
             )
             .add_event::<LivingBeingHitEvent>()
             .add_event::<LivingBeingDeathEvent>()
@@ -231,7 +239,8 @@ pub fn finish(
             match (players.get_single(), lines.get_single()) {
                 (Ok((player_entity, _)), Ok((line_entity, _))) => {
                     if (*h1 == player_entity && *h2 == line_entity)
-                        || (*h1 == line_entity && *h2 == player_entity) {
+                        || (*h1 == line_entity && *h2 == player_entity)
+                    {
                         state.set(AppState::EndMenu).unwrap();
                     }
                 }

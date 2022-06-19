@@ -6,8 +6,8 @@ use rand::Rng;
 use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
 use crate::Random;
 
-use super::{Bug, GameDirection, Jumper};
 use super::super::AppState;
+use super::{Bug, GameDirection, Jumper};
 
 const JUMP_PROBABILITY: f64 = 0.25;
 const CHANGE_DIRECTION_PROBABILITY: f64 = 0.25;
@@ -17,10 +17,7 @@ pub struct MonsterAiPlugin;
 
 impl Plugin for MonsterAiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_update(AppState::InGame)
-                .with_system(monster_walks)
-        )
+        app.add_system_set(SystemSet::on_update(AppState::InGame).with_system(monster_walks))
             .add_system_set(
                 SystemSet::new()
                     .with_run_criteria(FixedTimestep::step(ACTION_TIMESTEP))
@@ -43,10 +40,7 @@ fn monster_walks(mut monsters: Query<(&Bug, &mut Velocity)>) {
     }
 }
 
-fn monster_changes_direction(
-    mut monster_query: Query<&mut Bug>,
-    mut rng: ResMut<Random>,
-) {
+fn monster_changes_direction(mut monster_query: Query<&mut Bug>, mut rng: ResMut<Random>) {
     for mut monster in monster_query.iter_mut() {
         if should_change_direction(&mut rng) {
             monster.facing_direction = match monster.facing_direction {
@@ -57,7 +51,10 @@ fn monster_changes_direction(
     }
 }
 
-fn monster_jumps(mut monsters: Query<(&mut Jumper, &mut Velocity), With<Bug>>, mut rng: ResMut<Random>) {
+fn monster_jumps(
+    mut monsters: Query<(&mut Jumper, &mut Velocity), With<Bug>>,
+    mut rng: ResMut<Random>,
+) {
     for (mut jumper, mut velocity) in monsters.iter_mut() {
         if should_jump(&mut rng) {
             velocity.linvel = Vec2::new(0., jumper.jump_impulse);

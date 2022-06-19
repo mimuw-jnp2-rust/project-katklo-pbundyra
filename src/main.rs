@@ -4,8 +4,8 @@ use bevy::window::PresentMode;
 use game::GamePlugin;
 use menu::MenuPlugin;
 
-use crate::game::{GameAudioPlugin, GameTextures, MapPlugin, MonsterAiPlugin, PlayerPlugin, Level};
 use crate::game::Random;
+use crate::game::{GameAudioPlugin, GameTextures, Level, MapPlugin, MonsterAiPlugin, PlayerPlugin};
 
 mod game;
 mod menu;

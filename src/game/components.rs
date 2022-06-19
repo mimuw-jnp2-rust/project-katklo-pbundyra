@@ -1,6 +1,6 @@
 use bevy::prelude::*;
-use rand::{Rng, SeedableRng, thread_rng};
 use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng, SeedableRng};
 use rand_pcg::Pcg64;
 use rand_seeder::Seeder;
 
@@ -122,7 +122,8 @@ impl Random {
     pub fn make_generator_for_level(&mut self, level: usize) {
         let temp_rng: Pcg64 = Seeder::from(&self.seed).make_rng();
 
-        let level_seed: String = temp_rng.sample_iter(&Alphanumeric)
+        let level_seed: String = temp_rng
+            .sample_iter(&Alphanumeric)
             .take(5 * level)
             .map(char::from)
             .collect();
@@ -145,4 +146,3 @@ pub struct LivingBeing;
 
 #[derive(Component)]
 pub struct PhantomEntity;
-
