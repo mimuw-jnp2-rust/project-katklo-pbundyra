@@ -62,7 +62,7 @@ fn back_to_main_menu_controls(
     mut app_state: ResMut<State<AppState>>,
 ) {
     if *app_state.current() == AppState::InGame && keys.just_pressed(KeyCode::Escape) {
-        app_state.set(AppState::MainMenu).unwrap();
+        app_state.set(AppState::StopMenu).unwrap();
         keys.reset(KeyCode::Escape);
     }
 }

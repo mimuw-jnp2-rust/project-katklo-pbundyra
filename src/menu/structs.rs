@@ -17,7 +17,44 @@ pub struct MenuTextures {
     pub exit: Handle<Image>,
     pub main: Handle<Image>,
     pub retry: Handle<Image>,
+    pub positive: Vec<Handle<Image>>,
+    pub negative: Vec<Handle<Image>>,
+    pub neutral: Vec<Handle<Image>>,
     pub font: Handle<Font>,
+}
+
+impl MenuTextures {
+    pub fn load(asset_server: Res<AssetServer>) -> Self {
+        MenuTextures {
+            play: asset_server.load("menu/play.png"),
+            exit: asset_server.load("menu/exit.png"),
+            main: asset_server.load("menu/main.png"),
+            retry: asset_server.load("menu/retry.png"),
+            positive: vec![asset_server.load("menu/positive1.png"),
+                           asset_server.load("menu/positive2.png"),
+                           asset_server.load("menu/positive3.png"),
+                           asset_server.load("menu/positive4.png"),
+                           asset_server.load("menu/positive5.png"),
+                           asset_server.load("menu/positive6.png"),
+            ],
+            negative: vec![asset_server.load("menu/negative1.png"),
+                           asset_server.load("menu/negative2.png"),
+                           asset_server.load("menu/negative3.png"),
+                           asset_server.load("menu/negative4.png"),
+                           asset_server.load("menu/negative5.png"),
+                           asset_server.load("menu/negative6.png"),
+                           asset_server.load("menu/negative7.png"),
+                           asset_server.load("menu/negative8.png"),
+                           asset_server.load("menu/negative9.png"),
+                           asset_server.load("menu/negative10.png"),
+                           asset_server.load("menu/negative11.png"),
+                           asset_server.load("menu/negative12.png"),
+                           asset_server.load("menu/negative13.png"),
+            ],
+            neutral: vec![asset_server.load("menu/neutral1.png")],
+            font: asset_server.load("fonts/FiraSans-LightItalic.ttf"),
+        }
+    }
 }
 
 pub struct MenuData {

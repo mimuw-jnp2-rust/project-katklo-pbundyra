@@ -1,14 +1,30 @@
 use bevy::prelude::*;
+use rand::{Rng, thread_rng};
 
 use crate::{AppState, Level, Random};
 use crate::menu::structs::{InputText, MenuButton, MenuColors, MenuData, MenuTextures};
 
-pub fn setup(mut commands: Commands, colors: Res<MenuColors>, textures: Res<MenuTextures>,
-             text: &'static str, buttons: Vec<(&'static str, MenuButton)>) {
+pub fn setup_level_end(mut commands: Commands, colors: Res<MenuColors>, textures: Res<MenuTextures>, buttons: Vec<(&'static str, MenuButton)>, is_positive: Option<bool>, level: usize) {
     let menu_entity = commands
         .spawn_bundle(menu_bundle(&colors))
         .with_children(|parent| {
-            parent.spawn_bundle(main_text_bundle(&colors, &textures, text));
+            let mut title = String::from("Level ");
+                title.push_str(&level.to_string());
+
+            let images: &Vec<Handle<Image>> =
+            match is_positive {
+                Some(true) => { title.push_str(": success");
+                    &textures.positive }
+                Some(false) => { title.push_str(": fail");
+                    &textures.negative }
+                None => { title.push_str(" stopped");
+                    &textures.neutral }
+            };
+
+            parent.spawn_bundle(main_text_bundle(&colors, &textures, &title));
+
+            let rand: usize = thread_rng().gen_range(0..images.len());
+            parent.spawn_bundle(image_bundle(images[rand].clone()));
 
             for (text, but) in buttons {
                 spawn_button(&colors, &textures, parent, text, but);
@@ -19,8 +35,8 @@ pub fn setup(mut commands: Commands, colors: Res<MenuColors>, textures: Res<Menu
     insert_menu_data(commands, menu_entity);
 }
 
-pub fn setup_with_input(mut commands: Commands, colors: Res<MenuColors>, textures: Res<MenuTextures>,
-                        text: &'static str, buttons: Vec<(&'static str, MenuButton)>) {
+pub fn setup_main(mut commands: Commands, colors: Res<MenuColors>, textures: Res<MenuTextures>,
+                  text: &'static str, buttons: Vec<(&'static str, MenuButton)>) {
     let menu_entity = commands
         .spawn_bundle(menu_bundle(&colors))
         .with_children(|parent| {
@@ -155,6 +171,19 @@ fn button_icon_bundle(icon: Handle<Image>) -> ImageBundle {
             ..default()
         },
         image: UiImage(icon),
+        ..default()
+    }
+}
+
+fn image_bundle(image: Handle<Image>) -> ImageBundle {
+    ImageBundle {
+        style: Style {
+            max_size: Size::new(Val::Px(800.), Val::Auto),
+            min_size: Size::new(Val::Px(410.), Val::Auto),
+            margin: Rect::all(Val::Px(20.0)),
+            ..default()
+        },
+        image: UiImage(image),
         ..default()
     }
 }

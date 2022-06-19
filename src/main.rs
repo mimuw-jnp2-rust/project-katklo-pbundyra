@@ -4,7 +4,7 @@ use bevy::window::PresentMode;
 use game::GamePlugin;
 use menu::MenuPlugin;
 
-use crate::game::{GameAudioPlugin, GameTextures, MapPlugin, MonsterAiPlugin, PlayerPlugin, Level};
+use crate::game::{GameAudioPlugin, GameTextures, Level, MapPlugin, MonsterAiPlugin, PlayerPlugin};
 use crate::game::Random;
 
 mod game;
@@ -14,8 +14,9 @@ mod menu;
 pub enum AppState {
     InGame,
     MainMenu,
-    DeathMenu,
-    EndMenu,
+    FailMenu,
+    WinMenu,
+    StopMenu
 }
 
 fn main() {
