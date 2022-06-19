@@ -80,20 +80,31 @@ pub fn spawn_weak_bullet(
 pub fn destroy_bullet_on_contact(
     mut commands: Commands,
     bullets: Query<Entity, With<Bullet>>,
-    mut collision_events: EventReader<CollisionEvent>,
     players: Query<Entity, With<Player>>,
+    mut collision_events: EventReader<CollisionEvent>,
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-            if let Ok(player) = players.get_single() {
-                for bullet in bullets.iter() {
-                    if (*ent1 == bullet && *ent2 != player) || (*ent2 == bullet && *ent1 != player)
-                    {
-                        commands.entity(bullet).despawn_recursive();
-                    }
-                }
+            match (bullets.get(*ent1), bullets.get(*ent2)) {
+                (Ok(bullet), _) | (_, Ok(bullet)) => match (players.get(*ent1), players.get(*ent2))
+                {
+                    (Ok(_), _) | (_, Ok(_)) => {}
+                    _ => commands.entity(bullet).despawn_recursive(),
+                },
+                _ => {}
             }
         }
+
+        // if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
+        //     if let Ok(player) = players.get_single() {
+        //         for bullet in bullets.iter() {
+        //             if (*ent1 == bullet && *ent2 != player) || (*ent2 == bullet && *ent1 != player)
+        //             {
+        //                 commands.entity(bullet).despawn_recursive();
+        //             }
+        //         }
+        //     }
+        // }
     }
 }
 
