@@ -4,6 +4,7 @@ use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
 use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
+use crate::game::Powerup;
 use crate::Random;
 
 use super::super::AppState;
@@ -67,13 +68,17 @@ fn monster_changes_direction_randomly(mut monster_query: Query<&mut Bug>, mut rn
 fn monster_contact_detection(
     monsters: Query<Entity, With<Bug>>,
     mut collision_events: EventReader<CollisionEvent>,
-    mut send_monster_walked_into_wall: EventWriter<MonsterCollisionEvent>,
+    mut send_monster_collision: EventWriter<MonsterCollisionEvent>,
+    powerups: Query<Entity, With<Powerup>>,
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
             match (monsters.get(*ent1), monsters.get(*ent2)) {
                 (Ok(monster), _) | (_, Ok(monster)) => {
-                    send_monster_walked_into_wall.send(MonsterCollisionEvent { entity: monster })
+                    match (powerups.get(*ent1), powerups.get(*ent2)) {
+                        (Ok(_), _) | (_, Ok(_)) => {}
+                        _ => send_monster_collision.send(MonsterCollisionEvent { entity: monster }),
+                    }
                 }
                 _ => {}
             }
