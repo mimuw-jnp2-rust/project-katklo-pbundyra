@@ -33,12 +33,12 @@ pub fn spawn_static_collider_object<T>(commands: &mut Commands, left_down: (f32,
         ))
         .insert(RigidBody::Fixed)
         .insert(Collider::cuboid(half_width, half_height))
+        .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(kind);
 }
 
 pub fn spawn_dynamic_object(commands: &mut Commands, sprite: SpriteBundle, x_velocity: Option<f32>,
-                             gravity_scale: Option<f32>) -> Entity {
-
+                            gravity_scale: Option<f32>) -> Entity {
     commands
         .spawn_bundle(sprite)
         .insert(RigidBody::Dynamic)

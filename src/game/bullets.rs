@@ -70,11 +70,12 @@ pub fn destroy_bullet_on_contact(
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(h1, h2, _) = collision_event {
-            for bullet in bullets.iter() {
-                if (*h1 == bullet && !players.iter().any(|b| *h2 == b))
-                    || (*h2 == bullet && !players.iter().any(|b| *h1 == b))
-                {
-                    commands.entity(bullet).despawn_recursive();
+            if let Ok(player_entity) = players.get_single() {
+                for bullet in bullets.iter() {
+                    if (*h1 == bullet && *h2 != player_entity)
+                        || (*h2 == bullet && *h1 != player_entity) {
+                        commands.entity(bullet).despawn_recursive();
+                    }
                 }
             }
         }

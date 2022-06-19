@@ -43,7 +43,7 @@ pub fn drink_coffee(
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(h1, h2, _) = collision_event {
-            for (player_entity, mut player) in players.iter_mut() {
+            if let Ok((player_entity, mut player)) = players.get_single_mut() {
                 for coffee in coffees.iter() {
                     if (*h1 == player_entity && *h2 == coffee)
                         || (*h1 == coffee && *h2 == player_entity) {
@@ -58,7 +58,7 @@ pub fn drink_coffee(
 }
 
 pub fn finish_coffee(mut players: Query<&mut Player>, time: Res<Time>) {
-    for mut player in players.iter_mut() {
+    if let Ok(mut player) = players.get_single_mut() {
         player.coffee_timer.tick(time.delta());
         if player.coffee_timer.finished() {
             player.decrease_speed();
@@ -76,7 +76,7 @@ pub fn learn_rust(
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(h1, h2, _) = collision_event {
-            for (player_entity, mut player) in players.iter_mut() {
+            if let Ok((player_entity, mut player)) = players.get_single_mut() {
                 for rust in rusts.iter() {
                     if (*h1 == player_entity && *h2 == rust)
                         || (*h1 == rust && *h2 == player_entity)
@@ -92,7 +92,7 @@ pub fn learn_rust(
 }
 
 pub fn degrade_weapon(mut players: Query<&mut Player>, time: Res<Time>) {
-    for mut player in players.iter_mut() {
+    if let Ok(mut player) = players.get_single_mut() {
         player.weapon_upgrade_timer.tick(time.delta());
         if player.weapon_upgrade_timer.finished() {
             player.degrade_weapon();

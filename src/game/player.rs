@@ -140,7 +140,7 @@ pub fn player_jumps(
     keyboard_input: Res<Input<KeyCode>>,
     mut players: Query<(&mut Jumper, &mut Velocity), With<Player>>,
 ) {
-    for (mut jumper, mut velocity) in players.iter_mut() {
+    if let Ok((mut jumper, mut velocity)) = players.get_single_mut() {
         if keyboard_input.pressed(KeyCode::Up) && !jumper.is_jumping {
             velocity.linvel = Vec2::new(0., jumper.jump_impulse);
             jumper.is_jumping = true
@@ -152,7 +152,7 @@ pub fn player_movement(
     keyboard_input: Res<Input<KeyCode>>,
     mut players: Query<(&mut Player, &mut Velocity)>,
 ) {
-    for (mut player, mut velocity) in players.iter_mut() {
+    if let Ok((mut player, mut velocity)) = players.get_single_mut() {
         if keyboard_input.pressed(KeyCode::Left) {
             player.direction = GameDirection::Left;
             velocity.linvel = Vec2::new(-player.speed, velocity.linvel.y);

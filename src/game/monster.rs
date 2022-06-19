@@ -34,7 +34,7 @@ fn spawn_bug(commands: &mut Commands, game_textures: &Res<GameTextures>, x: f32,
 }
 
 pub fn death_by_enemy(
-    mut players: Query<Entity, With<Player>>,
+    players: Query<Entity, With<Player>>,
     enemies: Query<Entity, With<Enemy>>,
     mut collision_events: EventReader<CollisionEvent>,
     mut send_dead_event: EventWriter<LivingBeingDeathEvent>,
@@ -42,7 +42,7 @@ pub fn death_by_enemy(
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-            for player in players.iter_mut() {
+            if let Ok(player) = players.get_single() {
                 for enemy in enemies.iter() {
                     if (*ent1 == player && *ent2 == enemy) || (*ent1 == enemy && *ent2 == player) {
                         send_dead_event.send(LivingBeingDeathEvent { entity: player });
