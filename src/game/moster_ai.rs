@@ -86,7 +86,6 @@ fn monster_change_direction_on_contact(
     mut monster_query: Query<&mut Bug>,
 ) {
     for event in events.iter() {
-        // TODO sprawdzic czy mozna zrobic cos podobnego dla innych eventow
         if let Ok(monster) = monster_query.get_mut(event.entity) {
             change_direction(monster);
         }
