@@ -10,7 +10,7 @@ use super::utils::*;
 
 const BEGIN_WIDTH: usize = 10;
 pub const SAFE_ZONE_WIDTH: usize = 5;
-pub const GAME_WIDTH: usize = 150;
+pub const GAME_WIDTH: usize = 20;
 const MAP_WIDTH: usize = GAME_WIDTH + BEGIN_WIDTH + 1;
 const WALL_HEIGHT: f32 = 20.0;
 

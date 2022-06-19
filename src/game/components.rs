@@ -105,7 +105,7 @@ impl Random {
     }
 
     pub fn add_char(&mut self, c: char) {
-        if self.can_change {
+        if self.can_change && self.seed.len() <= 15 {
             self.seed.push(c);
         }
     }
@@ -120,7 +120,24 @@ impl Random {
         self.seed = Random::generate_random_seed();
     }
 
-    pub fn reset(&mut self) {
-        self.generator = Seeder::from(&self.seed).make_rng();
+    pub fn make_generator_for_level(&mut self, level: usize) {
+        let temp_rng: Pcg64 = Seeder::from(&self.seed).make_rng();
+
+        let aaa: String = temp_rng.sample_iter(&Alphanumeric)
+            .take(5 * level)
+            .map(char::from)
+            .collect();
+
+        self.generator = Seeder::from(aaa).make_rng();
+    }
+}
+
+pub struct Level {
+    pub level: usize,
+}
+
+impl Level {
+    pub fn new() -> Self {
+        Self { level: 0 }
     }
 }

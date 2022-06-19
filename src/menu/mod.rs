@@ -36,6 +36,7 @@ fn menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         play: asset_server.load("menu/play.png"),
         exit: asset_server.load("menu/exit.png"),
         main: asset_server.load("menu/main.png"),
+        retry: asset_server.load("menu/retry.png"),
         font: asset_server.load("fonts/FiraSans-LightItalic.ttf"),
     });
 }
@@ -43,14 +44,14 @@ fn menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 fn setup_main_menu(mut random: ResMut<Random>, commands: Commands,
                    colors: Res<MenuColors>, textures: Res<MenuTextures>) {
     *random = Random::new();
-    setup_with_input(commands, colors, textures, "Mario MIM", vec![("New game", MenuButton::Play), ("Quit", MenuButton::Quit)]);
+    setup_with_input(commands, colors, textures, "Mario MIM", vec![("New game", MenuButton::NewGame), ("Quit", MenuButton::Quit)]);
 }
 
 fn setup_death_menu(commands: Commands, colors: Res<MenuColors>, textures: Res<MenuTextures>) {
-    setup(commands, colors, textures, "Segmentation fault (core dumped)", vec![("Try again", MenuButton::Play), ("Go to main menu", MenuButton::MainMenu)]);
+    setup(commands, colors, textures, "Segmentation fault (core dumped)", vec![("Try again level", MenuButton::RestartLevel), ("Start from beginning", MenuButton::RestartGame), ("Go to main menu", MenuButton::MainMenu)]);
 }
 
 fn setup_end_menu(commands: Commands, colors: Res<MenuColors>, textures: Res<MenuTextures>) {
-    setup(commands, colors, textures, "Process finished with exit code 0", vec![("Play again", MenuButton::Play), ("Go to main menu", MenuButton::MainMenu)]);
+    setup(commands, colors, textures, "Process finished with exit code 0", vec![("Next level", MenuButton::NextLevel), ("Go to main menu", MenuButton::MainMenu)]);
 }
 

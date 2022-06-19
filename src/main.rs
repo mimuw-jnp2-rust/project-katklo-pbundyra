@@ -4,7 +4,7 @@ use bevy::window::PresentMode;
 use game::GamePlugin;
 use menu::MenuPlugin;
 
-use crate::game::{GameTextures, MapPlugin, MonsterAiPlugin, PlayerPlugin};
+use crate::game::{GameTextures, Level, MapPlugin, MonsterAiPlugin, PlayerPlugin};
 use crate::game::Random;
 
 mod game;
@@ -31,6 +31,7 @@ fn main() {
         .add_startup_system(setup)
         .insert_resource(ClearColor(Color::BEIGE))
         .insert_resource(Random::new())
+        .insert_resource(Level::new())
         .add_state(AppState::MainMenu)
         .add_plugin(PlayerPlugin)
         .add_plugin(MapPlugin)

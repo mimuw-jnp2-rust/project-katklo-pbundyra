@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{AppState, Random};
+use crate::{AppState, Level, Random};
 use crate::menu::structs::{InputText, MenuButton, MenuColors, MenuData, MenuTextures};
 
 pub fn setup(mut commands: Commands, colors: Res<MenuColors>, textures: Res<MenuTextures>,
@@ -54,7 +54,8 @@ fn spawn_button(colors: &Res<MenuColors>, textures: &Res<MenuTextures>,
         .spawn_bundle(button_bundle(&colors))
         .with_children(|parent| {
             match but {
-                MenuButton::Play => { parent.spawn_bundle(button_icon_bundle(textures.play.clone())); }
+                MenuButton::NewGame | MenuButton::NextLevel => { parent.spawn_bundle(button_icon_bundle(textures.play.clone())); }
+                MenuButton::RestartLevel | MenuButton::RestartGame => { parent.spawn_bundle(button_icon_bundle(textures.retry.clone())); }
                 MenuButton::Quit => { parent.spawn_bundle(button_icon_bundle(textures.exit.clone())); }
                 MenuButton::MainMenu => { parent.spawn_bundle(button_icon_bundle(textures.main.clone())); }
                 _ => {}
@@ -97,7 +98,7 @@ fn menu_bundle(materials: &Res<MenuColors>) -> NodeBundle {
 fn button_bundle(materials: &Res<MenuColors>) -> ButtonBundle {
     ButtonBundle {
         style: Style {
-            size: Size::new(Val::Px(380.0), Val::Px(65.0)),
+            size: Size::new(Val::Px(410.0), Val::Px(65.0)),
             margin: Rect::all(Val::Px(20.0)),
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
@@ -163,15 +164,20 @@ pub fn cleanup_menu(mut commands: Commands, menu_data: Res<MenuData>) {
     commands.entity(menu_data.camera_entity).despawn_recursive();
 }
 
-pub fn start_game(state: &mut ResMut<State<AppState>>, rng: &mut ResMut<Random>) {
-    if rng.seed.is_empty() {
-        rng.new_random_seed();
-    }
-
-    rng.reset();
+pub fn start_game_for_level(state: &mut ResMut<State<AppState>>, rng: &mut ResMut<Random>, level: &mut ResMut<Level>) {
+    rng.make_generator_for_level(level.level);
 
     state
         .set(AppState::InGame)
         .expect("Couldn't switch state to InGame")
+}
+
+pub fn start_new_game(state: &mut ResMut<State<AppState>>, rng: &mut ResMut<Random>, level: &mut ResMut<Level>) {
+    if rng.seed.is_empty() {
+        rng.new_random_seed();
+    }
+
+    level.level = 1;
+    start_game_for_level(state, rng, level);
 }
 

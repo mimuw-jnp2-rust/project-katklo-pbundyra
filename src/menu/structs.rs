@@ -2,17 +2,21 @@ use bevy::prelude::*;
 
 #[derive(Component)]
 pub enum MenuButton {
-    Play,
+    NewGame,
     Quit,
     MainMenu,
     SeedGenerate,
     InputButton,
+    NextLevel,
+    RestartLevel,
+    RestartGame,
 }
 
 pub struct MenuTextures {
     pub play: Handle<Image>,
     pub exit: Handle<Image>,
     pub main: Handle<Image>,
+    pub retry: Handle<Image>,
     pub font: Handle<Font>,
 }
 
