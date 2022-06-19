@@ -58,7 +58,7 @@ impl Player {
 
         player_entity = spawn_solid_collider(commands,
                                              player_entity,
-                                             Collider::round_cuboid(0.2, 0.2, 0.1),
+                                             Collider::round_cuboid(0.3, 0.3, 0.1),
                                              Some(Friction::coefficient(3.)),
         );
 

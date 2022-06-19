@@ -122,12 +122,12 @@ impl Random {
     pub fn make_generator_for_level(&mut self, level: usize) {
         let temp_rng: Pcg64 = Seeder::from(&self.seed).make_rng();
 
-        let aaa: String = temp_rng.sample_iter(&Alphanumeric)
+        let level_seed: String = temp_rng.sample_iter(&Alphanumeric)
             .take(5 * level)
             .map(char::from)
             .collect();
 
-        self.generator = Seeder::from(aaa).make_rng();
+        self.generator = Seeder::from(level_seed).make_rng();
     }
 }
 
