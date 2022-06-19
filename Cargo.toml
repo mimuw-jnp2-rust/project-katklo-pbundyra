@@ -1,12 +1,29 @@
 [package]
 name = "mario_mim"
 version = "0.1.0"
+authors = [
+    "Katarzyna Kloc <kasiakloc00@gmail.com>",
+    "Patryk Bundyra <bundyradev@gmail.com>",
+]
 edition = "2021"
 
 [dependencies]
-bevy = "0.7"
-bevy_rapier2d = "0.13.2"
-rand = "*"
+bevy = { version = "0.7", features = [
+    "render",
+    "animation",
+    "bevy_winit",
+    "bevy_gilrs",
+    "png",
+    "hdr",
+    "filesystem_watcher",
+    "x11"
+] }
+bevy_rapier2d = "0.13"
+bevy_kira_audio = { version = "0.9", features = ["ogg", "wav"] }
+rand = "0.8.5"
+rand_pcg = "0.3.1"
+rand_seeder = "0.2.3"
+wasm-bindgen = "0.2"
 
 [profile.dev.package.bevy_rapier2d]
 opt-level = 3
