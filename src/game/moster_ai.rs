@@ -1,9 +1,9 @@
 use bevy::core::FixedTimestep;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use rand::{thread_rng, Rng};
-use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
+use rand::Rng;
 
+use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
 use crate::Random;
 
 use super::{Bug, GameDirection, Jumper};
@@ -45,9 +45,10 @@ fn monster_walks(mut monsters: Query<(&Bug, &mut Velocity)>) {
 
 fn monster_changes_direction(
     mut monster_query: Query<&mut Bug>,
+    mut rng: ResMut<Random>,
 ) {
     for mut monster in monster_query.iter_mut() {
-        if should_change_direction() {
+        if should_change_direction(&mut rng) {
             monster.facing_direction = match monster.facing_direction {
                 GameDirection::Left => GameDirection::Right,
                 GameDirection::Right => GameDirection::Left,
@@ -65,8 +66,8 @@ fn monster_jumps(mut monsters: Query<(&mut Jumper, &mut Velocity), With<Bug>>, m
     }
 }
 
-fn should_change_direction() -> bool {
-    thread_rng().gen_bool(CHANGE_DIRECTION_PROBABILITY)
+fn should_change_direction(rng: &mut ResMut<Random>) -> bool {
+    rng.generator.gen_bool(CHANGE_DIRECTION_PROBABILITY)
 }
 
 fn should_jump(rng: &mut ResMut<Random>) -> bool {

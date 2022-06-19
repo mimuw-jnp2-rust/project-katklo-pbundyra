@@ -1,17 +1,17 @@
 use bevy::app::AppExit;
 use bevy::prelude::*;
 
-use crate::{AppState, Random};
+use crate::{AppState, Level, Random};
 use crate::menu::structs::{InputText, MenuButton, MenuColors, SelectedOption};
-use crate::menu::utils::start_game;
+use crate::menu::utils::{start_game_for_level, start_new_game};
 
 pub fn button_press_system(mut commands: Commands, mut state: ResMut<State<AppState>>,
                            buttons: Query<(&Interaction, &MenuButton, Entity, Changed<Interaction>), With<Button>>,
-                           mut exit: EventWriter<AppExit>, mut rng: ResMut<Random>) {
+                           mut exit: EventWriter<AppExit>, mut rng: ResMut<Random>, mut level: ResMut<Level>) {
     for (interaction, button, entity, _) in buttons.iter() {
         if *interaction == Interaction::Clicked {
             match button {
-                MenuButton::Play => start_game(&mut state, &mut rng),
+                MenuButton::NewGame => start_new_game(&mut state, &mut rng, &mut level),
                 MenuButton::Quit => exit.send(AppExit),
                 MenuButton::MainMenu => state
                     .set(AppState::MainMenu)
@@ -22,6 +22,12 @@ pub fn button_press_system(mut commands: Commands, mut state: ResMut<State<AppSt
                     rng.can_change = true;
                     commands.entity(entity).insert(SelectedOption);
                 }
+                MenuButton::NextLevel => {
+                    level.level += 1;
+                    start_game_for_level(&mut state, &mut rng, &mut level);
+                }
+                MenuButton::RestartLevel => start_game_for_level(&mut state, &mut rng, &mut level),
+                MenuButton::RestartGame => start_new_game(&mut state, &mut rng, &mut level),
             };
         }
     }

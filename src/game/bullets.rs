@@ -4,8 +4,7 @@ use bevy_rapier2d::prelude::*;
 use crate::game::{Bullet, Enemy, Player, Weapon};
 use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
 use crate::GameTextures;
-
-use super::{GameDirection};
+use super::GameDirection;
 use super::utils::*;
 
 pub struct ShootEvent;
@@ -32,15 +31,18 @@ fn spawn_bullet(commands: &mut Commands, texture: Handle<Image>, bullet_type: We
             (def_vel, 0.75)
         }
     };
-    spawn_object(commands,
-                 create_sprite_bundle(texture, (0.5, 0.2), (options.x + spawn_x, options.y, 0.0)),
-                 Some(vel_x),
-                 Some(0.0),
-                 Collider::round_cuboid(0.0, 0.0, 0.0),
-                 None,
-                 Bullet,
-                 bullet_type,
+
+    let mut bullet_entity = spawn_dynamic_object(commands,
+                                                 create_sprite_bundle(texture, (0.5, 0.2), (options.x + spawn_x, options.y, 0.0)),
+                                                 Some(vel_x),
+                                                 Some(0.0),
     );
+
+    bullet_entity = spawn_sensor_collider(commands, bullet_entity, Collider::round_cuboid(0.0, 0.0, 0.0));
+
+    commands.entity(bullet_entity)
+        .insert(Bullet)
+        .insert(bullet_type);
 }
 
 pub fn spawn_strong_bullet(
@@ -66,16 +68,12 @@ pub fn destroy_bullet_on_contact(
     players: Query<Entity, With<Player>>,
 ) {
     for collision_event in collision_events.iter() {
-        if let CollisionEvent::Started(h1, h2, _) = collision_event {
-            for bullet in bullets.iter() {
-                if (*h1 == bullet
-                    && !players.iter().any(|b| *h2 == b)
-                    && !bullets.iter().any(|b| *h2 == b))
-                    || (*h2 == bullet
-                    && !players.iter().any(|b| *h1 == b)
-                    && !bullets.iter().any(|b| *h1 == b))
-                {
-                    commands.entity(bullet).despawn_recursive();
+        if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
+            if let Ok(player) = players.get_single() {
+                for bullet in bullets.iter() {
+                    if (*ent1 == bullet && *ent2 != player) || (*ent2 == bullet && *ent1 != player) {
+                        commands.entity(bullet).despawn_recursive();
+                    }
                 }
             }
         }

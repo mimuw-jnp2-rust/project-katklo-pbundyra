@@ -1,17 +1,17 @@
 use std::time::Duration;
-use bevy::core::FixedTimestep;
+
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::game::{camera_follow_player, degrade_weapon, finish_coffee, FastShootEvent, FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, ShootEvent, Weapon, COFFEE_DURATION, RUST_DURATION};
-use crate::game::powerups::{drink_coffee, learn_rust};
+use crate::game::{camera_follow_player, COFFEE_DURATION, degrade_weapon, FastShootEvent, finish_coffee, FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, RUST_DURATION, ShootEvent, Weapon};
 use crate::game::bullets::{BulletOptions, destroy_bullet_on_contact, kill_enemy, spawn_strong_bullet, spawn_weak_bullet};
 use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent, on_living_being_dead, on_living_being_hit};
 use crate::game::monster::death_by_enemy;
+use crate::game::powerups::{drink_coffee, learn_rust};
 use crate::GameTextures;
 
 use super::camera::new_camera_2d;
-use super::components::{LivingBeing, Jumper};
+use super::components::{Jumper, LivingBeing};
 use super::super::AppState;
 use super::utils::*;
 
@@ -21,7 +21,6 @@ pub struct DeadPlayerEvent {
     pub entity: Entity,
 }
 
-const SHOOTING_TIMESTEP: f64 = 0.1;
 const PLAYER_NORMAL_SPEED: f32 = 7.0;
 const PLAYER_INCREASE_SPEED: f32 = 11.0;
 
@@ -49,17 +48,24 @@ impl Default for Player {
 #[allow(dead_code)]
 impl Player {
     pub fn spawn(commands: &mut Commands, game_textures: Res<GameTextures>) {
-        spawn_object(commands,
-                     create_sprite_bundle(game_textures.player.clone(),
-                                          (0.9, 1.5),
-                                          (0.0, 2.0, 0.0)),
-                     None,
-                     None,
-                     Collider::round_cuboid(0.2, 0.2, 0.1),
-                     Some(Friction::coefficient(3.)),
-                     Player::default(),
-                     LivingBeing::default(),
+        let mut player_entity = spawn_dynamic_object(commands,
+                                                     create_sprite_bundle(game_textures.player.clone(),
+                                                                          (0.9, 1.5),
+                                                                          (0.0, 2.0, 0.0)),
+                                                     None,
+                                                     None,
         );
+
+        player_entity = spawn_solid_collider(commands,
+                                             player_entity,
+                                             Collider::round_cuboid(0.3, 0.3, 0.1),
+                                             Some(Friction::coefficient(3.)),
+        );
+
+        commands.entity(player_entity)
+            .insert(Player::default())
+            .insert(Jumper::default())
+            .insert(LivingBeing::default());
     }
 
     pub fn change_weapon(&mut self) {
@@ -134,7 +140,7 @@ pub fn player_jumps(
     keyboard_input: Res<Input<KeyCode>>,
     mut players: Query<(&mut Jumper, &mut Velocity), With<Player>>,
 ) {
-    for (mut jumper, mut velocity) in players.iter_mut() {
+    if let Ok((mut jumper, mut velocity)) = players.get_single_mut() {
         if keyboard_input.pressed(KeyCode::Up) && !jumper.is_jumping {
             velocity.linvel = Vec2::new(0., jumper.jump_impulse);
             jumper.is_jumping = true
@@ -146,7 +152,7 @@ pub fn player_movement(
     keyboard_input: Res<Input<KeyCode>>,
     mut players: Query<(&mut Player, &mut Velocity)>,
 ) {
-    for (mut player, mut velocity) in players.iter_mut() {
+    if let Ok((mut player, mut velocity)) = players.get_single_mut() {
         if keyboard_input.pressed(KeyCode::Left) {
             player.direction = GameDirection::Left;
             velocity.linvel = Vec2::new(-player.speed, velocity.linvel.y);
@@ -214,21 +220,22 @@ pub fn jump_reset(
     }
 }
 
-// TODO zrobić lepiej przy okazji collision eventow
 pub fn finish(
-    mut players: Query<(Entity, &mut Player)>,
-    mut lines: Query<(Entity, &mut FinishLine)>,
+    players: Query<(Entity, &mut Player)>,
+    lines: Query<(Entity, &mut FinishLine)>,
     mut contact_events: EventReader<CollisionEvent>,
     mut state: ResMut<State<AppState>>,
 ) {
     for contact_event in contact_events.iter() {
-        for (entity1, _) in players.iter_mut() {
-            for (entity2, _) in lines.iter_mut() {
-                if let CollisionEvent::Started(h1, h2, _) = contact_event {
-                    if (*h1 == entity1 && *h2 == entity2) || (*h1 == entity2 && *h2 == entity1) {
+        if let CollisionEvent::Started(h1, h2, _) = contact_event {
+            match (players.get_single(), lines.get_single()) {
+                (Ok((player_entity, _)), Ok((line_entity, _))) => {
+                    if (*h1 == player_entity && *h2 == line_entity)
+                        || (*h1 == line_entity && *h2 == player_entity) {
                         state.set(AppState::EndMenu).unwrap();
                     }
                 }
+                _ => {}
             }
         }
     }
