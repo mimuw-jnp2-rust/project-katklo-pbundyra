@@ -10,11 +10,10 @@ use crate::game::living_being::{
     on_living_being_dead, on_living_being_hit, LivingBeingDeathEvent, LivingBeingHitEvent,
 };
 use crate::game::monster::death_by_enemy;
-use crate::game::powerups::{drink_coffee, learn_rust};
 use crate::game::{
-    camera_follow_player, finish_coffee, finish_rust, AudioDeadPlayerEvent, AudioFastShootEvent,
-    AudioShootEvent, Bullet, FastShootEvent, FinishLine, GameDirection, LastDespawnedEntity,
-    PhantomEntity, ShootEvent, Weapon, COFFEE_DURATION, RUST_DURATION,
+    camera_follow_player, AudioDeadPlayerEvent, AudioFastShootEvent, AudioShootEvent, Bullet,
+    FastShootEvent, FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, ShootEvent,
+    Weapon, COFFEE_DURATION, RUST_DURATION,
 };
 use crate::GameTextures;
 

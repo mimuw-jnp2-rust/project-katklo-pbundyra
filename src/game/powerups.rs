@@ -70,7 +70,7 @@ fn spawn_rust(commands: &mut Commands, game_textures: &Res<GameTextures>, x: f32
 
 //TODO moze da sie zrobic generyka na powerup
 pub fn drink_coffee(
-    mut players: Query<(Entity, &mut Player)>,
+    players: Query<(Entity, &mut Player)>,
     coffees: Query<Entity, With<Coffee>>,
     mut collision_events: EventReader<CollisionEvent>,
     mut send_event: EventWriter<CoffeeEvent>,
@@ -117,7 +117,7 @@ pub fn finish_coffee(mut players: Query<&mut Player>, time: Res<Time>) {
 }
 
 pub fn learn_rust(
-    mut players: Query<(Entity, &mut Player)>,
+    players: Query<(Entity, &mut Player)>,
     rusts: Query<Entity, With<Rust>>,
     mut collision_events: EventReader<CollisionEvent>,
     mut send_event: EventWriter<RustEvent>,
