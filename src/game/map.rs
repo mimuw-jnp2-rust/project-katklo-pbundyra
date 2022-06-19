@@ -14,9 +14,6 @@ pub const GAME_WIDTH: usize = 150;
 const MAP_WIDTH: usize = GAME_WIDTH + BEGIN_WIDTH;
 const WALL_HEIGHT: f32 = 20.0;
 
-const TILE_SIZE: f32 = 1.0;
-const HALF_TILE_SIZE: f32 = TILE_SIZE / 2.0;
-
 pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
@@ -27,12 +24,17 @@ impl Plugin for MapPlugin {
     }
 }
 
-fn generate_map(mut rng: ResMut<Random>, mut commands: Commands, game_textures: Res<GameTextures>) {
+fn generate_map(
+    mut rng: ResMut<Random>,
+    mut commands: Commands,
+    game_textures: Res<GameTextures>,
+    level: Res<Level>,
+) {
     let world = create_world(&mut rng);
     add_floor(&mut commands, &game_textures, &world);
     add_start_and_finish_line(&mut commands, &game_textures, &world);
-    add_enemies(&mut commands, &world, &game_textures, &mut rng);
-    add_powerups(&mut commands, &world, game_textures, &mut rng);
+    add_enemies(&mut commands, &world, &game_textures, &mut rng, &level);
+    add_powerups(&mut commands, &world, game_textures, &mut rng, &level);
 }
 
 fn create_world(rng: &mut ResMut<Random>) -> Vec<(i32, usize)> {
@@ -64,7 +66,7 @@ fn get_next_height(rng: &mut ResMut<Random>, current_height: usize) -> usize {
 }
 
 fn get_random_height_delta(rng: &mut ResMut<Random>) -> i32 {
-    match rng.generator.gen_range(0..=100) {
+    match rng.generator.gen_range(0..100) {
         0..=70 => 0,
         71..=80 => -1,
         81..=90 => 1,

@@ -1,19 +1,42 @@
 use bevy::prelude::*;
+use rand::{thread_rng, Rng};
 
 use crate::menu::structs::{InputText, MenuButton, MenuColors, MenuData, MenuTextures};
 use crate::{AppState, Level, Random};
 
-pub fn setup(
+pub fn setup_level_end(
     mut commands: Commands,
     colors: Res<MenuColors>,
     textures: Res<MenuTextures>,
-    text: &'static str,
     buttons: Vec<(&'static str, MenuButton)>,
+    is_positive: Option<bool>,
+    level: usize,
 ) {
     let menu_entity = commands
         .spawn_bundle(menu_bundle(&colors))
         .with_children(|parent| {
-            parent.spawn_bundle(main_text_bundle(&colors, &textures, text));
+            let mut title = String::from("Level ");
+            title.push_str(&level.to_string());
+
+            let images: &Vec<Handle<Image>> = match is_positive {
+                Some(true) => {
+                    title.push_str(": success");
+                    &textures.positive
+                }
+                Some(false) => {
+                    title.push_str(": fail");
+                    &textures.negative
+                }
+                None => {
+                    title.push_str(" stopped");
+                    &textures.neutral
+                }
+            };
+
+            parent.spawn_bundle(main_text_bundle(&colors, &textures, &title));
+
+            let rand: usize = thread_rng().gen_range(0..images.len());
+            parent.spawn_bundle(image_bundle(images[rand].clone()));
 
             for (text, but) in buttons {
                 spawn_button(&colors, &textures, parent, text, but);
@@ -24,7 +47,7 @@ pub fn setup(
     insert_menu_data(commands, menu_entity);
 }
 
-pub fn setup_with_input(
+pub fn setup_main(
     mut commands: Commands,
     colors: Res<MenuColors>,
     textures: Res<MenuTextures>,
@@ -214,6 +237,19 @@ fn button_icon_bundle(icon: Handle<Image>) -> ImageBundle {
     }
 }
 
+fn image_bundle(image: Handle<Image>) -> ImageBundle {
+    ImageBundle {
+        style: Style {
+            max_size: Size::new(Val::Px(900.), Val::Auto),
+            min_size: Size::new(Val::Px(410.), Val::Px(50.)),
+            margin: Rect::all(Val::Px(20.0)),
+            ..default()
+        },
+        image: UiImage(image),
+        ..default()
+    }
+}
+
 pub fn cleanup_menu(mut commands: Commands, menu_data: Res<MenuData>) {
     commands.entity(menu_data.menu_entity).despawn_recursive();
     commands.entity(menu_data.camera_entity).despawn_recursive();
@@ -240,6 +276,6 @@ pub fn start_new_game(
         rng.new_random_seed();
     }
 
-    level.level = 1;
+    level.reset_level();
     start_game_for_level(state, rng, level);
 }

@@ -5,7 +5,6 @@ use bevy::{
     prelude::OrthographicCameraBundle,
     render::camera::{DepthCalculation, OrthographicProjection, ScalingMode},
 };
-use bevy_rapier2d::prelude::*;
 
 use crate::game::Player;
 

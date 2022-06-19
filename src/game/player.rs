@@ -119,8 +119,8 @@ impl Plugin for PlayerPlugin {
                     .with_system(changing_weapon)
                     .with_system(on_living_being_dead)
                     .with_system(fire_controller)
-                    .with_system(on_living_being_hit)
                     .with_system(handle_death),
+                    .with_system(on_living_being_hit)
             )
             .add_event::<LivingBeingHitEvent>()
             .add_event::<LivingBeingDeathEvent>()

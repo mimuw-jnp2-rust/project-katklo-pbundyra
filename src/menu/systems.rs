@@ -28,7 +28,7 @@ pub fn button_press_system(
                     commands.entity(entity).insert(SelectedOption);
                 }
                 MenuButton::NextLevel => {
-                    level.level += 1;
+                    level.increase_level();
                     start_game_for_level(&mut state, &mut rng, &mut level);
                 }
                 MenuButton::RestartLevel => start_game_for_level(&mut state, &mut rng, &mut level),

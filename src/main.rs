@@ -16,8 +16,9 @@ mod menu;
 pub enum AppState {
     InGame,
     MainMenu,
-    DeathMenu,
-    EndMenu,
+    FailMenu,
+    WinMenu,
+    StopMenu,
 }
 
 fn main() {

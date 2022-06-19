@@ -4,8 +4,8 @@ use crate::menu::structs::{MenuButton, MenuColors, MenuTextures};
 use crate::menu::systems::{
     button_press_system, button_system, input_button_system, read_input_system, text_update_system,
 };
-use crate::menu::utils::{cleanup_menu, setup, setup_with_input};
-use crate::{AppState, Random};
+use crate::menu::utils::{cleanup_menu, setup_level_end, setup_main};
+use crate::{AppState, Level, Random};
 
 mod structs;
 mod systems;
@@ -27,21 +27,17 @@ impl Plugin for MenuPlugin {
                     .with_system(read_input_system),
             )
             .add_system_set(SystemSet::on_exit(AppState::MainMenu).with_system(cleanup_menu))
-            .add_system_set(SystemSet::on_enter(AppState::DeathMenu).with_system(setup_death_menu))
-            .add_system_set(SystemSet::on_exit(AppState::DeathMenu).with_system(cleanup_menu))
-            .add_system_set(SystemSet::on_enter(AppState::EndMenu).with_system(setup_end_menu))
-            .add_system_set(SystemSet::on_exit(AppState::EndMenu).with_system(cleanup_menu));
+            .add_system_set(SystemSet::on_enter(AppState::StopMenu).with_system(setup_stop_menu))
+            .add_system_set(SystemSet::on_exit(AppState::StopMenu).with_system(cleanup_menu))
+            .add_system_set(SystemSet::on_enter(AppState::FailMenu).with_system(setup_fail_menu))
+            .add_system_set(SystemSet::on_exit(AppState::FailMenu).with_system(cleanup_menu))
+            .add_system_set(SystemSet::on_enter(AppState::WinMenu).with_system(setup_win_menu))
+            .add_system_set(SystemSet::on_exit(AppState::WinMenu).with_system(cleanup_menu));
     }
 }
 
 fn menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.insert_resource(MenuTextures {
-        play: asset_server.load("menu/play.png"),
-        exit: asset_server.load("menu/exit.png"),
-        main: asset_server.load("menu/main.png"),
-        retry: asset_server.load("menu/retry.png"),
-        font: asset_server.load("fonts/FiraSans-LightItalic.ttf"),
-    });
+    commands.insert_resource(MenuTextures::load(asset_server));
 }
 
 fn setup_main_menu(
@@ -51,7 +47,7 @@ fn setup_main_menu(
     textures: Res<MenuTextures>,
 ) {
     *random = Random::new();
-    setup_with_input(
+    setup_main(
         commands,
         colors,
         textures,
@@ -63,29 +59,61 @@ fn setup_main_menu(
     );
 }
 
-fn setup_death_menu(commands: Commands, colors: Res<MenuColors>, textures: Res<MenuTextures>) {
-    setup(
+fn setup_fail_menu(
+    commands: Commands,
+    colors: Res<MenuColors>,
+    textures: Res<MenuTextures>,
+    level: Res<Level>,
+) {
+    setup_level_end(
         commands,
         colors,
         textures,
-        "Segmentation fault (core dumped)",
         vec![
             ("Try again level", MenuButton::RestartLevel),
             ("Start from beginning", MenuButton::RestartGame),
             ("Go to main menu", MenuButton::MainMenu),
         ],
+        Some(false),
+        level.level,
     );
 }
 
-fn setup_end_menu(commands: Commands, colors: Res<MenuColors>, textures: Res<MenuTextures>) {
-    setup(
+fn setup_win_menu(
+    commands: Commands,
+    colors: Res<MenuColors>,
+    textures: Res<MenuTextures>,
+    level: Res<Level>,
+) {
+    setup_level_end(
         commands,
         colors,
         textures,
-        "Process finished with exit code 0",
         vec![
             ("Next level", MenuButton::NextLevel),
             ("Go to main menu", MenuButton::MainMenu),
         ],
+        Some(true),
+        level.level,
+    );
+}
+
+fn setup_stop_menu(
+    commands: Commands,
+    colors: Res<MenuColors>,
+    textures: Res<MenuTextures>,
+    level: Res<Level>,
+) {
+    setup_level_end(
+        commands,
+        colors,
+        textures,
+        vec![
+            ("Restart level", MenuButton::RestartLevel),
+            ("Restart game", MenuButton::RestartGame),
+            ("Go to main menu", MenuButton::MainMenu),
+        ],
+        None,
+        level.level,
     );
 }
