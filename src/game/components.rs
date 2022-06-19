@@ -4,7 +4,7 @@ use rand::{thread_rng, Rng, SeedableRng};
 use rand_pcg::Pcg64;
 use rand_seeder::Seeder;
 
-const JUMP_IMPULSE: f32 = 13.0;
+const JUMP_IMPULSE: f32 = 15.0;
 
 #[derive(Component, Copy, Clone)]
 pub enum GameDirection {
