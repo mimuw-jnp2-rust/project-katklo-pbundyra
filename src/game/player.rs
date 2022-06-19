@@ -1,32 +1,47 @@
+use std::time::Duration;
+use bevy::core::FixedTimestep;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::game::{camera_follow_player, FinishLine, GameDirection, Weapon};
-use crate::game::boosters::{drink_coffee, learn_rust};
-use crate::game::bullets::{BulletOptions, destroy_bullet_on_contact, killing_enemies, spawn_strong_bullet, spawn_weak_bullet};
+use crate::game::{camera_follow_player, degrade_weapon, finish_coffee, FastShootEvent, FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, ShootEvent, Weapon, COFFEE_DURATION, RUST_DURATION};
+use crate::game::powerups::{drink_coffee, learn_rust};
+use crate::game::bullets::{BulletOptions, destroy_bullet_on_contact, kill_enemy, spawn_strong_bullet, spawn_weak_bullet};
+use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent, on_living_being_dead, on_living_being_hit};
 use crate::game::monster::death_by_enemy;
 use crate::GameTextures;
 
 use super::camera::new_camera_2d;
-use super::components::Jumper;
+use super::components::{LivingBeing, Jumper};
 use super::super::AppState;
 use super::utils::*;
 
 pub struct PlayerPlugin;
+
+pub struct DeadPlayerEvent {
+    pub entity: Entity,
+}
+
+const SHOOTING_TIMESTEP: f64 = 0.1;
+const PLAYER_NORMAL_SPEED: f32 = 7.0;
+const PLAYER_INCREASE_SPEED: f32 = 11.0;
 
 #[derive(Component)]
 pub struct Player {
     pub speed: f32,
     pub weapon: Weapon,
     pub direction: GameDirection,
+    pub weapon_upgrade_timer: Timer,
+    pub coffee_timer: Timer,
 }
 
 impl Default for Player {
     fn default() -> Self {
         Player {
-            speed: 7.0,
+            speed: PLAYER_NORMAL_SPEED,
             weapon: Weapon::WeakBullet,
             direction: GameDirection::Right,
+            weapon_upgrade_timer: Timer::new(Duration::from_secs(0), false),
+            coffee_timer: Timer::new(Duration::from_secs(0), false),
         }
     }
 }
@@ -36,14 +51,14 @@ impl Player {
     pub fn spawn(commands: &mut Commands, game_textures: Res<GameTextures>) {
         spawn_object(commands,
                      create_sprite_bundle(game_textures.player.clone(),
-                                          (0.9, 0.9),
+                                          (0.9, 1.5),
                                           (0.0, 2.0, 0.0)),
                      None,
                      None,
                      Collider::round_cuboid(0.2, 0.2, 0.1),
                      Some(Friction::coefficient(3.)),
-                     Jumper::default(),
                      Player::default(),
+                     LivingBeing::default(),
         );
     }
 
@@ -55,11 +70,12 @@ impl Player {
     }
 
     pub fn increase_speed(&mut self) {
-        self.speed += 0.25
+        self.coffee_timer = Timer::new(Duration::from_secs(COFFEE_DURATION), false);
+        self.speed = PLAYER_INCREASE_SPEED;
     }
 
     pub fn decrease_speed(&mut self) {
-        self.speed -= 0.25;
+        self.speed = PLAYER_NORMAL_SPEED;
     }
 
     pub fn degrade_weapon(&mut self) {
@@ -68,6 +84,7 @@ impl Player {
 
     pub fn powerup_weapon(&mut self) {
         self.weapon = Weapon::StrongBullet;
+        self.weapon_upgrade_timer = Timer::new(Duration::from_secs(RUST_DURATION), false);
     }
 }
 
@@ -80,22 +97,37 @@ impl Plugin for PlayerPlugin {
                     .with_system(player_movement)
                     .with_system(jump_reset)
                     .with_system(finish)
-                    .with_system(fire_controller)
                     .with_system(destroy_bullet_on_contact)
                     .with_system(death_by_enemy)
                     .with_system(camera_follow_player)
-                    .with_system(killing_enemies)
+                    .with_system(kill_enemy)
                     .with_system(changing_weapon)
                     .with_system(drink_coffee)
-                    .with_system(learn_rust),
-            );
+                    .with_system(finish_coffee)
+                    .with_system(learn_rust)
+                    .with_system(degrade_weapon)
+                    .with_system(on_living_being_dead)
+                    .with_system(fire_controller)
+                    .with_system(on_living_being_hit)
+            )
+            .add_event::<LivingBeingHitEvent>()
+            .add_event::<LivingBeingDeathEvent>()
+            .add_event::<DeadPlayerEvent>()
+            .add_event::<ShootEvent>()
+            .add_event::<FastShootEvent>();
     }
 }
 
-pub fn spawn_player(mut commands: Commands, game_textures: Res<GameTextures>) {
+pub fn spawn_player(
+    mut commands: Commands,
+    game_textures: Res<GameTextures>,
+    phantom_entity: Query<Entity, With<PhantomEntity>>,
+) {
     Player::spawn(&mut commands, game_textures);
-
     commands.spawn_bundle(new_camera_2d());
+    for entity in phantom_entity.iter() {
+        commands.insert_resource(LastDespawnedEntity { entity });
+    }
 }
 
 pub fn player_jumps(
@@ -142,6 +174,8 @@ pub fn fire_controller(
     mut commands: Commands,
     mut game_textures: Res<GameTextures>,
     positions: Query<(&mut Transform, &RigidBody, &mut Player, &mut Velocity), With<Player>>,
+    mut send_shoot_event: EventWriter<ShootEvent>,
+    mut send_fast_shoot_event: EventWriter<FastShootEvent>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Space) {
         for (pos, _, player, vel) in positions.iter() {
@@ -152,8 +186,14 @@ pub fn fire_controller(
                 player_vex: vel.linvel.x,
             };
             match player.weapon {
-                Weapon::WeakBullet => spawn_weak_bullet(&mut commands, &mut game_textures, options),
-                Weapon::StrongBullet => spawn_strong_bullet(&mut commands, &mut game_textures, options),
+                Weapon::WeakBullet => {
+                    send_shoot_event.send(ShootEvent);
+                    spawn_weak_bullet(&mut commands, &mut game_textures, options);
+                }
+                Weapon::StrongBullet => {
+                    send_fast_shoot_event.send(FastShootEvent);
+                    spawn_strong_bullet(&mut commands, &mut game_textures, options);
+                }
             }
         }
     }
@@ -161,11 +201,11 @@ pub fn fire_controller(
 
 pub fn jump_reset(
     mut query: Query<(Entity, &mut Jumper)>,
-    mut contact_events: EventReader<CollisionEvent>,
+    mut collision_events: EventReader<CollisionEvent>,
 ) {
-    for contact_event in contact_events.iter() {
+    for collision_event in collision_events.iter() {
         for (entity, mut jumper) in query.iter_mut() {
-            if let CollisionEvent::Started(h1, h2, _) = contact_event {
+            if let CollisionEvent::Started(h1, h2, _) = collision_event {
                 if *h1 == entity || *h2 == entity {
                     jumper.is_jumping = false
                 }
@@ -176,7 +216,7 @@ pub fn jump_reset(
 
 // TODO zrobić lepiej przy okazji collision eventow
 pub fn finish(
-    mut players: Query<(Entity, &mut Jumper)>,
+    mut players: Query<(Entity, &mut Player)>,
     mut lines: Query<(Entity, &mut FinishLine)>,
     mut contact_events: EventReader<CollisionEvent>,
     mut state: ResMut<State<AppState>>,

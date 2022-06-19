@@ -2,15 +2,15 @@ use bevy::prelude::*;
 use rand::prelude::*;
 
 use crate::{AppState, GameTextures, Random};
-use crate::game::{FinishLine, Wall};
-use crate::game::boosters::add_boosters;
+use crate::game::{CoffeeEvent, FinishLine, RustEvent, Wall};
+use crate::game::powerups::add_powerups;
 use crate::game::monster::add_enemies;
 
 use super::utils::*;
 
 const BEGIN_WIDTH: usize = 10;
 pub const SAFE_ZONE_WIDTH: usize = 5;
-pub const GAME_WIDTH: usize = 20;
+pub const GAME_WIDTH: usize = 150;
 const MAP_WIDTH: usize = GAME_WIDTH + BEGIN_WIDTH + 1;
 const WALL_HEIGHT: f32 = 20.0;
 
@@ -18,7 +18,9 @@ pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_enter(AppState::InGame).with_system(spawn_map));
+        app.add_system_set(SystemSet::on_enter(AppState::InGame).with_system(spawn_map))
+            .add_event::<CoffeeEvent>()
+            .add_event::<RustEvent>();
     }
 }
 
@@ -32,7 +34,7 @@ fn spawn_map(
     add_colliders(&world, &mut commands);
     add_finish_line(&mut commands, &game_textures, &world);
     add_enemies(&mut commands, &world, &game_textures, &mut rng);
-    add_boosters(&mut commands, &world, game_textures, &mut rng);
+    add_powerups(&mut commands, &world, game_textures, &mut rng);
 }
 
 fn create_world(rng: &mut ResMut<Random>) -> Vec<(i32, usize)> {
@@ -131,12 +133,11 @@ fn add_finish_line(commands: &mut Commands, game_textures: &Res<GameTextures>, w
 
     for h in 0..=WALL_HEIGHT as usize {
         commands.spawn_bundle(create_sprite_bundle(
-            game_textures.finish.clone(),
+            game_textures.finish_line.clone(),
             (1.0, 1.0),
             (finish_x_position, last_height + h as f32 + 1., 0.),
         ));
     }
-
     spawn_static_collider(commands, (finish_x_position - 0.5, last_height), (finish_x_position + 0.5, last_height + WALL_HEIGHT), FinishLine);
 }
 

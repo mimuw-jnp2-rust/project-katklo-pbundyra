@@ -4,7 +4,7 @@ use bevy::window::PresentMode;
 use game::GamePlugin;
 use menu::MenuPlugin;
 
-use crate::game::{GameTextures, Level, MapPlugin, MonsterAiPlugin, PlayerPlugin};
+use crate::game::{GameAudioPlugin, GameTextures, MapPlugin, MonsterAiPlugin, PlayerPlugin, Level};
 use crate::game::Random;
 
 mod game;
@@ -28,28 +28,15 @@ fn main() {
             present_mode: PresentMode::Fifo,
             ..default()
         })
-        .add_startup_system(setup)
         .insert_resource(ClearColor(Color::BEIGE))
         .insert_resource(Random::new())
         .insert_resource(Level::new())
         .add_state(AppState::MainMenu)
+        .add_plugin(GamePlugin)
+        .add_plugin(GameAudioPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(MapPlugin)
-        .add_plugin(GamePlugin)
         .add_plugin(MenuPlugin)
         .add_plugin(MonsterAiPlugin)
         .run();
-}
-
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.insert_resource(GameTextures {
-        player: asset_server.load("game/player.png"),
-        weak_laser: asset_server.load("game/weak_laser.png"),
-        strong_laser: asset_server.load("game/strong_laser.png"),
-        bug: asset_server.load("game/bug.png"),
-        coffee: asset_server.load("game/coffee.png"),
-        rust: asset_server.load("game/rust.png"),
-        floor: asset_server.load("game/floor.png"),
-        finish: asset_server.load("game/finish.png"),
-    });
 }

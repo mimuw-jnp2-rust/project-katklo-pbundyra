@@ -10,7 +10,6 @@ pub enum GameDirection {
     Right,
 }
 
-
 #[derive(Component)]
 pub struct FinishLine;
 
@@ -54,7 +53,7 @@ pub struct Velocity {
 }
 
 #[derive(Component)]
-pub struct Booster;
+pub struct Powerup;
 
 #[derive(Component)]
 pub struct Coffee;
@@ -141,3 +140,9 @@ impl Level {
         Self { level: 0 }
     }
 }
+#[derive(Component, Default)]
+pub struct LivingBeing;
+
+#[derive(Component)]
+pub struct PhantomEntity;
+

@@ -1,5 +1,7 @@
 use bevy::prelude::*;
+use bevy::utils::tracing::Instrument;
 use bevy_rapier2d::prelude::*;
+use crate::game::{Jumper, LivingBeing};
 
 const GRAVITY_SCALE_DEFAULT: f32 = 0.4;
 const VELOCITY_DEFAULT: f32 = 0.0;
@@ -19,9 +21,10 @@ pub fn create_sprite_bundle(texture: Handle<Image>,
     }
 }
 
-pub fn spawn_object<T1, T2>(commands: &mut Commands, sprite: SpriteBundle, x_velocity: Option<f32>,
-                            gravity_scale: Option<f32>,
-                            collider: Collider, friction: Option<Friction>, object_kind: T1, object_type: T2)
+pub fn spawn_object<T1, T2>(
+    commands: &mut Commands, sprite: SpriteBundle, x_velocity: Option<f32>,
+    gravity_scale: Option<f32>, collider: Collider, friction: Option<Friction>,
+    object_kind: T1, object_type: T2)
     where T1: Component,
           T2: Component {
     commands
@@ -35,8 +38,10 @@ pub fn spawn_object<T1, T2>(commands: &mut Commands, sprite: SpriteBundle, x_vel
         .insert(collider)
         .insert(friction.unwrap_or(Friction::default()))
         .insert(ActiveEvents::COLLISION_EVENTS)
+        .insert(Jumper::default())
         .insert(object_kind)
-        .insert(object_type);
+        .insert(object_type)
+    ;
 }
 
 pub fn spawn_static_collider<T>(commands: &mut Commands, left_down: (f32, f32), right_up: (f32, f32), kind: T) where T: Component {
