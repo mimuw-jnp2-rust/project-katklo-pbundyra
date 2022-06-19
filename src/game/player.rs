@@ -12,7 +12,7 @@ use crate::game::living_being::{
 use crate::game::monster::death_by_enemy;
 use crate::game::powerups::{drink_coffee, learn_rust};
 use crate::game::{
-    camera_follow_player, degrade_weapon, finish_coffee, Bullet, FastShootEvent, FinishLine,
+    camera_follow_player, finish_coffee, finish_rust, Bullet, FastShootEvent, FinishLine,
     GameDirection, LastDespawnedEntity, PhantomEntity, ShootEvent, Weapon, COFFEE_DURATION,
     RUST_DURATION,
 };
@@ -97,7 +97,7 @@ impl Player {
         self.weapon = Weapon::WeakBullet;
     }
 
-    pub fn powerup_weapon(&mut self) {
+    pub fn upgrade_weapon(&mut self) {
         self.weapon = Weapon::StrongBullet;
         self.weapon_upgrade_timer = Timer::new(Duration::from_secs(RUST_DURATION), false);
     }
@@ -117,10 +117,6 @@ impl Plugin for PlayerPlugin {
                     .with_system(camera_follow_player)
                     .with_system(kill_enemy)
                     .with_system(changing_weapon)
-                    .with_system(drink_coffee)
-                    .with_system(finish_coffee)
-                    .with_system(learn_rust)
-                    .with_system(degrade_weapon)
                     .with_system(on_living_being_dead)
                     .with_system(fire_controller)
                     .with_system(on_living_being_hit),
@@ -215,22 +211,31 @@ pub fn fire_controller(
 }
 
 pub fn jump_reset(
-    mut jumpers: Query<(Entity, &mut Jumper)>,
+    mut jumpers: Query<(Entity, &mut Jumper), With<Player>>,
     bullets: Query<Entity, With<Bullet>>,
+    players: Query<Entity, With<Player>>,
     mut collision_events: EventReader<CollisionEvent>,
 ) {
     for collision_event in collision_events.iter() {
-        for (entity, mut jumper) in jumpers.iter_mut() {
+        if let Ok((_, mut jumper)) = jumpers.get_single_mut() {
             if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-                if *ent1 == entity || *ent2 == entity {
-                    jumper.is_jumping = false
+                match (players.get(*ent1), players.get(*ent2)) {
+                    (Ok(_), _) | (_, Ok(_)) => match (bullets.get(*ent1), bullets.get(*ent2)) {
+                        (Ok(_), _) | (_, Ok(_)) => jumper.is_jumping = true,
+                        _ => jumper.is_jumping = false,
+                    },
+                    _ => {}
                 }
-                if let Ok(_) = bullets.get(*ent1) {
-                    jumper.is_jumping = true
-                }
-                if let Ok(_) = bullets.get(*ent2) {
-                    jumper.is_jumping = true
-                }
+                // match (
+                //     players.get(*ent1),
+                //     bullets.get(*ent2),
+                //     players.get(*ent2),
+                //     bullets.get(*ent1),
+                // ) {
+                //     (Ok(_), Ok(_), _, _) | (_, _, Ok(_), Ok(_)) => jumper.is_jumping = true,
+                //     (Ok(_), _, _, _) | (_, _, Ok(_), _) => jumper.is_jumping = false,
+                //     _ => {}
+                // }
             }
         }
     }
@@ -243,12 +248,10 @@ pub fn finish(
     mut state: ResMut<State<AppState>>,
 ) {
     for contact_event in contact_events.iter() {
-        if let CollisionEvent::Started(h1, h2, _) = contact_event {
+        if let CollisionEvent::Started(ent1, ent2, _) = contact_event {
             match (players.get_single(), lines.get_single()) {
-                (Ok((player_entity, _)), Ok((line_entity, _))) => {
-                    if (*h1 == player_entity && *h2 == line_entity)
-                        || (*h1 == line_entity && *h2 == player_entity)
-                    {
+                (Ok((player, _)), Ok((line, _))) => {
+                    if (*ent1 == player && *ent2 == line) || (*ent1 == line && *ent2 == player) {
                         state.set(AppState::EndMenu).unwrap();
                     }
                 }
