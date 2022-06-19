@@ -3,8 +3,7 @@ use bevy_kira_audio::{Audio, AudioChannel, AudioPlugin, AudioSource};
 use rand::{Rng, thread_rng};
 
 use crate::{AppState};
-use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
-use crate::game::player::{DeadPlayerEvent, Player};
+use crate::game::player::DeadPlayerEvent;
 use crate::game::powerups::CoffeeEvent;
 use crate::game::{FastShootEvent, RustEvent, ShootEvent};
 

@@ -1,7 +1,6 @@
 use bevy::prelude::*;
-use bevy::utils::tracing::Instrument;
 use bevy_rapier2d::prelude::*;
-use crate::game::{Jumper, LivingBeing};
+use crate::game::Jumper;
 
 const GRAVITY_SCALE_DEFAULT: f32 = 0.4;
 const VELOCITY_DEFAULT: f32 = 0.0;

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::game::{Bullet, Enemy, Player, Weapon};
-use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
+use crate::game::living_being::LivingBeingHitEvent;
 use crate::GameTextures;
 
 use super::{GameDirection};

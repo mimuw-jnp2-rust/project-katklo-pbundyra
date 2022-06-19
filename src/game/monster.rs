@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
-use crate::{AppState, GameTextures, Random};
-use crate::game::{Enemy, Bug, Player, SAFE_ZONE_WIDTH, LivingBeing, DeadPlayerEvent, Jumper};
+use crate::{GameTextures, Random};
+use crate::game::{Enemy, Bug, Player, SAFE_ZONE_WIDTH, DeadPlayerEvent};
 use crate::game::living_being::LivingBeingDeathEvent;
 use crate::game::utils::*;
 

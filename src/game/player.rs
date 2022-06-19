@@ -1,5 +1,4 @@
 use std::time::Duration;
-use bevy::core::FixedTimestep;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
@@ -21,7 +20,6 @@ pub struct DeadPlayerEvent {
     pub entity: Entity,
 }
 
-const SHOOTING_TIMESTEP: f64 = 0.1;
 const PLAYER_NORMAL_SPEED: f32 = 7.0;
 const PLAYER_INCREASE_SPEED: f32 = 11.0;
 
