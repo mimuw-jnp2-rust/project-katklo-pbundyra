@@ -19,19 +19,25 @@ pub struct FinishLine;
 pub struct Wall;
 
 #[derive(Component)]
+pub struct Bullet;
+
+#[derive(Component)]
 pub struct WeakBullet;
 
 #[derive(Component)]
 pub struct StrongBullet;
 
 #[derive(Component)]
+pub struct PlayersBullet;
+
+#[derive(Component)]
+pub struct EnemyBullet;
+
+#[derive(Component)]
 pub enum Weapon {
     WeakBullet,
     StrongBullet,
 }
-
-#[derive(Component)]
-pub struct Bullet;
 
 #[derive(Component)]
 pub struct Jumper {
@@ -69,19 +75,19 @@ pub struct Bug;
 #[derive(Component, Default)]
 pub struct Valgrind;
 
+#[derive(Component)]
+pub struct Enemy {
+    pub speed: f32,
+    pub direction: GameDirection,
+}
+
 impl Default for Enemy {
     fn default() -> Self {
         Enemy {
             speed: 2.0,
-            facing_direction: GameDirection::Right,
+            direction: GameDirection::Right,
         }
     }
-}
-
-#[derive(Component)]
-pub struct Enemy {
-    pub speed: f32,
-    pub facing_direction: GameDirection,
 }
 
 #[derive(Debug, Component, PartialEq, Eq, Clone)]
@@ -165,6 +171,8 @@ impl Level {
         self.difficulty = ((self.level - 1) / 3) as f64 + 1.;
     }
 }
+
+//TODO redundant
 #[derive(Component, Default)]
 pub struct LivingBeing;
 

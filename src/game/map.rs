@@ -3,7 +3,7 @@ use rand::prelude::*;
 
 use crate::game::monster::add_enemies;
 use crate::game::powerups::add_powerups;
-use crate::game::{CoffeeEvent, FinishLine, Level, RustEvent, Wall};
+use crate::game::{FinishLine, Level, Wall};
 use crate::{AppState, GameTextures, Random};
 
 use super::utils::*;
@@ -20,9 +20,7 @@ pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_enter(AppState::InGame).with_system(generate_map))
-            .add_event::<CoffeeEvent>()
-            .add_event::<RustEvent>();
+        app.add_system_set(SystemSet::on_enter(AppState::InGame).with_system(generate_map));
     }
 }
 

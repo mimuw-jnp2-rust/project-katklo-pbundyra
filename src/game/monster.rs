@@ -3,10 +3,12 @@ use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
 use crate::game::utils::*;
-use crate::game::{Bug, DeadPlayerEvent, Enemy, Jumper, Player, Valgrind, SAFE_ZONE_WIDTH};
+use crate::game::{
+    Bug, DeadPlayerEvent, Enemy, EnemyBullet, Jumper, Player, Valgrind, SAFE_ZONE_WIDTH,
+};
 use crate::{GameTextures, Level, Random};
 
-const SPAWNING_PROBABILITY: f64 = 0.1;
+const SPAWNING_PROBABILITY: f64 = 0.05;
 
 fn spawn_enemy<T>(commands: &mut Commands, texture: Handle<Image>, enemy_type: T, x: f32, y: f32)
 where
@@ -48,20 +50,24 @@ fn spawn_valgrind(commands: &mut Commands, game_textures: &Res<GameTextures>, x:
 pub fn death_by_enemy(
     players: Query<Entity, With<Player>>,
     enemies: Query<Entity, With<Enemy>>,
+    enemy_bullets: Query<Entity, With<EnemyBullet>>,
     mut collision_events: EventReader<CollisionEvent>,
     mut send_dead_player_event: EventWriter<DeadPlayerEvent>,
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-            match (
-                players.get(*ent1),
-                enemies.get(*ent2),
-                players.get(*ent2),
-                enemies.get(*ent1),
-            ) {
-                (Ok(_), Ok(_), _, _) | (_, _, Ok(_), Ok(_)) => {
-                    send_dead_player_event.send(DeadPlayerEvent)
-                }
+            match (players.get(*ent1), players.get(*ent2)) {
+                (Ok(_), _) | (_, Ok(_)) => match (
+                    enemy_bullets.get(*ent1),
+                    enemy_bullets.get(*ent2),
+                    enemies.get(*ent1),
+                    enemies.get(*ent2),
+                ) {
+                    (Ok(_), _, _, _) | (_, Ok(_), _, _) | (_, _, Ok(_), _) | (_, _, _, Ok(_)) => {
+                        send_dead_player_event.send(DeadPlayerEvent)
+                    }
+                    _ => {}
+                },
                 _ => {}
             }
         }

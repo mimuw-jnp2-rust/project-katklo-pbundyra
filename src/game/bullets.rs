@@ -4,7 +4,9 @@ use bevy_rapier2d::prelude::*;
 use super::utils::*;
 use super::GameDirection;
 use crate::game::living_being::LivingBeingHitEvent;
-use crate::game::{spawn_dynamic_object, Bullet, Enemy, Player, Weapon};
+use crate::game::{
+    spawn_dynamic_object, Bullet, Enemy, EnemyBullet, Player, PlayersBullet, Wall, Weapon,
+};
 use crate::GameTextures;
 
 pub struct ShootEvent;
@@ -12,6 +14,7 @@ pub struct FastShootEvent;
 
 const WEAK_BULLET_SPEED: f32 = 8.25;
 const STRONG_BULLET_SPEED: f32 = 18.5;
+const ENEMY_BULLET_SPEED: f32 = 8.25;
 
 #[derive(Copy, Clone)]
 pub struct BulletOptions {
@@ -24,10 +27,9 @@ pub struct BulletOptions {
 fn spawn_bullet(
     commands: &mut Commands,
     texture: Handle<Image>,
-    bullet_type: Weapon,
     options: BulletOptions,
     def_vel: f32,
-) {
+) -> Entity {
     let (vel_x, spawn_x) = match options.direction {
         GameDirection::Left => (-def_vel, -0.75),
         GameDirection::Right => (def_vel, 0.75),
@@ -43,10 +45,7 @@ fn spawn_bullet(
         bullet_entity,
         Collider::round_cuboid(0.0, 0.0, 0.0),
     );
-    commands
-        .entity(bullet_entity)
-        .insert(Bullet)
-        .insert(bullet_type);
+    commands.entity(bullet_entity).insert(Bullet).id()
 }
 
 pub fn spawn_strong_bullet(
@@ -54,13 +53,13 @@ pub fn spawn_strong_bullet(
     game_textures: &Res<GameTextures>,
     options: BulletOptions,
 ) {
-    spawn_bullet(
+    let bullet = spawn_bullet(
         commands,
         game_textures.strong_bullet.clone(),
-        Weapon::StrongBullet,
         options,
         STRONG_BULLET_SPEED,
     );
+    commands.entity(bullet).insert(PlayersBullet);
 }
 
 pub fn spawn_weak_bullet(
@@ -68,60 +67,71 @@ pub fn spawn_weak_bullet(
     game_textures: &Res<GameTextures>,
     options: BulletOptions,
 ) {
-    spawn_bullet(
+    let bullet = spawn_bullet(
         commands,
         game_textures.weak_bullet.clone(),
-        Weapon::WeakBullet,
         options,
         WEAK_BULLET_SPEED,
     );
+    commands.entity(bullet).insert(PlayersBullet);
+}
+
+pub fn spawn_enemy_bullet(
+    commands: &mut Commands,
+    game_textures: &Res<GameTextures>,
+    options: BulletOptions,
+) {
+    let bullet = spawn_bullet(
+        commands,
+        game_textures.enemy_bullet.clone(),
+        options,
+        ENEMY_BULLET_SPEED,
+    );
+    commands.entity(bullet).insert(EnemyBullet);
 }
 
 pub fn destroy_bullet_on_contact(
     mut commands: Commands,
     bullets: Query<Entity, With<Bullet>>,
-    players: Query<Entity, With<Player>>,
+    walls: Query<Entity, With<Wall>>,
     mut collision_events: EventReader<CollisionEvent>,
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-            match (bullets.get(*ent1), bullets.get(*ent2)) {
-                (Ok(bullet), _) | (_, Ok(bullet)) => match (players.get(*ent1), players.get(*ent2))
-                {
-                    (Ok(_), _) | (_, Ok(_)) => {}
-                    _ => commands.entity(bullet).despawn_recursive(),
-                },
+            match (
+                bullets.get(*ent1),
+                walls.get(*ent2),
+                bullets.get(*ent2),
+                walls.get(*ent1),
+            ) {
+                (Ok(bullet), Ok(_), _, _) | (_, _, Ok(bullet), Ok(_)) => {
+                    commands.entity(bullet).despawn_recursive()
+                }
                 _ => {}
             }
         }
-
-        // if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-        //     if let Ok(player) = players.get_single() {
-        //         for bullet in bullets.iter() {
-        //             if (*ent1 == bullet && *ent2 != player) || (*ent2 == bullet && *ent1 != player)
-        //             {
-        //                 commands.entity(bullet).despawn_recursive();
-        //             }
-        //         }
-        //     }
-        // }
     }
 }
 
 pub fn kill_enemy(
-    bullets: Query<Entity, With<Bullet>>,
+    mut commands: Commands,
+    bullets: Query<Entity, With<PlayersBullet>>,
     enemies: Query<Entity, With<Enemy>>,
     mut collision_event: EventReader<CollisionEvent>,
-    mut send_hit_event: EventWriter<LivingBeingHitEvent>,
 ) {
     for collision_event in collision_event.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-            for bullet in bullets.iter() {
-                for enemy in enemies.iter() {
-                    if (*ent1 == bullet && *ent2 == enemy) || (*ent1 == enemy && *ent2 == bullet) {
-                        send_hit_event.send(LivingBeingHitEvent { entity: enemy });
-                    }
+            match (
+                bullets.get(*ent1),
+                enemies.get(*ent2),
+                bullets.get(*ent2),
+                enemies.get(*ent1),
+            ) {
+                (Ok(bullet), Ok(enemy), _, _) | (_, _, Ok(bullet), Ok(enemy)) => {
+                    commands.entity(bullet).despawn_recursive();
+                    commands.entity(enemy).despawn_recursive();
                 }
+                _ => {}
             }
         }
     }

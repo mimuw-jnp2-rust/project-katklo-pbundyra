@@ -27,7 +27,7 @@ pub struct PlayerPlugin;
 pub struct DeadPlayerEvent;
 
 const PLAYER_NORMAL_SPEED: f32 = 7.0;
-const PLAYER_INCREASE_SPEED: f32 = 11.0;
+const PLAYER_INCREASE_SPEED: f32 = 10.0;
 
 #[derive(Component)]
 pub struct Player {
@@ -59,14 +59,12 @@ impl Player {
             None,
             None,
         );
-
         player_entity = spawn_solid_collider(
             commands,
             player_entity,
             Collider::round_cuboid(0.3, 0.3, 0.1),
             Some(Friction::coefficient(3.)),
         );
-
         commands
             .entity(player_entity)
             .insert(Player::default())
@@ -113,7 +111,6 @@ impl Plugin for PlayerPlugin {
                     .with_system(death_by_enemy)
                     .with_system(camera_follow_player)
                     .with_system(kill_enemy)
-                    .with_system(changing_weapon)
                     .with_system(on_living_being_dead)
                     .with_system(fire_controller)
                     .with_system(handle_death)
@@ -163,17 +160,6 @@ pub fn player_movement(
         if keyboard_input.pressed(KeyCode::Right) {
             player.direction = GameDirection::Right;
             velocity.linvel = Vec2::new(player.speed, velocity.linvel.y);
-        }
-    }
-}
-
-pub fn changing_weapon(
-    keyboard_input: Res<Input<KeyCode>>,
-    mut players: Query<&mut Player, With<Player>>,
-) {
-    if let Ok(mut player) = players.get_single_mut() {
-        if keyboard_input.just_pressed(KeyCode::S) {
-            player.change_weapon();
         }
     }
 }

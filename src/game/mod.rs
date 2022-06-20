@@ -31,6 +31,7 @@ pub struct GameTextures {
     pub player: Handle<Image>,
     pub weak_bullet: Handle<Image>,
     pub strong_bullet: Handle<Image>,
+    pub enemy_bullet: Handle<Image>,
     pub bug: Handle<Image>,
     pub valgrind: Handle<Image>,
     pub coffee: Handle<Image>,
@@ -78,8 +79,9 @@ fn cleanup_all(mut commands: Commands, query: Query<Entity>) {
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(GameTextures {
         player: asset_server.load("images/wojownik.png"),
-        weak_bullet: asset_server.load("images/weak_laser.png"),
-        strong_bullet: asset_server.load("images/strong_laser.png"),
+        weak_bullet: asset_server.load("images/weak_bullet.png"),
+        strong_bullet: asset_server.load("images/strong_bullet.png"),
+        enemy_bullet: asset_server.load("images/enemy_bullet.png"),
         bug: asset_server.load("images/bug.png"),
         valgrind: asset_server.load("images/valgrind.png"),
         coffee: asset_server.load("images/coffee.png"),

@@ -17,7 +17,7 @@ pub struct RustEvent {
     rust: Entity,
 }
 
-const SPAWNING_COFFEE_PROBABILITY: f64 = 0.1;
+const SPAWNING_COFFEE_PROBABILITY: f64 = 0.05;
 const SPAWNING_RUST_PROBABILITY: f64 = 0.03;
 pub const COFFEE_DURATION: u64 = 10;
 pub const RUST_DURATION: u64 = 7;

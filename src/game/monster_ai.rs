@@ -4,8 +4,8 @@ use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
 use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
-use crate::game::{Enemy, Powerup};
-use crate::Random;
+use crate::game::{spawn_enemy_bullet, BulletOptions, Enemy, Powerup, Valgrind};
+use crate::{GameTextures, Random};
 
 use super::super::AppState;
 use super::{GameDirection, Jumper};
@@ -31,7 +31,8 @@ impl Plugin for MonsterAiPlugin {
             SystemSet::new()
                 .with_run_criteria(FixedTimestep::step(ACTION_TIMESTEP))
                 .with_system(monster_changes_direction_randomly)
-                .with_system(monster_jumps),
+                .with_system(monster_jumps)
+                .with_system(valgrind_shoots),
         )
         .add_event::<MonsterCollisionEvent>()
         .add_event::<LivingBeingHitEvent>()
@@ -41,7 +42,7 @@ impl Plugin for MonsterAiPlugin {
 
 fn monster_walks(mut monsters: Query<(&Enemy, &mut Velocity)>) {
     for (monster, mut velocity) in monsters.iter_mut() {
-        let speed = match monster.facing_direction {
+        let speed = match monster.direction {
             GameDirection::Left => -monster.speed,
             GameDirection::Right => monster.speed,
         };
@@ -50,8 +51,27 @@ fn monster_walks(mut monsters: Query<(&Enemy, &mut Velocity)>) {
     }
 }
 
+fn valgrind_shoots(
+    mut commands: Commands,
+    mut game_textures: Res<GameTextures>,
+    positions: Query<(&mut Transform, &RigidBody, &mut Enemy, &mut Velocity), With<Valgrind>>,
+    mut rng: ResMut<Random>,
+) {
+    for (pos, _, valgrind, vel) in positions.iter() {
+        let options = BulletOptions {
+            x: pos.translation.x,
+            y: pos.translation.y,
+            direction: valgrind.direction,
+            player_vex: vel.linvel.x,
+        };
+        if should_shoot(&mut rng) {
+            spawn_enemy_bullet(&mut commands, &mut game_textures, options);
+        }
+    }
+}
+
 fn change_direction(mut monster: Mut<Enemy>) {
-    monster.facing_direction = match monster.facing_direction {
+    monster.direction = match monster.direction {
         GameDirection::Left => GameDirection::Right,
         GameDirection::Right => GameDirection::Left,
     }
@@ -117,5 +137,10 @@ fn should_change_direction(rng: &mut ResMut<Random>) -> bool {
 }
 
 fn should_jump(rng: &mut ResMut<Random>) -> bool {
+    rng.generator.gen_bool(JUMP_PROBABILITY)
+}
+
+// TODO lvl, shoot probability
+fn should_shoot(rng: &mut ResMut<Random>) -> bool {
     rng.generator.gen_bool(JUMP_PROBABILITY)
 }
