@@ -3,14 +3,12 @@ use std::time::Duration;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::game::bullets::{
-    destroy_bullet_on_contact, kill_enemy, spawn_strong_bullet, spawn_weak_bullet, BulletOptions,
-};
+use crate::game::bullets::{spawn_strong_bullet, spawn_weak_bullet, BulletOptions};
 use crate::game::monster::death_by_enemy;
 use crate::game::{
     camera_follow_player, AudioDeadPlayerEvent, AudioFastShootEvent, AudioShootEvent, Bullet,
-    FastShootEvent, FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, ShootEvent,
-    Weapon, COFFEE_DURATION, RUST_DURATION,
+    FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, Weapon, COFFEE_DURATION,
+    RUST_DURATION,
 };
 use crate::GameTextures;
 
@@ -23,7 +21,7 @@ pub struct PlayerPlugin;
 
 pub struct DeadPlayerEvent;
 
-const PLAYER_NORMAL_SPEED: f32 = 7.0;
+const PLAYER_NORMAL_SPEED: f32 = 8.0;
 const PLAYER_INCREASE_SPEED: f32 = 10.0;
 
 #[derive(Component)]

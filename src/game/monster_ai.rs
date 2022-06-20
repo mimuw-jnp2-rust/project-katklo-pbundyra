@@ -63,7 +63,7 @@ fn valgrind_shoots(
             player_vex: vel.linvel.x,
         };
         if should_shoot(&mut rng) {
-            spawn_enemy_bullet(&mut commands, &mut game_textures, options);
+            spawn_enemy_bullet(&mut commands, &game_textures, options);
         }
     }
 }

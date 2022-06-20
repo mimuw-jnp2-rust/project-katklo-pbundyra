@@ -4,7 +4,7 @@ use bevy_rapier2d::prelude::*;
 use super::utils::*;
 use super::GameDirection;
 use crate::game::{
-    spawn_dynamic_object, AudioHitEvent, Bullet, Enemy, EnemyBullet, PlayersBullet, Wall, Weapon,
+    spawn_dynamic_object, AudioHitEvent, Bullet, Enemy, EnemyBullet, PlayersBullet, Wall,
 };
 use crate::GameTextures;
 

@@ -68,7 +68,6 @@ fn spawn_rust(commands: &mut Commands, game_textures: &Res<GameTextures>, x: f32
     spawn_powerup(commands, game_textures.rust.clone(), Rust, x, y);
 }
 
-//TODO moze da sie zrobic generyka na powerup
 pub fn drink_coffee(
     players: Query<(Entity, &mut Player)>,
     coffees: Query<Entity, With<Coffee>>,

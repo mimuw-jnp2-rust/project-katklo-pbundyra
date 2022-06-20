@@ -71,13 +71,11 @@ pub fn input_button_system(
     for (interaction, button, _) in buttons.iter_mut() {
         if let MenuButton::InputButton = button {
             continue;
-        } else {
-            if *interaction == Interaction::Clicked {
-                if let Ok((selected, mut selected_color)) = selected_query.get_single_mut() {
-                    random.can_change = false;
-                    *selected_color = materials.normal_button;
-                    commands.entity(selected).remove::<SelectedOption>();
-                }
+        } else if *interaction == Interaction::Clicked {
+            if let Ok((selected, mut selected_color)) = selected_query.get_single_mut() {
+                random.can_change = false;
+                *selected_color = materials.normal_button;
+                commands.entity(selected).remove::<SelectedOption>();
             }
         }
     }
