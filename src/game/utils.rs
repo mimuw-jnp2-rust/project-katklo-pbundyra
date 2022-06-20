@@ -25,7 +25,7 @@ pub fn spawn_static_collider_object<T>(
     left_down: (f32, f32),
     right_up: (f32, f32),
     kind: T,
-) where
+) -> Entity where
     T: Component,
 {
     let width = right_up.0 - left_down.0;
@@ -43,7 +43,8 @@ pub fn spawn_static_collider_object<T>(
         .insert(RigidBody::Fixed)
         .insert(Collider::cuboid(half_width, half_height))
         .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(kind);
+        .insert(kind)
+        .id()
 }
 
 pub fn spawn_dynamic_object(

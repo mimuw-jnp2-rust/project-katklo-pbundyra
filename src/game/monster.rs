@@ -81,11 +81,16 @@ pub fn add_enemies(
     rng: &mut ResMut<Random>,
     level: &Res<Level>,
 ) {
+    let (should_add_bug, should_add_valgrind) = (
+        level.level % 3 == 1 || level.level % 3 == 0,
+        level.level % 3 == 2 || level.level % 3 == 0,
+    );
+
     world.iter().for_each(|&(x, height)| {
-        if should_add_enemy(x, rng, level) {
+        if should_add_bug && should_add_enemy(x, rng, level) {
             spawn_bug(commands, game_textures, x as f32, height as f32 + 1.5);
         }
-        if should_add_enemy(x, rng, level) {
+        if should_add_valgrind && should_add_enemy(x, rng, level) {
             spawn_valgrind(commands, game_textures, x as f32, height as f32 + 1.5);
         }
     });
