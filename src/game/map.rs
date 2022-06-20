@@ -151,6 +151,7 @@ fn add_start_and_finish_line(
         .last()
         .map(|&(x, y)| (x as f32 + 1., y as f32))
         .unwrap_or((0., 0.));
+
     add_column_of_tiles(
         commands,
         game_textures.floor.clone(),
@@ -183,13 +184,15 @@ fn add_start_and_finish_line(
         Wall,
     );
 
-    spawn_static_collider_object(
+    let finish_entity = spawn_static_collider_object(
         commands,
         (finish_x - HALF_TILE_SIZE, start_y - HALF_TILE_SIZE),
         (
             finish_x + HALF_TILE_SIZE,
             finish_y + WALL_HEIGHT - HALF_TILE_SIZE,
         ),
-        FinishLine,
+        Wall,
     );
+
+    commands.entity(finish_entity).insert(FinishLine);
 }
