@@ -173,9 +173,5 @@ impl Level {
     }
 }
 
-//TODO redundant
-// #[derive(Component, Default)]
-// pub struct LivingBeing;
-
 #[derive(Component)]
 pub struct PhantomEntity;

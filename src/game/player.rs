@@ -6,9 +6,6 @@ use bevy_rapier2d::prelude::*;
 use crate::game::bullets::{
     destroy_bullet_on_contact, kill_enemy, spawn_strong_bullet, spawn_weak_bullet, BulletOptions,
 };
-// use crate::game::living_being::{
-//     on_living_being_dead, on_living_being_hit, LivingBeingDeathEvent, LivingBeingHitEvent,
-// };
 use crate::game::monster::death_by_enemy;
 use crate::game::{
     camera_follow_player, AudioDeadPlayerEvent, AudioFastShootEvent, AudioShootEvent, Bullet,
@@ -110,9 +107,8 @@ impl Plugin for PlayerPlugin {
                     .with_system(death_by_enemy)
                     .with_system(camera_follow_player)
                     .with_system(kill_enemy)
-                    // .with_system(on_living_being_dead)
                     .with_system(fire_controller)
-                    .with_system(handle_death), // .with_system(on_living_being_hit),
+                    .with_system(handle_death),
             )
             .add_event::<DeadPlayerEvent>()
             .add_event::<ShootEvent>()
