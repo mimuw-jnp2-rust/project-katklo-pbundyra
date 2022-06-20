@@ -3,10 +3,8 @@ use bevy_rapier2d::prelude::*;
 
 use super::utils::*;
 use super::GameDirection;
-use crate::game::living_being::LivingBeingHitEvent;
 use crate::game::{
-    spawn_dynamic_object, AudioHitEvent, Bullet, Enemy, EnemyBullet, Player, PlayersBullet, Wall,
-    Weapon,
+    spawn_dynamic_object, AudioHitEvent, Bullet, Enemy, EnemyBullet, PlayersBullet, Wall, Weapon,
 };
 use crate::GameTextures;
 

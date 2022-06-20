@@ -5,6 +5,8 @@ use rand_pcg::Pcg64;
 use rand_seeder::Seeder;
 
 const JUMP_IMPULSE: f32 = 15.0;
+const MAX_SEED_LEN: usize = 15;
+const LEVEL_SEED_LEN_MULTIPLIER: usize = 2;
 
 #[derive(Component, Copy, Clone)]
 pub enum GameDirection {
@@ -115,8 +117,7 @@ impl Random {
     }
 
     pub fn add_char(&mut self, c: char) {
-        if self.can_change && self.seed.len() <= 15 {
-            // TODO podmienic 15 na stala
+        if self.can_change && self.seed.len() <= MAX_SEED_LEN {
             self.seed.push(c);
         }
     }
@@ -136,7 +137,7 @@ impl Random {
 
         let level_seed: String = temp_rng
             .sample_iter(&Alphanumeric)
-            .take(5 * level)
+            .take(LEVEL_SEED_LEN_MULTIPLIER * level)
             .map(char::from)
             .collect();
 
@@ -173,8 +174,8 @@ impl Level {
 }
 
 //TODO redundant
-#[derive(Component, Default)]
-pub struct LivingBeing;
+// #[derive(Component, Default)]
+// pub struct LivingBeing;
 
 #[derive(Component)]
 pub struct PhantomEntity;

@@ -3,7 +3,6 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
-use crate::game::living_being::{LivingBeingDeathEvent, LivingBeingHitEvent};
 use crate::game::{spawn_enemy_bullet, BulletOptions, Enemy, Powerup, Valgrind};
 use crate::{GameTextures, Random};
 
@@ -35,9 +34,7 @@ impl Plugin for MonsterAiPlugin {
                 .with_system(monster_jumps)
                 .with_system(valgrind_shoots),
         )
-        .add_event::<MonsterCollisionEvent>()
-        .add_event::<LivingBeingHitEvent>()
-        .add_event::<LivingBeingDeathEvent>();
+        .add_event::<MonsterCollisionEvent>();
     }
 }
 
