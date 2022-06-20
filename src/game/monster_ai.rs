@@ -11,6 +11,7 @@ use super::super::AppState;
 use super::{GameDirection, Jumper};
 
 const JUMP_PROBABILITY: f64 = 0.25;
+const SHOOT_PROBABILITY: f64 = 0.25;
 const CHANGE_DIRECTION_PROBABILITY: f64 = 0.25;
 const ACTION_TIMESTEP: f64 = 2.0;
 
@@ -140,7 +141,6 @@ fn should_jump(rng: &mut ResMut<Random>) -> bool {
     rng.generator.gen_bool(JUMP_PROBABILITY)
 }
 
-// TODO lvl, shoot probability
 fn should_shoot(rng: &mut ResMut<Random>) -> bool {
-    rng.generator.gen_bool(JUMP_PROBABILITY)
+    rng.generator.gen_bool(SHOOT_PROBABILITY)
 }

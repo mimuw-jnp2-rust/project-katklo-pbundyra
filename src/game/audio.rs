@@ -30,22 +30,6 @@ pub struct AudioAssets {
     menu_channel: AudioChannel,
 }
 
-pub trait AudioEvent {
-    fn play(audio: Res<Audio>, audio_state: Res<AudioAssets>);
-}
-
-impl AudioEvent for AudioShootEvent {
-    fn play(audio: Res<Audio>, audio_state: Res<AudioAssets>) {
-        audio.play(audio_state.shoot.clone());
-    }
-}
-
-impl AudioEvent for AudioFastShootEvent {
-    fn play(audio: Res<Audio>, audio_state: Res<AudioAssets>) {
-        audio.play(audio_state.fast_shoot.clone());
-    }
-}
-
 impl Plugin for GameAudioPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(AudioPlugin)
@@ -56,9 +40,8 @@ impl Plugin for GameAudioPlugin {
             .add_system(play_death_sfx)
             .add_system(play_eat_sfx)
             .add_system(play_lvlup_sfx)
-            // .add_system(play_shoot_sfx)
-            // .add_system(play_fast_shoot_sfx)
-            .add_system(shoot_sfx)
+            .add_system(play_shoot_sfx)
+            .add_system(play_fast_shoot_sfx)
             .add_startup_system(play_menu_music)
             .add_event::<AudioRustEvent>()
             .add_event::<AudioCoffeeEvent>()
@@ -101,7 +84,6 @@ pub fn play_eat_sfx(
     });
 }
 
-// TODO moze generyk
 pub fn play_lvlup_sfx(
     audio: Res<Audio>,
     audio_state: Res<AudioAssets>,
@@ -112,37 +94,25 @@ pub fn play_lvlup_sfx(
     });
 }
 
-pub fn shoot_sfx<T>(
+pub fn play_shoot_sfx(
     audio: Res<Audio>,
     audio_state: Res<AudioAssets>,
-    mut audio_event: EventReader<T>,
-) where
-    T: AudioEven + std::marker::Send + std::marker::Sync,
-{
-    audio_event
-        .iter()
-        .for_each(|event| event.play(audio, audio_state));
+    mut audio_event: EventReader<AudioShootEvent>,
+) {
+    audio_event.iter().for_each(|_| {
+        audio.play(audio_state.shoot.clone());
+    });
 }
 
-// pub fn play_shoot_sfx(
-//     audio: Res<Audio>,
-//     audio_state: Res<AudioAssets>,
-//     mut audio_event: EventReader<AudioShootEvent>,
-// ) {
-//     audio_event.iter().for_each(|_| {
-//         audio.play(audio_state.shoot.clone());
-//     });
-// }
-//
-// pub fn play_fast_shoot_sfx(
-//     audio: Res<Audio>,
-//     audio_state: Res<AudioAssets>,
-//     mut audio_event: EventReader<AudioFastShootEvent>,
-// ) {
-//     audio_event.iter().for_each(|_| {
-//         audio.play(audio_state.fast_shoot.clone());
-//     });
-// }
+pub fn play_fast_shoot_sfx(
+    audio: Res<Audio>,
+    audio_state: Res<AudioAssets>,
+    mut audio_event: EventReader<AudioFastShootEvent>,
+) {
+    audio_event.iter().for_each(|_| {
+        audio.play(audio_state.fast_shoot.clone());
+    });
+}
 
 pub fn play_death_sfx(
     audio: Res<Audio>,
