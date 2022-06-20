@@ -8,6 +8,8 @@ use crate::game::{
 };
 use crate::GameTextures;
 
+pub struct BulletsPlugin;
+
 pub struct ShootEvent;
 pub struct FastShootEvent;
 
@@ -21,6 +23,18 @@ pub struct BulletOptions {
     pub y: f32,
     pub direction: GameDirection,
     pub player_vex: f32,
+}
+
+impl Plugin for BulletsPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_system_set(
+            SystemSet::new()
+                .with_system(destroy_bullet_on_contact)
+                .with_system(kill_enemy),
+        )
+        .add_event::<ShootEvent>()
+        .add_event::<FastShootEvent>();
+    }
 }
 
 fn spawn_bullet(

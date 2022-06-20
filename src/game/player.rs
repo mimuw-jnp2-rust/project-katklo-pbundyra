@@ -103,16 +103,12 @@ impl Plugin for PlayerPlugin {
                     .with_system(player_movement)
                     .with_system(jump_reset)
                     .with_system(finish)
-                    .with_system(destroy_bullet_on_contact)
                     .with_system(death_by_enemy)
                     .with_system(camera_follow_player)
-                    .with_system(kill_enemy)
                     .with_system(fire_controller)
                     .with_system(handle_death),
             )
-            .add_event::<DeadPlayerEvent>()
-            .add_event::<ShootEvent>()
-            .add_event::<FastShootEvent>();
+            .add_event::<DeadPlayerEvent>();
     }
 }
 

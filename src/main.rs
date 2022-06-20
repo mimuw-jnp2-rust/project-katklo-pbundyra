@@ -5,8 +5,8 @@ use game::GamePlugin;
 use menu::MenuPlugin;
 
 use crate::game::{
-    GameAudioPlugin, GameTextures, Level, MapPlugin, MonsterAiPlugin, PlayerPlugin, PowerupsPlugin,
-    Random,
+    BulletsPlugin, GameAudioPlugin, GameTextures, Level, MapPlugin, MonsterAiPlugin, PlayerPlugin,
+    PowerupsPlugin, Random,
 };
 
 mod game;
@@ -36,6 +36,7 @@ fn main() {
         .insert_resource(Level::new())
         .add_state(AppState::MainMenu)
         .add_plugin(GamePlugin)
+        .add_plugin(BulletsPlugin)
         .add_plugin(GameAudioPlugin)
         .add_plugin(PowerupsPlugin)
         .add_plugin(PlayerPlugin)
