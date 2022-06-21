@@ -1,13 +1,18 @@
 use bevy::app::AppExit;
 use bevy::prelude::*;
 
-use crate::{AppState, Level, Random};
 use crate::menu::structs::{InputText, MenuButton, MenuColors, SelectedOption};
 use crate::menu::utils::{start_game_for_level, start_new_game};
+use crate::{AppState, Level, Random};
 
-pub fn button_press_system(mut commands: Commands, mut state: ResMut<State<AppState>>,
-                           buttons: Query<(&Interaction, &MenuButton, Entity, Changed<Interaction>), With<Button>>,
-                           mut exit: EventWriter<AppExit>, mut rng: ResMut<Random>, mut level: ResMut<Level>) {
+pub fn button_press_system(
+    mut commands: Commands,
+    mut state: ResMut<State<AppState>>,
+    buttons: Query<(&Interaction, &MenuButton, Entity, Changed<Interaction>), With<Button>>,
+    mut exit: EventWriter<AppExit>,
+    mut rng: ResMut<Random>,
+    mut level: ResMut<Level>,
+) {
     for (interaction, button, entity, _) in buttons.iter() {
         if *interaction == Interaction::Clicked {
             match button {
@@ -23,7 +28,7 @@ pub fn button_press_system(mut commands: Commands, mut state: ResMut<State<AppSt
                     commands.entity(entity).insert(SelectedOption);
                 }
                 MenuButton::NextLevel => {
-                    level.level += 1;
+                    level.increase_level();
                     start_game_for_level(&mut state, &mut rng, &mut level);
                 }
                 MenuButton::RestartLevel => start_game_for_level(&mut state, &mut rng, &mut level),
@@ -33,9 +38,11 @@ pub fn button_press_system(mut commands: Commands, mut state: ResMut<State<AppSt
     }
 }
 
-pub fn button_system(materials: Res<MenuColors>,
-                     mut buttons: Query<(&Interaction, &mut UiColor, Changed<Interaction>, Option<&SelectedOption>), With<Button>>) {
-    for (interaction, mut color, _, selected) in buttons.iter_mut() {
+pub fn button_system(
+    materials: Res<MenuColors>,
+    mut buttons: Query<(&Interaction, &mut UiColor, Option<&SelectedOption>), With<Button>>,
+) {
+    for (interaction, mut color, selected) in buttons.iter_mut() {
         *color = match (*interaction, selected) {
             (Interaction::Clicked, _) => materials.button_pressed,
             (Interaction::Hovered, Some(_)) => materials.button_selected,
@@ -46,26 +53,31 @@ pub fn button_system(materials: Res<MenuColors>,
     }
 }
 
-pub fn input_button_system(mut commands: Commands, mut random: ResMut<Random>, materials: Res<MenuColors>,
-                           mut buttons: Query<(&Interaction, &MenuButton, Changed<Interaction>), With<Button>>,
-                           mut selected_query: Query<(Entity, &mut UiColor), With<SelectedOption>>) {
+pub fn input_button_system(
+    mut commands: Commands,
+    mut random: ResMut<Random>,
+    materials: Res<MenuColors>,
+    mut buttons: Query<(&Interaction, &MenuButton, Changed<Interaction>), With<Button>>,
+    mut selected_query: Query<(Entity, &mut UiColor), With<SelectedOption>>,
+) {
     for (interaction, button, _) in buttons.iter_mut() {
         if let MenuButton::InputButton = button {
             continue;
-        } else {
-            if *interaction == Interaction::Clicked {
-                if let Ok((selected, mut selected_color)) = selected_query.get_single_mut() {
-                    random.can_change = false;
-                    *selected_color = materials.normal_button;
-                    commands.entity(selected).remove::<SelectedOption>();
-                }
+        } else if *interaction == Interaction::Clicked {
+            if let Ok((selected, mut selected_color)) = selected_query.get_single_mut() {
+                random.can_change = false;
+                *selected_color = materials.normal_button;
+                commands.entity(selected).remove::<SelectedOption>();
             }
         }
     }
 }
 
-pub fn read_input_system(mut random: ResMut<Random>, keys: Res<Input<KeyCode>>,
-                         mut char_evr: EventReader<ReceivedCharacter>) {
+pub fn read_input_system(
+    mut random: ResMut<Random>,
+    keys: Res<Input<KeyCode>>,
+    mut char_evr: EventReader<ReceivedCharacter>,
+) {
     for ev in char_evr.iter() {
         if ev.char.is_alphanumeric() {
             random.add_char(ev.char);

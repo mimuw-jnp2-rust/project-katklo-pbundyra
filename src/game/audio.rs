@@ -1,15 +1,17 @@
 use bevy::prelude::*;
 use bevy_kira_audio::{Audio, AudioChannel, AudioPlugin, AudioSource};
-use rand::{Rng, thread_rng};
+use rand::{thread_rng, Rng};
 
-use crate::{AppState};
-use crate::game::player::DeadPlayerEvent;
-use crate::game::powerups::CoffeeEvent;
-use crate::game::{FastShootEvent, RustEvent, ShootEvent};
+use crate::AppState;
 
 pub struct GameAudioPlugin;
 
 pub struct AudioHitEvent;
+pub struct AudioCoffeeEvent;
+pub struct AudioRustEvent;
+pub struct AudioFastShootEvent;
+pub struct AudioShootEvent;
+pub struct AudioDeadPlayerEvent;
 
 pub struct AudioAssets {
     bg: Handle<AudioSource>,
@@ -18,17 +20,15 @@ pub struct AudioAssets {
     hit2: Handle<AudioSource>,
     hit3: Handle<AudioSource>,
     death: Handle<AudioSource>,
-    eat1: Handle<AudioSource>,
-    eat2: Handle<AudioSource>,
-    eat3: Handle<AudioSource>,
+    drink1: Handle<AudioSource>,
+    drink2: Handle<AudioSource>,
+    drink3: Handle<AudioSource>,
     shoot: Handle<AudioSource>,
     fast_shoot: Handle<AudioSource>,
     lvlup: Handle<AudioSource>,
     bg_channel: AudioChannel,
     menu_channel: AudioChannel,
 }
-
-const SFX_VOLUME: f32 = 0.35;
 
 impl Plugin for GameAudioPlugin {
     fn build(&self, app: &mut App) {
@@ -42,87 +42,87 @@ impl Plugin for GameAudioPlugin {
             .add_system(play_lvlup_sfx)
             .add_system(play_shoot_sfx)
             .add_system(play_fast_shoot_sfx)
-            .add_startup_system(play_menu_music);
+            .add_startup_system(play_menu_music)
+            .add_event::<AudioRustEvent>()
+            .add_event::<AudioCoffeeEvent>()
+            .add_event::<AudioHitEvent>()
+            .add_event::<AudioFastShootEvent>()
+            .add_event::<AudioShootEvent>()
+            .add_event::<AudioDeadPlayerEvent>();
     }
 }
 
 pub fn play_hit_sfx(
     audio: Res<Audio>,
     audio_state: Res<AudioAssets>,
-    mut hit_events: EventReader<AudioHitEvent>,
+    mut audio_event: EventReader<AudioHitEvent>,
 ) {
-    for _ in hit_events.iter() {
-        audio.set_volume(SFX_VOLUME);
+    audio_event.iter().for_each(|_| {
         let mut rng = thread_rng();
         match rng.gen_range(0..100) {
+            // 1/3 chance of playing each sound
             0..=33 => audio.play(audio_state.hit1.clone()),
             34..=67 => audio.play(audio_state.hit2.clone()),
             _ => audio.play(audio_state.hit3.clone()),
         };
-    }
+    });
 }
 
 pub fn play_eat_sfx(
     audio: Res<Audio>,
     audio_state: Res<AudioAssets>,
-    mut coffee_events: EventReader<CoffeeEvent>,
+    mut audio_event: EventReader<AudioCoffeeEvent>,
 ) {
-    for _ in coffee_events.iter() {
-        audio.set_volume(SFX_VOLUME);
+    audio_event.iter().for_each(|_| {
         let mut rng = thread_rng();
         match rng.gen_range(0..100) {
-            0..=33 => audio.play(audio_state.eat1.clone()),
-            34..=67 => audio.play(audio_state.eat2.clone()),
-            _ => audio.play(audio_state.eat3.clone()),
+            // 1/3 chance of playing each sound
+            0..=33 => audio.play(audio_state.drink1.clone()),
+            34..=67 => audio.play(audio_state.drink2.clone()),
+            _ => audio.play(audio_state.drink3.clone()),
         };
-    }
+    });
 }
 
 pub fn play_lvlup_sfx(
     audio: Res<Audio>,
     audio_state: Res<AudioAssets>,
-    mut lvlup_events: EventReader<RustEvent>,
+    mut audio_event: EventReader<AudioRustEvent>,
 ) {
-    for _ in lvlup_events.iter() {
+    audio_event.iter().for_each(|_| {
         audio.play(audio_state.lvlup.clone());
-    }
+    });
 }
 
 pub fn play_shoot_sfx(
     audio: Res<Audio>,
     audio_state: Res<AudioAssets>,
-    mut shoot_events: EventReader<ShootEvent>,
+    mut audio_event: EventReader<AudioShootEvent>,
 ) {
-    for _ in shoot_events.iter() {
-        audio.set_volume(SFX_VOLUME);
+    audio_event.iter().for_each(|_| {
         audio.play(audio_state.shoot.clone());
-    }
+    });
 }
 
 pub fn play_fast_shoot_sfx(
     audio: Res<Audio>,
     audio_state: Res<AudioAssets>,
-    mut fast_shoot_events: EventReader<FastShootEvent>,
+    mut audio_event: EventReader<AudioFastShootEvent>,
 ) {
-    for _ in fast_shoot_events.iter() {
-        audio.set_volume(SFX_VOLUME);
+    audio_event.iter().for_each(|_| {
         audio.play(audio_state.fast_shoot.clone());
-    }
+    });
 }
 
 pub fn play_death_sfx(
     audio: Res<Audio>,
     audio_state: Res<AudioAssets>,
-    mut death_events: EventReader<DeadPlayerEvent>,
-    mut state: ResMut<State<AppState>>,
+    mut death_events: EventReader<AudioDeadPlayerEvent>,
 ) {
     for _ in death_events.iter() {
         audio.play(audio_state.death.clone());
-        println!("Player died");
-        state.set(AppState::DeathMenu).expect("Could not set state to DeathMenu");
     }
 }
-
 
 fn play_bg_music(audio: Res<Audio>, audio_state: Res<AudioAssets>) {
     audio.stop_channel(&audio_state.menu_channel);
@@ -142,9 +142,9 @@ fn load_audio(mut commands: Commands, assets: Res<AssetServer>) {
         hit2: assets.load("audio/hit2.ogg"),
         hit3: assets.load("audio/hit3.ogg"),
         death: assets.load("audio/death.ogg"),
-        eat1: assets.load("audio/eat1.ogg"),
-        eat2: assets.load("audio/eat2.ogg"),
-        eat3: assets.load("audio/eat3.ogg"),
+        drink1: assets.load("audio/drink1.ogg"),
+        drink2: assets.load("audio/drink2.ogg"),
+        drink3: assets.load("audio/drink3.ogg"),
         shoot: assets.load("audio/shoot.ogg"),
         fast_shoot: assets.load("audio/fast_shoot.ogg"),
         lvlup: assets.load("audio/levelup.ogg"),

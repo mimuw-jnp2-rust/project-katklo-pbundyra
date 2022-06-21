@@ -1,8 +1,12 @@
 use bevy::prelude::*;
-use rand::{Rng, SeedableRng, thread_rng};
 use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng, SeedableRng};
 use rand_pcg::Pcg64;
 use rand_seeder::Seeder;
+
+const JUMP_IMPULSE: f32 = 15.0;
+const MAX_SEED_LEN: usize = 15;
+const LEVEL_SEED_LEN_MULTIPLIER: usize = 2;
 
 #[derive(Component, Copy, Clone)]
 pub enum GameDirection {
@@ -17,19 +21,25 @@ pub struct FinishLine;
 pub struct Wall;
 
 #[derive(Component)]
+pub struct Bullet;
+
+#[derive(Component)]
 pub struct WeakBullet;
 
 #[derive(Component)]
 pub struct StrongBullet;
 
 #[derive(Component)]
+pub struct PlayersBullet;
+
+#[derive(Component)]
+pub struct EnemyBullet;
+
+#[derive(Component)]
 pub enum Weapon {
     WeakBullet,
     StrongBullet,
 }
-
-#[derive(Component)]
-pub struct Bullet;
 
 #[derive(Component)]
 pub struct Jumper {
@@ -40,7 +50,7 @@ pub struct Jumper {
 impl Default for Jumper {
     fn default() -> Self {
         Jumper {
-            jump_impulse: 13.0,
+            jump_impulse: JUMP_IMPULSE,
             is_jumping: false,
         }
     }
@@ -61,23 +71,26 @@ pub struct Coffee;
 #[derive(Component)]
 pub struct Rust;
 
+#[derive(Component, Default)]
+pub struct Bug;
+
+#[derive(Component, Default)]
+pub struct Valgrind;
+
 #[derive(Component)]
-pub struct Bug {
+pub struct Enemy {
     pub speed: f32,
-    pub facing_direction: GameDirection,
+    pub direction: GameDirection,
 }
 
-impl Default for Bug {
+impl Default for Enemy {
     fn default() -> Self {
-        Bug {
+        Enemy {
             speed: 2.0,
-            facing_direction: GameDirection::Right,
+            direction: GameDirection::Right,
         }
     }
 }
-
-#[derive(Component)]
-pub struct Enemy;
 
 #[derive(Debug, Component, PartialEq, Eq, Clone)]
 pub struct Random {
@@ -104,7 +117,7 @@ impl Random {
     }
 
     pub fn add_char(&mut self, c: char) {
-        if self.can_change && self.seed.len() <= 15 {
+        if self.can_change && self.seed.len() <= MAX_SEED_LEN {
             self.seed.push(c);
         }
     }
@@ -122,8 +135,9 @@ impl Random {
     pub fn make_generator_for_level(&mut self, level: usize) {
         let temp_rng: Pcg64 = Seeder::from(&self.seed).make_rng();
 
-        let level_seed: String = temp_rng.sample_iter(&Alphanumeric)
-            .take(5 * level)
+        let level_seed: String = temp_rng
+            .sample_iter(&Alphanumeric)
+            .take(LEVEL_SEED_LEN_MULTIPLIER * level)
             .map(char::from)
             .collect();
 
@@ -133,16 +147,31 @@ impl Random {
 
 pub struct Level {
     pub level: usize,
+    pub difficulty: f64,
 }
 
 impl Level {
     pub fn new() -> Self {
-        Self { level: 0 }
+        Self {
+            level: 1,
+            difficulty: 1.,
+        }
+    }
+
+    pub fn increase_level(&mut self) {
+        self.level += 1;
+        self.update_difficulty();
+    }
+
+    pub fn reset_level(&mut self) {
+        self.level = 1;
+        self.update_difficulty();
+    }
+
+    fn update_difficulty(&mut self) {
+        self.difficulty = ((self.level - 1) / 3) as f64 + 1.;
     }
 }
-#[derive(Component, Default)]
-pub struct LivingBeing;
 
 #[derive(Component)]
 pub struct PhantomEntity;
-
