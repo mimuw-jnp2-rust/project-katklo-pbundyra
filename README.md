@@ -62,23 +62,23 @@ Widzimy też pole na poprawę i rzeczy które chcemy dodać w kolejnej części 
 # Part 2
 ## Opis:
 Włączcie Sweden i znów poczujcie się jak wtedy,
-gdy mając 12 lat w swoim pokoju, przekopywaliście się przez kolejne stone’y,
+gdy mając 12 lat w swoim pokoju, przekopywaliście się przez kolejne stone'y,
 żeby dostać upragnione diamenty.
-Ah nie, nie musicie tego robić,
-bo kolejna wersja Mario MIM dzięki swojej wyjątkowej szacie audiowizualnej
-przeniesie was do stanu tej błogiej nostalgii. 
+Ah, nie, nie musicie tego robić,
+bo kolejna wersja „Mario MIM” dzięki swojej wyjątkowej szacie audiowizualnej
+przeniesie was do stanu tej błogiej nostalgii.
 Wspomnienia przywoływane przez grę będą sięgać również bliższej przeszłości,
-wtedy gdy jako młodzi kadeci Podstaw Matematyki dostaliście pierwsze oceny,
-pierwszy raz zobaczyliście zielony komunikat o poprawnie wykonanych testach w swoich terminalach,
+gdy jako młodzi kadeci Podstaw Matematyki dostaliście pierwsze oceny,
+pierwszy raz zobaczyliście zielony komunikat o poprawnie wykonanych testach w swoich terminalach
 czy zamieniliście C++ na Rusta.
-Jako studenci MIM-u musicie stawić czoła różnym bugom lub- co gorsza Valgrindowi…
-Aby jakoś przebrnąć do końca kolejnego semestru, możecie wzmocnić się kawą lub 
-nauczyć najbardziej uwielbianego języka na świecie. 
+Jako studenci MIM-u musicie stawić czoła różnym bugom lub - co gorsza - Valgrindowi…
+Aby jakoś przebrnąć do końca kolejnego semestru możecie wzmocnić się kawą lub
+nauczyć najbardziej uwielbianego języka na świecie.
 Chcecie podzielić się rozgrywką z innymi studentami MIM-u?
-Nic prostszego, ponieważ możecie zagrać [online](https://pbundyra.github.io/wasm-deploy/) 
-i dzięki seedowi wygenerować tę samą mapę co Twój towarzysz studenckiej podróży.
+Nic prostszego, ponieważ możecie zagrać [online](https://pbundyra.github.io/wasm-deploy/)
+i dzięki seedowi wygenerować tę samą mapę, co Twój towarzysz studenckiej podróży.
 ## Zmiany:
-- poprawienie wydajności przez duży refactoring
+- poprawienie wydajności
 - poprawienie fizyki powerup-ów
 - dodanie timerów do powerup-ów
 - dodanie kolejnych elementów menu
@@ -86,13 +86,13 @@ i dzięki seedowi wygenerować tę samą mapę co Twój towarzysz studenckiej po
 - poprawienie poruszania się przeciwników
 - dodanie kolejnego przeciwnika, który potrafi strzelać
 - dodanie efektów dźwiękowych
-- znaczące poprawienie stylu i przejrzystości kodu
 - poprawienie collider-ów ścian
-- deploy gry używając WebAssembly i Github Pages
+- deploy gry używając WebAssembly i Github Pages - https://pbundyra.github.io/wasm-deploy/
 - dodanie mechaniki poziomów ze zwiększającym się poziomem trudności
 - podział poziomów na 3 różne rodzaje
 - naprawa bugów
-- poprawienie stylu
+- poprawa stylu i przejrzystości kodu z poprzedniej części
+    
 ## Czego nie udało nam się zrobić i dlaczego:
 Nie zrobiliśmy finałowego bossa, ponieważ zmieniliśmy koncepcję stopniowania trudności poziomów oraz co ważniejsze, chcieliśmy dostarczyć kod który będzie zawierał trochę mniej feature’ów, ale za to będzie lepszej jakości. Zrobiliśmy ogromny refactor pierwszej części, korzystając z mechaniki Eventów w Bevy oraz dodaliśmy kolejne ważne Pluginy. Postawiliśmy na jakość, zamiast ilość i po ukończeniu projektu uważamy, że była to lepsza decyzja.
 Czy są bugi? Są, ale bardzo rzadko- prawdopodobnie podczas rozgrywki nie będziecie mieli szansy ich nawet zauważyć (więc nie będziemy ich zdradzać), oprócz tych, które sami musicie pokonać. Naprawiliśmy bardzo dużo bugów z poprzedniej części, ale zabrakło zasobów, żeby złapać je wszystkie ;)
