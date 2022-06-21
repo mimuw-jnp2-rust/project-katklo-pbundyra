@@ -81,9 +81,9 @@ pub fn add_enemies(
     rng: &mut ResMut<Random>,
     level: &Res<Level>,
 ) {
+    // every 3 levels we change the kinds of enemies.
     let (should_add_bug, should_add_valgrind) = (
-        level.level % 3 == 1 || level.level % 3 == 0,
-        level.level % 3 == 2 || level.level % 3 == 0,
+        level.level % 3 != 2, level.level % 3 != 1,
     );
 
     world.iter().for_each(|&(x, height)| {
