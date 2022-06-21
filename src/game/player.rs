@@ -45,12 +45,11 @@ impl Default for Player {
     }
 }
 
-#[allow(dead_code)]
 impl Player {
     pub fn spawn(commands: &mut Commands, game_textures: Res<GameTextures>) {
         let mut player_entity = spawn_dynamic_object(
             commands,
-            create_sprite_bundle(game_textures.player.clone(), (0.9, 1.5), (0.0, 2.0, 0.0)),
+            create_sprite_bundle(game_textures.player.clone(), (0.9, 0.9), (0.0, 2.0, 0.0)),
             None,
             None,
         );
@@ -64,13 +63,6 @@ impl Player {
             .entity(player_entity)
             .insert(Player::default())
             .insert(Jumper::default());
-    }
-
-    pub fn change_weapon(&mut self) {
-        match self.weapon {
-            Weapon::WeakBullet => self.weapon = Weapon::StrongBullet,
-            Weapon::StrongBullet => self.weapon = Weapon::WeakBullet,
-        }
     }
 
     pub fn increase_speed(&mut self) {
@@ -153,7 +145,7 @@ pub fn player_movement(
 pub fn fire_controller(
     keyboard_input: Res<Input<KeyCode>>,
     mut commands: Commands,
-    mut game_textures: Res<GameTextures>,
+    game_textures: Res<GameTextures>,
     positions: Query<(&mut Transform, &RigidBody, &mut Player, &mut Velocity), With<Player>>,
     mut send_shoot_event: EventWriter<AudioShootEvent>,
     mut send_fast_shoot_event: EventWriter<AudioFastShootEvent>,
@@ -169,11 +161,11 @@ pub fn fire_controller(
             match player.weapon {
                 Weapon::WeakBullet => {
                     send_shoot_event.send(AudioShootEvent);
-                    spawn_weak_bullet(&mut commands, &mut game_textures, options);
+                    spawn_weak_bullet(&mut commands, &game_textures, options);
                 }
                 Weapon::StrongBullet => {
                     send_fast_shoot_event.send(AudioFastShootEvent);
-                    spawn_strong_bullet(&mut commands, &mut game_textures, options);
+                    spawn_strong_bullet(&mut commands, &game_textures, options);
                 }
             }
         }
@@ -222,11 +214,14 @@ pub fn finish(
 ) {
     for contact_event in contact_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = contact_event {
-            match (players.get_single(), lines.get_single()) {
-                (Ok((player, _)), Ok((line, _))) => {
-                    if (*ent1 == player && *ent2 == line) || (*ent1 == line && *ent2 == player) {
-                        state.set(AppState::WinMenu).unwrap();
-                    }
+            match (
+                players.get(*ent1),
+                lines.get(*ent2),
+                players.get(*ent2),
+                lines.get(*ent1),
+            ) {
+                (Ok(_), Ok(_), _, _) | (_, _, Ok(_), Ok(_)) => {
+                    state.set(AppState::WinMenu).unwrap()
                 }
                 _ => {}
             }

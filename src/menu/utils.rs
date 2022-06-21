@@ -99,7 +99,7 @@ fn spawn_button(
     but: MenuButton,
 ) {
     parent
-        .spawn_bundle(button_bundle(&colors))
+        .spawn_bundle(button_bundle(colors))
         .with_children(|parent| {
             match but {
                 MenuButton::NewGame | MenuButton::NextLevel => {
@@ -117,7 +117,7 @@ fn spawn_button(
                 _ => {}
             };
 
-            parent.spawn_bundle(button_text_bundle(&colors, &textures, text));
+            parent.spawn_bundle(button_text_bundle(colors, textures, text));
         })
         .insert(but);
 }
@@ -128,10 +128,10 @@ fn spawn_input_button(
     parent: &mut ChildBuilder,
 ) {
     parent
-        .spawn_bundle(button_bundle(&colors))
+        .spawn_bundle(button_bundle(colors))
         .with_children(|parent| {
             parent
-                .spawn_bundle(button_text_bundle(&colors, &textures, ""))
+                .spawn_bundle(button_text_bundle(colors, textures, ""))
                 .insert(InputText);
         })
         .insert(MenuButton::InputButton);
@@ -205,7 +205,7 @@ fn text_bundle(
     style: Option<Style>,
 ) -> TextBundle {
     TextBundle {
-        style: style.unwrap_or(Style::default()),
+        style: style.unwrap_or_default(),
         text: Text::with_section(
             label,
             TextStyle {

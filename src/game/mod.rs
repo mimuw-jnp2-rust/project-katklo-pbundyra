@@ -76,7 +76,7 @@ fn cleanup_all(mut commands: Commands, query: Query<Entity>) {
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(GameTextures {
-        player: asset_server.load("images/wojownik.png"),
+        player: asset_server.load("images/player.png"),
         weak_bullet: asset_server.load("images/weak_bullet.png"),
         strong_bullet: asset_server.load("images/strong_bullet.png"),
         enemy_bullet: asset_server.load("images/enemy_bullet.png"),

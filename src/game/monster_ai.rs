@@ -51,7 +51,7 @@ fn monster_walks(mut monsters: Query<(&Enemy, &mut Velocity)>) {
 
 fn valgrind_shoots(
     mut commands: Commands,
-    mut game_textures: Res<GameTextures>,
+    game_textures: Res<GameTextures>,
     positions: Query<(&mut Transform, &RigidBody, &mut Enemy, &mut Velocity), With<Valgrind>>,
     mut rng: ResMut<Random>,
 ) {

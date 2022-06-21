@@ -40,17 +40,9 @@ pub fn button_press_system(
 
 pub fn button_system(
     materials: Res<MenuColors>,
-    mut buttons: Query<
-        (
-            &Interaction,
-            &mut UiColor,
-            Changed<Interaction>,
-            Option<&SelectedOption>,
-        ),
-        With<Button>,
-    >,
+    mut buttons: Query<(&Interaction, &mut UiColor, Option<&SelectedOption>), With<Button>>,
 ) {
-    for (interaction, mut color, _, selected) in buttons.iter_mut() {
+    for (interaction, mut color, selected) in buttons.iter_mut() {
         *color = match (*interaction, selected) {
             (Interaction::Clicked, _) => materials.button_pressed,
             (Interaction::Hovered, Some(_)) => materials.button_selected,
