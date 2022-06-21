@@ -32,8 +32,6 @@ fn main() {
             ..default()
         })
         .insert_resource(ClearColor(Color::BEIGE))
-        .insert_resource(Random::new())
-        .insert_resource(Level::new())
         .add_state(AppState::MainMenu)
         .add_plugin(GamePlugin)
         .add_plugin(BulletsPlugin)

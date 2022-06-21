@@ -82,9 +82,7 @@ pub fn add_enemies(
     level: &Res<Level>,
 ) {
     // every 3 levels we change the kinds of enemies.
-    let (should_add_bug, should_add_valgrind) = (
-        level.level % 3 != 2, level.level % 3 != 1,
-    );
+    let (should_add_bug, should_add_valgrind) = (level.level % 3 != 2, level.level % 3 != 1);
 
     world.iter().for_each(|&(x, height)| {
         if should_add_bug && should_add_enemy(x, rng, level) {
