@@ -59,10 +59,10 @@ pub fn play_hit_sfx(
 ) {
     audio_event.iter().for_each(|_| {
         let mut rng = thread_rng();
-        match rng.gen_range(0..100) {
+        match rng.gen_range(0..=2) {
             // 1/3 chance of playing each sound
-            0..=33 => audio.play(audio_state.hit1.clone()),
-            34..=67 => audio.play(audio_state.hit2.clone()),
+            0 => audio.play(audio_state.hit1.clone()),
+            1 => audio.play(audio_state.hit2.clone()),
             _ => audio.play(audio_state.hit3.clone()),
         };
     });
@@ -75,10 +75,10 @@ pub fn play_eat_sfx(
 ) {
     audio_event.iter().for_each(|_| {
         let mut rng = thread_rng();
-        match rng.gen_range(0..100) {
+        match rng.gen_range(0..=2) {
             // 1/3 chance of playing each sound
-            0..=33 => audio.play(audio_state.drink1.clone()),
-            34..=67 => audio.play(audio_state.drink2.clone()),
+            0 => audio.play(audio_state.drink1.clone()),
+            1 => audio.play(audio_state.drink2.clone()),
             _ => audio.play(audio_state.drink3.clone()),
         };
     });
