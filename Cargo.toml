@@ -19,7 +19,7 @@ bevy = { version = "0.7", features = [
     "x11"
 ] }
 bevy_rapier2d = "0.13"
-bevy_kira_audio = { version = "0.9", features = ["ogg", ] }
+bevy_kira_audio = { version = "0.9", features = ["ogg"] }
 rand = "0.8"
 rand_pcg = "0.3"
 rand_seeder = "0.2"
