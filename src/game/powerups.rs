@@ -47,7 +47,7 @@ fn spawn_powerup<T>(
 {
     let mut powerup_entity = spawn_static_object(
         commands,
-        create_sprite_bundle(texture, (0.99, 0.99), (x, y, 10.0)),
+        create_sprite_bundle(texture, Vec2::new(0.99, 0.99), Vec3::new(x, y, 10.0)),
     );
     powerup_entity = spawn_sensor_collider(
         commands,
@@ -156,6 +156,7 @@ fn handle_rust_event(
 pub fn finish_rust(mut players: Query<&mut Player>, time: Res<Time>) {
     if let Ok(mut player) = players.get_single_mut() {
         player.weapon_upgrade_timer.tick(time.delta());
+
         if player.weapon_upgrade_timer.finished() {
             player.degrade_weapon();
         }
@@ -170,27 +171,20 @@ pub fn add_powerups(
     level: &Res<Level>,
 ) {
     world.iter().for_each(|&(x, height)| {
-        if should_add_coffee(x, rng, level) {
-            spawn_coffee(commands, &game_textures, x as f32, height as f32 + 0.75);
+        let y = height as f32 + 0.75;
+
+        if should_add(x, rng, level, SPAWNING_COFFEE_PROBABILITY) {
+            spawn_coffee(commands, &game_textures, x as f32, y);
         }
-        if should_add_rust(x, rng, level) {
-            spawn_rust(commands, &game_textures, x as f32, height as f32 + 0.75);
+        if should_add(x, rng, level, SPAWNING_RUST_PROBABILITY) {
+            spawn_rust(commands, &game_textures, x as f32, y);
         }
     });
 }
 
-fn should_add_coffee(x: i32, rng: &mut ResMut<Random>, level: &Res<Level>) -> bool {
+fn should_add(x: i32, rng: &mut ResMut<Random>, level: &Res<Level>, chance: f64) -> bool {
     if x <= SAFE_ZONE_WIDTH {
         return false;
     }
-    rng.generator
-        .gen_bool(SPAWNING_COFFEE_PROBABILITY / level.difficulty)
-}
-
-fn should_add_rust(x: i32, rng: &mut ResMut<Random>, level: &Res<Level>) -> bool {
-    if x <= SAFE_ZONE_WIDTH {
-        return false;
-    }
-    rng.generator
-        .gen_bool(SPAWNING_RUST_PROBABILITY / level.difficulty)
+    rng.generator.gen_bool(chance / level.difficulty)
 }

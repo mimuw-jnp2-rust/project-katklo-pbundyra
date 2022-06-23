@@ -16,7 +16,7 @@ where
 {
     let mut enemy_entity = spawn_dynamic_object(
         commands,
-        create_sprite_bundle(texture, (0.9, 0.9), (x, y, 10.0)),
+        create_sprite_bundle(texture, Vec2::new(0.9, 0.9), Vec3::new(x, y, 10.0)),
         None,
         None,
     );

@@ -240,8 +240,8 @@ fn button_icon_bundle(icon: Handle<Image>) -> ImageBundle {
 fn image_bundle(image: Handle<Image>) -> ImageBundle {
     ImageBundle {
         style: Style {
-            max_size: Size::new(Val::Px(900.), Val::Auto),
-            min_size: Size::new(Val::Px(410.), Val::Px(50.)),
+            max_size: Size::new(Val::Px(800.), Val::Auto),
+            min_size: Size::new(Val::Px(410.), Val::Px(60.)),
             margin: Rect::all(Val::Px(20.0)),
             ..default()
         },

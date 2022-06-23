@@ -49,7 +49,11 @@ fn spawn_bullet(
     };
     let mut bullet_entity = spawn_dynamic_object(
         commands,
-        create_sprite_bundle(texture, (0.5, 0.2), (options.x + spawn_x, options.y, 0.0)),
+        create_sprite_bundle(
+            texture,
+            Vec2::new(0.5, 0.2),
+            Vec3::new(options.x + spawn_x, options.y, 0.0),
+        ),
         Some(vel_x),
         Some(0.0),
     );

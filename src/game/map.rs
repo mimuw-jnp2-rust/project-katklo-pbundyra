@@ -101,22 +101,25 @@ fn add_column_of_tiles(
     for h in y_min..=y_max {
         spawn_static_object(
             commands,
-            create_sprite_bundle(texture.clone(), (TILE_SIZE, TILE_SIZE), (x, h as f32, 0.)),
+            create_sprite_bundle(
+                texture.clone(),
+                Vec2::new(TILE_SIZE, TILE_SIZE),
+                Vec3::new(x, h as f32, 0.),
+            ),
         );
     }
 }
 
 // Add colliders for the whole map as big rectangles
 fn add_colliders(world: &[(i32, usize)], commands: &mut Commands) {
-    let (mut block_start, mut current_height) =
-        world.first().map(|&(x, y)| (x, y)).unwrap_or((0, 0));
+    let (mut block_start, mut current_height) = world.first().copied().unwrap_or((0, 0));
 
     world.iter().for_each(|&(x, height_at_x)| {
         if height_at_x != current_height {
             spawn_static_collider_object(
                 commands,
-                (block_start as f32 - HALF_TILE_SIZE, -HALF_TILE_SIZE),
-                (
+                Point::new(block_start as f32 - HALF_TILE_SIZE, -HALF_TILE_SIZE),
+                Point::new(
                     x as f32 - HALF_TILE_SIZE,
                     current_height as f32 + HALF_TILE_SIZE,
                 ),
@@ -131,8 +134,8 @@ fn add_colliders(world: &[(i32, usize)], commands: &mut Commands) {
     if let Some(last_x) = world.last().map(|&(x, _)| x) {
         spawn_static_collider_object(
             commands,
-            (block_start as f32 - HALF_TILE_SIZE, -HALF_TILE_SIZE),
-            (
+            Point::new(block_start as f32 - HALF_TILE_SIZE, -HALF_TILE_SIZE),
+            Point::new(
                 last_x as f32 + HALF_TILE_SIZE,
                 current_height as f32 + HALF_TILE_SIZE,
             ),
@@ -176,8 +179,8 @@ fn add_start_and_finish_line(
 
     spawn_static_collider_object(
         commands,
-        (start_x - HALF_TILE_SIZE, start_y - HALF_TILE_SIZE),
-        (
+        Point::new(start_x - HALF_TILE_SIZE, start_y - HALF_TILE_SIZE),
+        Point::new(
             start_x + HALF_TILE_SIZE,
             start_y + WALL_HEIGHT - HALF_TILE_SIZE,
         ),
@@ -186,8 +189,8 @@ fn add_start_and_finish_line(
 
     let finish_entity = spawn_static_collider_object(
         commands,
-        (finish_x - HALF_TILE_SIZE, start_y - HALF_TILE_SIZE),
-        (
+        Point::new(finish_x - HALF_TILE_SIZE, start_y - HALF_TILE_SIZE),
+        Point::new(
             finish_x + HALF_TILE_SIZE,
             finish_y + WALL_HEIGHT - HALF_TILE_SIZE,
         ),
