@@ -69,23 +69,17 @@ fn spawn_rust(commands: &mut Commands, game_textures: &Res<GameTextures>, x: f32
 }
 
 pub fn drink_coffee(
-    players: Query<(Entity, &mut Player)>,
+    players: Query<Entity, With<Player>>,
     coffees: Query<Entity, With<Coffee>>,
     mut collision_events: EventReader<CollisionEvent>,
     mut send_event: EventWriter<CoffeeEvent>,
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-            match (
-                players.get(*ent1),
-                coffees.get(*ent2),
-                players.get(*ent2),
-                coffees.get(*ent1),
-            ) {
-                (Ok(_), Ok(coffee), _, _) | (_, _, Ok(_), Ok(coffee)) => {
-                    send_event.send(CoffeeEvent { coffee });
-                }
-                _ => {}
+            let from_collision = get_both_proper_entities(ent1, ent2, &players, &coffees);
+
+            if let Ok((_, coffee)) = from_collision {
+                send_event.send(CoffeeEvent { coffee });
             }
         }
     }
@@ -116,23 +110,17 @@ pub fn finish_coffee(mut players: Query<&mut Player>, time: Res<Time>) {
 }
 
 pub fn learn_rust(
-    players: Query<(Entity, &mut Player)>,
+    players: Query<Entity, With<Player>>,
     rusts: Query<Entity, With<Rust>>,
     mut collision_events: EventReader<CollisionEvent>,
     mut send_event: EventWriter<RustEvent>,
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-            match (
-                players.get(*ent1),
-                rusts.get(*ent2),
-                players.get(*ent2),
-                rusts.get(*ent1),
-            ) {
-                (Ok(_), Ok(rust), _, _) | (_, _, Ok(_), Ok(rust)) => {
-                    send_event.send(RustEvent { rust });
-                }
-                _ => {}
+            let from_collision = get_both_proper_entities(ent1, ent2, &players, &rusts);
+
+            if let Ok((_, rust)) = from_collision {
+                send_event.send(RustEvent { rust });
             }
         }
     }

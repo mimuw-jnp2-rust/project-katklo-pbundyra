@@ -115,16 +115,10 @@ pub fn destroy_bullet_on_contact(
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-            match (
-                bullets.get(*ent1),
-                walls.get(*ent2),
-                bullets.get(*ent2),
-                walls.get(*ent1),
-            ) {
-                (Ok(bullet), Ok(_), _, _) | (_, _, Ok(bullet), Ok(_)) => {
-                    commands.entity(bullet).despawn_recursive()
-                }
-                _ => {}
+            let from_collision = get_both_proper_entities(ent1, ent2, &walls, &bullets);
+
+            if let Ok((_, bullet)) = from_collision {
+                commands.entity(bullet).despawn_recursive()
             }
         }
     }
@@ -139,18 +133,12 @@ pub fn kill_enemy(
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-            match (
-                bullets.get(*ent1),
-                enemies.get(*ent2),
-                bullets.get(*ent2),
-                enemies.get(*ent1),
-            ) {
-                (Ok(bullet), Ok(enemy), _, _) | (_, _, Ok(bullet), Ok(enemy)) => {
-                    audio_event_sender.send(AudioEvent::new(AudioType::Hit));
-                    commands.entity(bullet).despawn_recursive();
-                    commands.entity(enemy).despawn_recursive();
-                }
-                _ => {}
+            let from_collision = get_both_proper_entities(ent1, ent2, &bullets, &enemies);
+
+            if let Ok((bullet, enemy)) = from_collision {
+                audio_event_sender.send(AudioEvent::new(AudioType::Hit));
+                commands.entity(bullet).despawn_recursive();
+                commands.entity(enemy).despawn_recursive();
             }
         }
     }

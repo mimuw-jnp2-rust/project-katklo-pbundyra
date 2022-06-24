@@ -1,3 +1,4 @@
+use bevy::ecs::query::QueryEntityError;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
@@ -103,4 +104,40 @@ pub fn spawn_solid_collider(
         .insert(friction.unwrap_or_default())
         .insert(ActiveEvents::COLLISION_EVENTS)
         .id()
+}
+
+pub fn get_both_proper_entities<T1, T2>(
+    ent1: &Entity,
+    ent2: &Entity,
+    query1: &Query<Entity, With<T1>>,
+    query2: &Query<Entity, With<T2>>,
+) -> Result<(Entity, Entity), QueryEntityError>
+where
+    T1: Component,
+    T2: Component,
+{
+    query1
+        .get(*ent1)
+        .and_then(|e1| query2.get(*ent2).map(|e2| (e1, e2)))
+        .or_else(|_| {
+            query1
+                .get(*ent2)
+                .and_then(|e1| query2.get(*ent1).map(|e2| (e1, e2)))
+        })
+}
+
+pub fn get_entities_when_first_is_proper<T1, T2>(
+    ent1: &Entity,
+    ent2: &Entity,
+    query1: &Query<Entity, With<T1>>,
+    query2: &Query<Entity, With<T2>>,
+) -> Result<(Entity, Result<Entity, QueryEntityError>), QueryEntityError>
+where
+    T1: Component,
+    T2: Component,
+{
+    query1
+        .get(*ent1)
+        .map(|e1| (e1, query2.get(*ent2)))
+        .or_else(|_| query1.get(*ent2).map(|e1| (e1, query2.get(*ent2))))
 }

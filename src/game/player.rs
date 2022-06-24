@@ -59,7 +59,7 @@ impl Player {
         player_entity = spawn_solid_collider(
             commands,
             player_entity,
-            Collider::round_cuboid(0.3, 0.3, 0.1),
+            Collider::round_cuboid(0.25, 0.3, 0.05),
             Some(Friction::coefficient(3.)),
         );
         commands
@@ -183,12 +183,11 @@ pub fn jump_reset(
     for collision_event in collision_events.iter() {
         if let Ok((_, mut jumper)) = jumpers.get_single_mut() {
             if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-                match (players.get(*ent1), players.get(*ent2)) {
-                    (Ok(_), _) | (_, Ok(_)) => match (bullets.get(*ent1), bullets.get(*ent2)) {
-                        (Ok(_), _) | (_, Ok(_)) => jumper.is_jumping = true,
-                        _ => jumper.is_jumping = false,
-                    },
-                    _ => {}
+                let proper_player_with_bullet =
+                    get_entities_when_first_is_proper(ent1, ent2, &players, &bullets);
+
+                if let Ok((_, Err(_))) = proper_player_with_bullet {
+                    jumper.is_jumping = false;
                 }
             }
         }
@@ -209,23 +208,17 @@ fn handle_death(
 }
 
 pub fn finish(
-    players: Query<(Entity, &mut Player)>,
-    lines: Query<(Entity, &mut FinishLine)>,
+    players: Query<Entity, With<Player>>,
+    lines: Query<Entity, With<FinishLine>>,
     mut contact_events: EventReader<CollisionEvent>,
     mut state: ResMut<State<AppState>>,
 ) {
     for contact_event in contact_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = contact_event {
-            match (
-                players.get(*ent1),
-                lines.get(*ent2),
-                players.get(*ent2),
-                lines.get(*ent1),
-            ) {
-                (Ok(_), Ok(_), _, _) | (_, _, Ok(_), Ok(_)) => {
-                    state.set(AppState::WinMenu).unwrap()
-                }
-                _ => {}
+            let from_collision = get_both_proper_entities(ent1, ent2, &players, &lines);
+
+            if from_collision.is_ok() {
+                state.set(AppState::WinMenu).unwrap()
             }
         }
     }
