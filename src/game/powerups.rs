@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
-use crate::game::{AudioCoffeeEvent, AudioRustEvent, Coffee, Player, Powerup, Rust};
+use crate::game::{AudioEvent, AudioType, Coffee, Player, Powerup, Rust};
 use crate::{GameTextures, Level, Random};
 
 use super::utils::*;
@@ -95,13 +95,13 @@ fn handle_coffee_event(
     mut commands: Commands,
     mut coffee_events: EventReader<CoffeeEvent>,
     mut players: Query<&mut Player>,
-    mut send_event: EventWriter<AudioCoffeeEvent>,
+    mut audio_event_sender: EventWriter<AudioEvent>,
 ) {
     if let Ok(mut player) = players.get_single_mut() {
         coffee_events.iter().for_each(|coffee_event| {
             player.increase_speed();
             commands.entity(coffee_event.coffee).despawn_recursive();
-            send_event.send(AudioCoffeeEvent);
+            audio_event_sender.send(AudioEvent::new(AudioType::Coffee));
         });
     }
 }
@@ -142,13 +142,13 @@ fn handle_rust_event(
     mut commands: Commands,
     mut rust_events: EventReader<RustEvent>,
     mut players: Query<&mut Player>,
-    mut send_event: EventWriter<AudioRustEvent>,
+    mut audio_event_sender: EventWriter<AudioEvent>,
 ) {
     if let Ok(mut player) = players.get_single_mut() {
         rust_events.iter().for_each(|rust_event| {
             player.upgrade_weapon();
             commands.entity(rust_event.rust).despawn_recursive();
-            send_event.send(AudioRustEvent);
+            audio_event_sender.send(AudioEvent::new(AudioType::Rust));
         });
     }
 }

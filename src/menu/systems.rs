@@ -76,9 +76,9 @@ pub fn input_button_system(
 pub fn read_input_system(
     mut random: ResMut<Random>,
     keys: Res<Input<KeyCode>>,
-    mut char_evr: EventReader<ReceivedCharacter>,
+    mut char_received: EventReader<ReceivedCharacter>,
 ) {
-    for ev in char_evr.iter() {
+    for ev in char_received.iter() {
         if ev.char.is_alphanumeric() {
             random.add_char(ev.char);
         }

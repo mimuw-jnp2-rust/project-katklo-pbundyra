@@ -108,10 +108,10 @@ fn monster_contact_detection(
 }
 
 fn monster_change_direction_on_contact(
-    mut events: EventReader<MonsterCollisionEvent>,
+    mut collision_events: EventReader<MonsterCollisionEvent>,
     mut monster_query: Query<&mut Enemy>,
 ) {
-    for event in events.iter() {
+    for event in collision_events.iter() {
         if let Ok(monster) = monster_query.get_mut(event.entity) {
             change_direction(monster);
         }

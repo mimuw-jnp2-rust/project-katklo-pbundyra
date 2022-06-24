@@ -4,7 +4,7 @@ use bevy_rapier2d::prelude::*;
 use super::utils::*;
 use super::GameDirection;
 use crate::game::{
-    spawn_dynamic_object, AudioHitEvent, Bullet, Enemy, EnemyBullet, PlayersBullet, Wall,
+    spawn_dynamic_object, AudioEvent, AudioType, Bullet, Enemy, EnemyBullet, PlayersBullet, Wall,
 };
 use crate::GameTextures;
 
@@ -134,10 +134,10 @@ pub fn kill_enemy(
     mut commands: Commands,
     bullets: Query<Entity, With<PlayersBullet>>,
     enemies: Query<Entity, With<Enemy>>,
-    mut collision_event: EventReader<CollisionEvent>,
-    mut send_audio_hit_event: EventWriter<AudioHitEvent>,
+    mut collision_events: EventReader<CollisionEvent>,
+    mut audio_event_sender: EventWriter<AudioEvent>,
 ) {
-    for collision_event in collision_event.iter() {
+    for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
             match (
                 bullets.get(*ent1),
@@ -146,7 +146,7 @@ pub fn kill_enemy(
                 enemies.get(*ent1),
             ) {
                 (Ok(bullet), Ok(enemy), _, _) | (_, _, Ok(bullet), Ok(enemy)) => {
-                    send_audio_hit_event.send(AudioHitEvent);
+                    audio_event_sender.send(AudioEvent::new(AudioType::Hit));
                     commands.entity(bullet).despawn_recursive();
                     commands.entity(enemy).despawn_recursive();
                 }
