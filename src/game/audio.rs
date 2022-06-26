@@ -13,21 +13,29 @@ pub struct AudioFastShootEvent;
 pub struct AudioShootEvent;
 pub struct AudioDeadPlayerEvent;
 
+pub struct SimpleAudioEvent {
+    pub audio_src: Handle<AudioSource>,
+}
+
+pub struct ComplexedAudioEvent {
+    audio_assets: Vec<Handle<AudioSource>>,
+}
+
 pub struct AudioAssets {
-    bg: Handle<AudioSource>,
-    menu: Handle<AudioSource>,
-    hit1: Handle<AudioSource>,
-    hit2: Handle<AudioSource>,
-    hit3: Handle<AudioSource>,
-    death: Handle<AudioSource>,
-    drink1: Handle<AudioSource>,
-    drink2: Handle<AudioSource>,
-    drink3: Handle<AudioSource>,
-    shoot: Handle<AudioSource>,
-    fast_shoot: Handle<AudioSource>,
-    lvlup: Handle<AudioSource>,
-    bg_channel: AudioChannel,
-    menu_channel: AudioChannel,
+    pub bg: Handle<AudioSource>,
+    pub menu: Handle<AudioSource>,
+    pub hit1: Handle<AudioSource>,
+    pub hit2: Handle<AudioSource>,
+    pub hit3: Handle<AudioSource>,
+    pub death: Handle<AudioSource>,
+    pub drink1: Handle<AudioSource>,
+    pub drink2: Handle<AudioSource>,
+    pub drink3: Handle<AudioSource>,
+    pub shoot: Handle<AudioSource>,
+    pub fast_shoot: Handle<AudioSource>,
+    pub lvlup: Handle<AudioSource>,
+    pub bg_channel: AudioChannel,
+    pub menu_channel: AudioChannel,
 }
 
 impl Plugin for GameAudioPlugin {
@@ -36,21 +44,42 @@ impl Plugin for GameAudioPlugin {
             .add_startup_system_to_stage(StartupStage::PreStartup, load_audio)
             .add_system_set(SystemSet::on_enter(AppState::InGame).with_system(play_bg_music))
             .add_system_set(SystemSet::on_exit(AppState::InGame).with_system(play_menu_music))
-            .add_system(play_hit_sfx)
-            .add_system(play_death_sfx)
-            .add_system(play_eat_sfx)
-            .add_system(play_lvlup_sfx)
-            .add_system(play_shoot_sfx)
-            .add_system(play_fast_shoot_sfx)
+            // .add_system(play_hit_sfx)
+            // .add_system(play_death_sfx)
+            // .add_system(play_eat_sfx)
+            // .add_system(play_lvlup_sfx)
+            // .add_system(play_shoot_sfx)
+            // .add_system(play_fast_shoot_sfx)
+            .add_system(play_simple_audio)
+            // .add_system(play_complexed_audio)
             .add_startup_system(play_menu_music)
             .add_event::<AudioRustEvent>()
             .add_event::<AudioCoffeeEvent>()
             .add_event::<AudioHitEvent>()
             .add_event::<AudioFastShootEvent>()
             .add_event::<AudioShootEvent>()
-            .add_event::<AudioDeadPlayerEvent>();
+            .add_event::<AudioDeadPlayerEvent>()
+            .add_event::<SimpleAudioEvent>()
+            .add_event::<ComplexedAudioEvent>();
     }
 }
+
+pub fn play_simple_audio(audio: Res<Audio>, mut audio_event: EventReader<SimpleAudioEvent>) {
+    audio_event.iter().for_each(|event| {
+        audio.play(event.audio_src.clone());
+    });
+}
+
+// pub fn play_complexed_audio(
+//     audio: Res<Audio>,
+//     mut audio_event: EventReader<ComplexedAudioEvent>,
+// ){
+//     audio_event.iter().for_each(|_| {
+//         let mut rng = thread_rng();
+//         audio.play(
+//             audio_event.audio_assets[         rng.gen_range(0..audio_event.audio_assets.len())].clone());
+//     }
+// }
 
 pub fn play_hit_sfx(
     audio: Res<Audio>,

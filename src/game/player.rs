@@ -6,9 +6,9 @@ use bevy_rapier2d::prelude::*;
 use crate::game::bullets::{spawn_strong_bullet, spawn_weak_bullet, BulletOptions};
 use crate::game::monster::death_by_enemy;
 use crate::game::{
-    camera_follow_player, AudioDeadPlayerEvent, AudioFastShootEvent, AudioShootEvent, Bullet,
-    FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, Weapon, COFFEE_DURATION,
-    RUST_DURATION,
+    camera_follow_player, AudioAssets, AudioDeadPlayerEvent, AudioFastShootEvent, AudioShootEvent,
+    Bullet, FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, SimpleAudioEvent,
+    Weapon, COFFEE_DURATION, RUST_DURATION,
 };
 use crate::GameTextures;
 
@@ -149,6 +149,8 @@ pub fn fire_controller(
     positions: Query<(&mut Transform, &RigidBody, &mut Player, &mut Velocity), With<Player>>,
     mut send_shoot_event: EventWriter<AudioShootEvent>,
     mut send_fast_shoot_event: EventWriter<AudioFastShootEvent>,
+    mut audio_event: EventWriter<SimpleAudioEvent>,
+    audio_assets: Res<AudioAssets>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Space) {
         for (pos, _, player, vel) in positions.iter() {
@@ -160,7 +162,10 @@ pub fn fire_controller(
             };
             match player.weapon {
                 Weapon::WeakBullet => {
-                    send_shoot_event.send(AudioShootEvent);
+                    // send_shoot_event.send(AudioShootEvent);
+                    audio_event.send(SimpleAudioEvent {
+                        audio_src: audio_assets.shoot.clone(),
+                    });
                     spawn_weak_bullet(&mut commands, &game_textures, options);
                 }
                 Weapon::StrongBullet => {
