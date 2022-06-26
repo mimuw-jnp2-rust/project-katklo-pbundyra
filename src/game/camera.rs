@@ -1,4 +1,3 @@
-use crate::game::Player;
 use bevy::prelude::*;
 use bevy::render::camera::Camera2d;
 use bevy::{
@@ -6,7 +5,9 @@ use bevy::{
     prelude::OrthographicCameraBundle,
     render::camera::{DepthCalculation, OrthographicProjection, ScalingMode},
 };
-use bevy_rapier2d::prelude::*;
+use bevy_rapier2d::prelude::RigidBody;
+
+use crate::game::Player;
 
 pub fn new_camera_2d() -> OrthographicCameraBundle<Camera2d> {
     let far = 1000.0;
@@ -25,7 +26,7 @@ pub fn camera_follow_player(
     mut cameras: Query<&mut Transform, With<Camera>>,
     players: Query<(&Transform, &RigidBody, &Player), Without<Camera>>,
 ) {
-    for (player, _, _) in players.iter() {
+    if let Ok((player, _, _)) = players.get_single() {
         for mut camera in cameras.iter_mut() {
             camera.translation.x = player.translation.x;
             camera.translation.y = player.translation.y;

@@ -1,51 +1,89 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::game::boosters::{drink_coffee, learn_rust};
-use crate::game::bullets::{
-    destroy_bullet_on_contact, insert_strong_bullet_at, insert_weak_bullet_at, killing_enemies,
-    BulletOptions,
-};
+use crate::game::bullets::{spawn_strong_bullet, spawn_weak_bullet, BulletOptions};
 use crate::game::monster::death_by_enemy;
-use crate::game::{camera_follow_player, GameDirection, Weapon};
+use crate::game::{
+    camera_follow_player, AudioAssets, FinishLine, GameDirection, LastDespawnedEntity,
+    PhantomEntity, SimpleAudioEvent, Wall, Weapon, COFFEE_DURATION, RUST_DURATION,
+};
 use crate::GameTextures;
 
 use super::super::AppState;
 use super::camera::new_camera_2d;
 use super::components::Jumper;
+use super::utils::*;
 
 pub struct PlayerPlugin;
+
+pub struct DeadPlayerEvent;
+
+const PLAYER_NORMAL_SPEED: f32 = 8.0;
+const PLAYER_INCREASE_SPEED: f32 = 10.0;
 
 #[derive(Component)]
 pub struct Player {
     pub speed: f32,
     pub weapon: Weapon,
     pub direction: GameDirection,
+    pub weapon_upgrade_timer: Timer,
+    pub coffee_timer: Timer,
 }
 
-#[allow(dead_code)]
-impl Player {
-    pub fn change_weapon(&mut self) {
-        match self.weapon {
-            Weapon::WeakBullet => self.weapon = Weapon::StrongBullet,
-            Weapon::StrongBullet => self.weapon = Weapon::WeakBullet,
+impl Default for Player {
+    fn default() -> Self {
+        Player {
+            speed: PLAYER_NORMAL_SPEED,
+            weapon: Weapon::WeakBullet,
+            direction: GameDirection::Right,
+            weapon_upgrade_timer: Timer::new(Duration::from_secs(0), false),
+            coffee_timer: Timer::new(Duration::from_secs(0), false),
         }
+    }
+}
+
+impl Player {
+    pub fn spawn(commands: &mut Commands, game_textures: Res<GameTextures>) {
+        let mut player_entity = spawn_dynamic_object(
+            commands,
+            create_sprite_bundle(
+                game_textures.player.clone(),
+                Vec2::new(0.9, 0.9),
+                Vec3::new(0.0, 2.0, 0.0),
+            ),
+            None,
+            None,
+        );
+        player_entity = spawn_solid_collider(
+            commands,
+            player_entity,
+            Collider::round_cuboid(0.25, 0.3, 0.05),
+            Some(Friction::coefficient(3.)),
+        );
+        commands
+            .entity(player_entity)
+            .insert(Player::default())
+            .insert(Jumper::default());
     }
 
     pub fn increase_speed(&mut self) {
-        self.speed += 0.25
+        self.coffee_timer = Timer::new(Duration::from_secs(COFFEE_DURATION), false);
+        self.speed = PLAYER_INCREASE_SPEED;
     }
 
     pub fn decrease_speed(&mut self) {
-        self.speed -= 0.25;
+        self.speed = PLAYER_NORMAL_SPEED;
     }
 
     pub fn degrade_weapon(&mut self) {
         self.weapon = Weapon::WeakBullet;
     }
 
-    pub fn powerup_weapon(&mut self) {
+    pub fn upgrade_weapon(&mut self) {
         self.weapon = Weapon::StrongBullet;
+        self.weapon_upgrade_timer = Timer::new(Duration::from_secs(RUST_DURATION), false);
     }
 }
 
@@ -57,60 +95,33 @@ impl Plugin for PlayerPlugin {
                     .with_system(player_jumps)
                     .with_system(player_movement)
                     .with_system(jump_reset)
-                    .with_system(fire_controller)
-                    .with_system(destroy_bullet_on_contact)
-                    .with_system(death_by_falling)
+                    .with_system(finish)
                     .with_system(death_by_enemy)
                     .with_system(camera_follow_player)
-                    .with_system(killing_enemies)
-                    .with_system(changing_weapon)
-                    .with_system(drink_coffee)
-                    .with_system(learn_rust),
-            );
+                    .with_system(fire_controller)
+                    .with_system(handle_death),
+            )
+            .add_event::<DeadPlayerEvent>();
     }
 }
 
-pub fn spawn_player(mut commands: Commands, game_textures: Res<GameTextures>) {
-    commands
-        .spawn_bundle(SpriteBundle {
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(0.9, 0.9)),
-                ..default()
-            },
-            // cloning only id of resource, not entire resource
-            texture: game_textures.player.clone(),
-            transform: Transform {
-                translation: Vec3::new(0.0, 2.0, 0.0),
-                ..default()
-            },
-            ..default()
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(LockedAxes::ROTATION_LOCKED)
-        .insert(Sleeping::disabled())
-        .insert(GravityScale(0.3))
-        .insert(Ccd::enabled())
-        .insert(Collider::round_cuboid(0.20, 0.20, 0.1))
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(Velocity::default())
-        .insert(Player {
-            speed: 7.0,
-            weapon: Weapon::WeakBullet,
-            direction: GameDirection::Right,
-        })
-        .insert(Jumper {
-            jump_impulse: 12.0,
-            is_jumping: false,
-        });
-
+pub fn spawn_player(
+    mut commands: Commands,
+    game_textures: Res<GameTextures>,
+    phantom_entity: Query<Entity, With<PhantomEntity>>,
+) {
+    Player::spawn(&mut commands, game_textures);
     commands.spawn_bundle(new_camera_2d());
+    for entity in phantom_entity.iter() {
+        commands.insert_resource(LastDespawnedEntity { entity });
+    }
 }
 
 pub fn player_jumps(
     keyboard_input: Res<Input<KeyCode>>,
     mut players: Query<(&mut Jumper, &mut Velocity), With<Player>>,
 ) {
-    for (mut jumper, mut velocity) in players.iter_mut() {
+    if let Ok((mut jumper, mut velocity)) = players.get_single_mut() {
         if keyboard_input.pressed(KeyCode::Up) && !jumper.is_jumping {
             velocity.linvel = Vec2::new(0., jumper.jump_impulse);
             jumper.is_jumping = true
@@ -122,7 +133,7 @@ pub fn player_movement(
     keyboard_input: Res<Input<KeyCode>>,
     mut players: Query<(&mut Player, &mut Velocity)>,
 ) {
-    for (mut player, mut velocity) in players.iter_mut() {
+    if let Ok((mut player, mut velocity)) = players.get_single_mut() {
         if keyboard_input.pressed(KeyCode::Left) {
             player.direction = GameDirection::Left;
             velocity.linvel = Vec2::new(-player.speed, velocity.linvel.y);
@@ -134,22 +145,13 @@ pub fn player_movement(
     }
 }
 
-pub fn changing_weapon(
-    keyboard_input: Res<Input<KeyCode>>,
-    mut players: Query<&mut Player, With<Player>>,
-) {
-    if let Ok(mut player) = players.get_single_mut() {
-        if keyboard_input.just_pressed(KeyCode::S) {
-            player.change_weapon();
-        }
-    }
-}
-
 pub fn fire_controller(
     keyboard_input: Res<Input<KeyCode>>,
     mut commands: Commands,
-    mut game_textures: Res<GameTextures>,
+    game_textures: Res<GameTextures>,
     positions: Query<(&mut Transform, &RigidBody, &mut Player, &mut Velocity), With<Player>>,
+    mut audio_event_sender: EventWriter<SimpleAudioEvent>,
+    audio_assets: Res<AudioAssets>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Space) {
         for (pos, _, player, vel) in positions.iter() {
@@ -161,10 +163,16 @@ pub fn fire_controller(
             };
             match player.weapon {
                 Weapon::WeakBullet => {
-                    insert_weak_bullet_at(&mut commands, options, &mut game_textures);
+                    audio_event_sender.send(SimpleAudioEvent {
+                        audio_src: audio_assets.shoot.clone(),
+                    });
+                    spawn_weak_bullet(&mut commands, &game_textures, options);
                 }
                 Weapon::StrongBullet => {
-                    insert_strong_bullet_at(&mut commands, options, &mut game_textures);
+                    audio_event_sender.send(SimpleAudioEvent {
+                        audio_src: audio_assets.fast_shoot.clone(),
+                    });
+                    spawn_strong_bullet(&mut commands, &game_textures, options);
                 }
             }
         }
@@ -172,27 +180,51 @@ pub fn fire_controller(
 }
 
 pub fn jump_reset(
-    mut query: Query<(Entity, &mut Jumper)>,
-    mut contact_events: EventReader<CollisionEvent>,
+    mut jumpers: Query<(Entity, &mut Jumper), With<Player>>,
+    walls: Query<Entity, With<Wall>>,
+    players: Query<Entity, With<Player>>,
+    mut collision_events: EventReader<CollisionEvent>,
 ) {
-    for contact_event in contact_events.iter() {
-        for (entity, mut jumper) in query.iter_mut() {
-            if let CollisionEvent::Started(h1, h2, _) = contact_event {
-                if *h1 == entity || *h2 == entity {
-                    jumper.is_jumping = false
+    for collision_event in collision_events.iter() {
+        if let Ok((_, mut jumper)) = jumpers.get_single_mut() {
+            if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
+                if get_both_proper_entities(ent1, ent2, &walls, &players).is_ok() {
+                    jumper.is_jumping = false;
                 }
             }
         }
     }
 }
 
-pub fn death_by_falling(
-    mut commands: Commands,
-    positions: Query<(Entity, &mut Transform, &RigidBody), With<Player>>,
+fn handle_death(
+    mut state: ResMut<State<AppState>>,
+    mut dead_player_events: EventReader<DeadPlayerEvent>,
+    mut audio_event_sender: EventWriter<SimpleAudioEvent>,
+    audio_assets: Res<AudioAssets>,
 ) {
-    for (entity, pos, _) in positions.iter() {
-        if pos.translation.y < -10.0 {
-            commands.entity(entity).despawn_recursive();
+    dead_player_events.iter().for_each(|_| {
+        state
+            .replace(AppState::FailMenu)
+            .expect("Could not set state to DeathMenu");
+        audio_event_sender.send(SimpleAudioEvent {
+            audio_src: audio_assets.death.clone(),
+        });
+    });
+}
+
+pub fn finish(
+    players: Query<Entity, With<Player>>,
+    lines: Query<Entity, With<FinishLine>>,
+    mut contact_events: EventReader<CollisionEvent>,
+    mut state: ResMut<State<AppState>>,
+) {
+    for contact_event in contact_events.iter() {
+        if let CollisionEvent::Started(ent1, ent2, _) = contact_event {
+            let from_collision = get_both_proper_entities(ent1, ent2, &players, &lines);
+
+            if from_collision.is_ok() {
+                state.replace(AppState::WinMenu).unwrap()
+            }
         }
     }
 }

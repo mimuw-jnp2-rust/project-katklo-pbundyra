@@ -1,17 +1,24 @@
 use bevy::prelude::*;
 use bevy::window::PresentMode;
 
-mod game;
-mod main_menu;
-
-use crate::game::{GameTextures, MapPlugin, MonsterAiPlugin, PlayerPlugin};
 use game::GamePlugin;
-use main_menu::MainMenuPlugin;
+use menu::MenuPlugin;
+
+use crate::game::{
+    BulletsPlugin, GameAudioPlugin, GameTextures, Level, MapPlugin, MonsterAiPlugin, PlayerPlugin,
+    PowerupsPlugin, Random,
+};
+
+mod game;
+mod menu;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
-enum AppState {
-    MainMenu,
+pub enum AppState {
     InGame,
+    MainMenu,
+    FailMenu,
+    WinMenu,
+    StopMenu,
 }
 
 fn main() {
@@ -24,24 +31,15 @@ fn main() {
             present_mode: PresentMode::Fifo,
             ..default()
         })
-        .add_startup_system(setup)
-        .insert_resource(ClearColor(Color::rgb(0.71, 2.13, 2.44)))
+        .insert_resource(ClearColor(Color::BEIGE))
         .add_state(AppState::MainMenu)
+        .add_plugin(GameAudioPlugin)
+        .add_plugin(MenuPlugin)
+        .add_plugin(GamePlugin)
+        .add_plugin(BulletsPlugin)
+        .add_plugin(PowerupsPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(MapPlugin)
-        .add_plugin(GamePlugin)
-        .add_plugin(MainMenuPlugin)
         .add_plugin(MonsterAiPlugin)
         .run();
-}
-
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.insert_resource(GameTextures {
-        player: asset_server.load("player.png"),
-        weak_laser: asset_server.load("weak_laser.png"),
-        strong_laser: asset_server.load("strong_laser.png"),
-        bug: asset_server.load("bug.png"),
-        coffee: asset_server.load("coffee.png"),
-        rust: asset_server.load("rust.png"),
-    });
 }

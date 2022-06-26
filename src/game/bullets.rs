@@ -1,13 +1,22 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::game::{Bullet, Enemy, Player, StrongBullet};
+use super::utils::*;
+use super::GameDirection;
+use crate::game::{
+    spawn_dynamic_object, AudioAssets, Bullet, ComplexAudioEvent, Enemy, EnemyBullet,
+    PlayersBullet, Wall,
+};
 use crate::GameTextures;
 
-use super::{GameDirection, WeakBullet};
+pub struct BulletsPlugin;
+
+pub struct ShootEvent;
+pub struct FastShootEvent;
 
 const WEAK_BULLET_SPEED: f32 = 8.25;
 const STRONG_BULLET_SPEED: f32 = 18.5;
+const ENEMY_BULLET_SPEED: f32 = 8.25;
 
 #[derive(Copy, Clone)]
 pub struct BulletOptions {
@@ -17,127 +26,123 @@ pub struct BulletOptions {
     pub player_vex: f32,
 }
 
-pub fn insert_weak_bullet_at(
-    commands: &mut Commands,
-    options: BulletOptions,
-    game_textures: &mut Res<GameTextures>,
-) {
-    let vel_x: f32;
-    let spawn_x: f32;
-    match options.direction {
-        GameDirection::Left => {
-            vel_x = -WEAK_BULLET_SPEED + options.player_vex * 0.15;
-            spawn_x = -0.75;
-        }
-        GameDirection::Right => {
-            vel_x = WEAK_BULLET_SPEED + options.player_vex * 0.15;
-            spawn_x = 0.75
-        }
+impl Plugin for BulletsPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_system_set(
+            SystemSet::new()
+                .with_system(destroy_bullet_on_contact)
+                .with_system(kill_enemy),
+        )
+        .add_event::<ShootEvent>()
+        .add_event::<FastShootEvent>();
     }
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: game_textures.weak_laser.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(0.5, 0.2)),
-                ..default()
-            },
-            ..default()
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(Transform::from_xyz(options.x + spawn_x, options.y, 10.0))
-        .insert(LockedAxes::ROTATION_LOCKED)
-        .insert(Sleeping::disabled())
-        .insert(GravityScale(0.0))
-        .insert(Velocity {
-            linvel: Vec2::new(vel_x, 0.0),
-            ..default()
-        })
-        .insert(Ccd::enabled())
-        .insert(Collider::round_cuboid(0.25, 0.05, 0.1))
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(WeakBullet)
-        .insert(Bullet);
 }
 
-pub fn insert_strong_bullet_at(
+fn spawn_bullet(
     commands: &mut Commands,
+    texture: Handle<Image>,
     options: BulletOptions,
-    game_textures: &mut Res<GameTextures>,
+    def_vel: f32,
+) -> Entity {
+    let (vel_x, spawn_x) = match options.direction {
+        GameDirection::Left => (-def_vel, -0.75),
+        GameDirection::Right => (def_vel, 0.75),
+    };
+    let mut bullet_entity = spawn_dynamic_object(
+        commands,
+        create_sprite_bundle(
+            texture,
+            Vec2::new(0.5, 0.2),
+            Vec3::new(options.x + spawn_x, options.y, 0.0),
+        ),
+        Some(vel_x),
+        Some(0.0),
+    );
+    bullet_entity = spawn_sensor_collider(
+        commands,
+        bullet_entity,
+        Collider::round_cuboid(0.0, 0.0, 0.0),
+    );
+    commands.entity(bullet_entity).insert(Bullet).id()
+}
+
+pub fn spawn_strong_bullet(
+    commands: &mut Commands,
+    game_textures: &Res<GameTextures>,
+    options: BulletOptions,
 ) {
-    let vel_x: f32;
-    let spawn_x: f32;
-    match options.direction {
-        GameDirection::Left => {
-            vel_x = -STRONG_BULLET_SPEED + options.player_vex * 0.15;
-            spawn_x = -0.75;
-        }
-        GameDirection::Right => {
-            vel_x = STRONG_BULLET_SPEED + options.player_vex * 0.15;
-            spawn_x = 0.75
-        }
-    }
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: game_textures.strong_laser.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(0.5, 0.2)),
-                ..default()
-            },
-            ..default()
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(Transform::from_xyz(options.x + spawn_x, options.y, 10.0))
-        .insert(LockedAxes::ROTATION_LOCKED)
-        .insert(Sleeping::disabled())
-        .insert(GravityScale(0.0))
-        .insert(Velocity {
-            linvel: Vec2::new(vel_x, 0.0),
-            ..default()
-        })
-        .insert(Ccd::enabled())
-        .insert(Collider::round_cuboid(0.25, 0.05, 0.1))
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(StrongBullet)
-        .insert(Bullet);
+    let bullet = spawn_bullet(
+        commands,
+        game_textures.strong_bullet.clone(),
+        options,
+        STRONG_BULLET_SPEED,
+    );
+    commands.entity(bullet).insert(PlayersBullet);
+}
+
+pub fn spawn_weak_bullet(
+    commands: &mut Commands,
+    game_textures: &Res<GameTextures>,
+    options: BulletOptions,
+) {
+    let bullet = spawn_bullet(
+        commands,
+        game_textures.weak_bullet.clone(),
+        options,
+        WEAK_BULLET_SPEED,
+    );
+    commands.entity(bullet).insert(PlayersBullet);
+}
+
+pub fn spawn_enemy_bullet(
+    commands: &mut Commands,
+    game_textures: &Res<GameTextures>,
+    options: BulletOptions,
+) {
+    let bullet = spawn_bullet(
+        commands,
+        game_textures.enemy_bullet.clone(),
+        options,
+        ENEMY_BULLET_SPEED,
+    );
+    commands.entity(bullet).insert(EnemyBullet);
 }
 
 pub fn destroy_bullet_on_contact(
     mut commands: Commands,
     bullets: Query<Entity, With<Bullet>>,
+    walls: Query<Entity, With<Wall>>,
     mut collision_events: EventReader<CollisionEvent>,
-    players: Query<Entity, With<Player>>,
 ) {
     for collision_event in collision_events.iter() {
-        if let CollisionEvent::Started(h1, h2, _) = collision_event {
-            for bullet in bullets.iter() {
-                if (*h1 == bullet
-                    && !players.iter().any(|b| *h2 == b)
-                    && !bullets.iter().any(|b| *h2 == b))
-                    || (*h2 == bullet
-                        && !players.iter().any(|b| *h1 == b)
-                        && !bullets.iter().any(|b| *h1 == b))
-                {
-                    commands.entity(bullet).despawn_recursive();
-                }
+        if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
+            let from_collision = get_both_proper_entities(ent1, ent2, &walls, &bullets);
+
+            if let Ok((_, bullet)) = from_collision {
+                commands.entity(bullet).despawn_recursive()
             }
         }
     }
 }
 
-pub fn killing_enemies(
+pub fn kill_enemy(
     mut commands: Commands,
-    bullets: Query<Entity, With<Bullet>>,
+    bullets: Query<Entity, With<PlayersBullet>>,
     enemies: Query<Entity, With<Enemy>>,
-    mut collision_event: EventReader<CollisionEvent>,
+    mut collision_events: EventReader<CollisionEvent>,
+    mut audio_event_sender: EventWriter<ComplexAudioEvent>,
+    audio_assets: Res<AudioAssets>,
 ) {
-    for collision_event in collision_event.iter() {
-        if let CollisionEvent::Started(h1, h2, _) = collision_event {
-            for bullet in bullets.iter() {
-                for enemy in enemies.iter() {
-                    if (*h1 == bullet && *h2 == enemy) || (*h1 == enemy && *h2 == bullet) {
-                        commands.entity(enemy).despawn_recursive();
-                    }
-                }
+    for collision_event in collision_events.iter() {
+        if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
+            let from_collision = get_both_proper_entities(ent1, ent2, &bullets, &enemies);
+
+            if let Ok((bullet, enemy)) = from_collision {
+                audio_event_sender.send(ComplexAudioEvent {
+                    audio_src: audio_assets.hits.clone(),
+                });
+                commands.entity(bullet).despawn_recursive();
+                commands.entity(enemy).despawn_recursive();
             }
         }
     }
