@@ -47,13 +47,9 @@ pub fn play_simple_audio(audio: Res<Audio>, mut audio_event: EventReader<SimpleA
     });
 }
 
-pub fn play_complexed_audio(
-    audio: Res<Audio>,
-    mut audio_event: EventReader<ComplexAudioEvent>,
-    audio_assets: Res<AudioAssets>,
-) {
+pub fn play_complexed_audio(audio: Res<Audio>, mut audio_event: EventReader<ComplexAudioEvent>) {
     audio_event.iter().for_each(|event| {
-        let sound_id = thread_rng().gen_range(0..audio_assets.hits.len());
+        let sound_id = thread_rng().gen_range(0..event.audio_src.len());
         audio.play(event.audio_src[sound_id].clone());
     });
 }
