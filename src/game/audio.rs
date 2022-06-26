@@ -34,7 +34,7 @@ impl Plugin for GameAudioPlugin {
             .add_system_set(SystemSet::on_enter(AppState::InGame).with_system(play_bg_music))
             .add_system_set(SystemSet::on_exit(AppState::InGame).with_system(play_menu_music))
             .add_system(play_simple_audio)
-            .add_system(play_complexed_audio)
+            .add_system(play_complex_audio)
             .add_startup_system(play_menu_music)
             .add_event::<SimpleAudioEvent>()
             .add_event::<ComplexAudioEvent>();
