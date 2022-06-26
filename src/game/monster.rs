@@ -16,7 +16,7 @@ where
 {
     let mut enemy_entity = spawn_dynamic_object(
         commands,
-        create_sprite_bundle(texture, (0.9, 0.9), (x, y, 10.0)),
+        create_sprite_bundle(texture, Vec2::new(0.9, 0.9), Vec3::new(x, y, 10.0)),
         None,
         None,
     );
@@ -56,19 +56,17 @@ pub fn death_by_enemy(
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-            match (players.get(*ent1), players.get(*ent2)) {
-                (Ok(_), _) | (_, Ok(_)) => match (
-                    enemy_bullets.get(*ent1),
-                    enemy_bullets.get(*ent2),
-                    enemies.get(*ent1),
-                    enemies.get(*ent2),
-                ) {
-                    (Ok(_), _, _, _) | (_, Ok(_), _, _) | (_, _, Ok(_), _) | (_, _, _, Ok(_)) => {
-                        send_dead_player_event.send(DeadPlayerEvent)
-                    }
-                    _ => {}
-                },
-                _ => {}
+            let death_reason_from_collision = players
+                .get(*ent1)
+                .and(enemy_bullets.get(*ent2).or_else(|_| enemies.get(*ent2)))
+                .or_else(|_| {
+                    players
+                        .get(*ent2)
+                        .and(enemy_bullets.get(*ent1).or_else(|_| enemies.get(*ent1)))
+                });
+
+            if death_reason_from_collision.is_ok() {
+                send_dead_player_event.send(DeadPlayerEvent)
             }
         }
     }

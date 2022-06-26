@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
-use crate::game::{AudioCoffeeEvent, AudioRustEvent, Coffee, Player, Powerup, Rust};
+use crate::game::{AudioEvent, AudioType, Coffee, Player, Powerup, Rust};
 use crate::{GameTextures, Level, Random};
 
 use super::utils::*;
@@ -47,7 +47,7 @@ fn spawn_powerup<T>(
 {
     let mut powerup_entity = spawn_static_object(
         commands,
-        create_sprite_bundle(texture, (0.99, 0.99), (x, y, 10.0)),
+        create_sprite_bundle(texture, Vec2::new(0.99, 0.99), Vec3::new(x, y, 10.0)),
     );
     powerup_entity = spawn_sensor_collider(
         commands,
@@ -69,23 +69,17 @@ fn spawn_rust(commands: &mut Commands, game_textures: &Res<GameTextures>, x: f32
 }
 
 pub fn drink_coffee(
-    players: Query<(Entity, &mut Player)>,
+    players: Query<Entity, With<Player>>,
     coffees: Query<Entity, With<Coffee>>,
     mut collision_events: EventReader<CollisionEvent>,
     mut send_event: EventWriter<CoffeeEvent>,
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-            match (
-                players.get(*ent1),
-                coffees.get(*ent2),
-                players.get(*ent2),
-                coffees.get(*ent1),
-            ) {
-                (Ok(_), Ok(coffee), _, _) | (_, _, Ok(_), Ok(coffee)) => {
-                    send_event.send(CoffeeEvent { coffee });
-                }
-                _ => {}
+            let from_collision = get_both_proper_entities(ent1, ent2, &players, &coffees);
+
+            if let Ok((_, coffee)) = from_collision {
+                send_event.send(CoffeeEvent { coffee });
             }
         }
     }
@@ -95,13 +89,13 @@ fn handle_coffee_event(
     mut commands: Commands,
     mut coffee_events: EventReader<CoffeeEvent>,
     mut players: Query<&mut Player>,
-    mut send_event: EventWriter<AudioCoffeeEvent>,
+    mut audio_event_sender: EventWriter<AudioEvent>,
 ) {
     if let Ok(mut player) = players.get_single_mut() {
         coffee_events.iter().for_each(|coffee_event| {
             player.increase_speed();
             commands.entity(coffee_event.coffee).despawn_recursive();
-            send_event.send(AudioCoffeeEvent);
+            audio_event_sender.send(AudioEvent::new(AudioType::Coffee));
         });
     }
 }
@@ -116,23 +110,17 @@ pub fn finish_coffee(mut players: Query<&mut Player>, time: Res<Time>) {
 }
 
 pub fn learn_rust(
-    players: Query<(Entity, &mut Player)>,
+    players: Query<Entity, With<Player>>,
     rusts: Query<Entity, With<Rust>>,
     mut collision_events: EventReader<CollisionEvent>,
     mut send_event: EventWriter<RustEvent>,
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-            match (
-                players.get(*ent1),
-                rusts.get(*ent2),
-                players.get(*ent2),
-                rusts.get(*ent1),
-            ) {
-                (Ok(_), Ok(rust), _, _) | (_, _, Ok(_), Ok(rust)) => {
-                    send_event.send(RustEvent { rust });
-                }
-                _ => {}
+            let from_collision = get_both_proper_entities(ent1, ent2, &players, &rusts);
+
+            if let Ok((_, rust)) = from_collision {
+                send_event.send(RustEvent { rust });
             }
         }
     }
@@ -142,13 +130,13 @@ fn handle_rust_event(
     mut commands: Commands,
     mut rust_events: EventReader<RustEvent>,
     mut players: Query<&mut Player>,
-    mut send_event: EventWriter<AudioRustEvent>,
+    mut audio_event_sender: EventWriter<AudioEvent>,
 ) {
     if let Ok(mut player) = players.get_single_mut() {
         rust_events.iter().for_each(|rust_event| {
             player.upgrade_weapon();
             commands.entity(rust_event.rust).despawn_recursive();
-            send_event.send(AudioRustEvent);
+            audio_event_sender.send(AudioEvent::new(AudioType::Rust));
         });
     }
 }
@@ -156,6 +144,7 @@ fn handle_rust_event(
 pub fn finish_rust(mut players: Query<&mut Player>, time: Res<Time>) {
     if let Ok(mut player) = players.get_single_mut() {
         player.weapon_upgrade_timer.tick(time.delta());
+
         if player.weapon_upgrade_timer.finished() {
             player.degrade_weapon();
         }
@@ -170,27 +159,20 @@ pub fn add_powerups(
     level: &Res<Level>,
 ) {
     world.iter().for_each(|&(x, height)| {
-        if should_add_coffee(x, rng, level) {
-            spawn_coffee(commands, &game_textures, x as f32, height as f32 + 0.75);
+        let y = height as f32 + 0.75;
+
+        if should_add(x, rng, level, SPAWNING_COFFEE_PROBABILITY) {
+            spawn_coffee(commands, &game_textures, x as f32, y);
         }
-        if should_add_rust(x, rng, level) {
-            spawn_rust(commands, &game_textures, x as f32, height as f32 + 0.75);
+        if should_add(x, rng, level, SPAWNING_RUST_PROBABILITY) {
+            spawn_rust(commands, &game_textures, x as f32, y);
         }
     });
 }
 
-fn should_add_coffee(x: i32, rng: &mut ResMut<Random>, level: &Res<Level>) -> bool {
+fn should_add(x: i32, rng: &mut ResMut<Random>, level: &Res<Level>, chance: f64) -> bool {
     if x <= SAFE_ZONE_WIDTH {
         return false;
     }
-    rng.generator
-        .gen_bool(SPAWNING_COFFEE_PROBABILITY / level.difficulty)
-}
-
-fn should_add_rust(x: i32, rng: &mut ResMut<Random>, level: &Res<Level>) -> bool {
-    if x <= SAFE_ZONE_WIDTH {
-        return false;
-    }
-    rng.generator
-        .gen_bool(SPAWNING_RUST_PROBABILITY / level.difficulty)
+    rng.generator.gen_bool(chance / level.difficulty)
 }

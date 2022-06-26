@@ -10,6 +10,7 @@ pub enum MenuButton {
     NextLevel,
     RestartLevel,
     RestartGame,
+    Resume,
 }
 
 pub struct MenuTextures {

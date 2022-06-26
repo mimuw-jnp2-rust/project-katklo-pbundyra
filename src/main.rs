@@ -33,13 +33,13 @@ fn main() {
         })
         .insert_resource(ClearColor(Color::BEIGE))
         .add_state(AppState::MainMenu)
+        .add_plugin(GameAudioPlugin)
+        .add_plugin(MenuPlugin)
         .add_plugin(GamePlugin)
         .add_plugin(BulletsPlugin)
-        .add_plugin(GameAudioPlugin)
         .add_plugin(PowerupsPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(MapPlugin)
-        .add_plugin(MenuPlugin)
         .add_plugin(MonsterAiPlugin)
         .run();
 }
