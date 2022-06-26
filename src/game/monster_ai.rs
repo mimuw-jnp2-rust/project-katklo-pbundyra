@@ -3,7 +3,9 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
-use crate::game::{spawn_enemy_bullet, BulletOptions, Enemy, Powerup, Valgrind};
+use crate::game::{
+    get_entities_when_first_is_proper, spawn_enemy_bullet, BulletOptions, Enemy, Powerup, Valgrind,
+};
 use crate::{GameTextures, Random};
 
 use super::super::AppState;
@@ -94,24 +96,21 @@ fn monster_contact_detection(
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-            match (monsters.get(*ent1), monsters.get(*ent2)) {
-                (Ok(monster), _) | (_, Ok(monster)) => {
-                    match (powerups.get(*ent1), powerups.get(*ent2)) {
-                        (Ok(_), _) | (_, Ok(_)) => {}
-                        _ => send_monster_collision.send(MonsterCollisionEvent { entity: monster }),
-                    }
-                }
-                _ => {}
+            let proper_monster_with_powerup =
+                get_entities_when_first_is_proper(ent1, ent2, &monsters, &powerups);
+
+            if let Ok((monster, Err(_))) = proper_monster_with_powerup {
+                send_monster_collision.send(MonsterCollisionEvent { entity: monster });
             }
         }
     }
 }
 
 fn monster_change_direction_on_contact(
-    mut events: EventReader<MonsterCollisionEvent>,
+    mut collision_events: EventReader<MonsterCollisionEvent>,
     mut monster_query: Query<&mut Enemy>,
 ) {
-    for event in events.iter() {
+    for event in collision_events.iter() {
         if let Ok(monster) = monster_query.get_mut(event.entity) {
             change_direction(monster);
         }

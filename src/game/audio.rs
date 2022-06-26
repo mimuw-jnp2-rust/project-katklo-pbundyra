@@ -22,20 +22,16 @@ pub struct ComplexedAudioEvent {
 }
 
 pub struct AudioAssets {
-    pub bg: Handle<AudioSource>,
-    pub menu: Handle<AudioSource>,
-    pub hit1: Handle<AudioSource>,
-    pub hit2: Handle<AudioSource>,
-    pub hit3: Handle<AudioSource>,
-    pub death: Handle<AudioSource>,
-    pub drink1: Handle<AudioSource>,
-    pub drink2: Handle<AudioSource>,
-    pub drink3: Handle<AudioSource>,
-    pub shoot: Handle<AudioSource>,
-    pub fast_shoot: Handle<AudioSource>,
-    pub lvlup: Handle<AudioSource>,
-    pub bg_channel: AudioChannel,
-    pub menu_channel: AudioChannel,
+    bg: Handle<AudioSource>,
+    menu: Handle<AudioSource>,
+    hits: Vec<Handle<AudioSource>>,
+    death: Handle<AudioSource>,
+    drinks: Vec<Handle<AudioSource>>,
+    shoot: Handle<AudioSource>,
+    fast_shoot: Handle<AudioSource>,
+    lvlup: Handle<AudioSource>,
+    bg_channel: AudioChannel,
+    menu_channel: AudioChannel,
 }
 
 impl Plugin for GameAudioPlugin {
@@ -52,6 +48,7 @@ impl Plugin for GameAudioPlugin {
             // .add_system(play_fast_shoot_sfx)
             .add_system(play_simple_audio)
             // .add_system(play_complexed_audio)
+            .add_system(play_audio_for_event)
             .add_startup_system(play_menu_music)
             .add_event::<AudioRustEvent>()
             .add_event::<AudioCoffeeEvent>()
@@ -61,6 +58,7 @@ impl Plugin for GameAudioPlugin {
             .add_event::<AudioDeadPlayerEvent>()
             .add_event::<SimpleAudioEvent>()
             .add_event::<ComplexedAudioEvent>();
+            .add_event::<AudioEvent>();
     }
 }
 
@@ -113,44 +111,29 @@ pub fn play_eat_sfx(
     });
 }
 
-pub fn play_lvlup_sfx(
+pub fn play_audio_for_event(
     audio: Res<Audio>,
     audio_state: Res<AudioAssets>,
-    mut audio_event: EventReader<AudioRustEvent>,
+    mut audio_events: EventReader<AudioEvent>,
 ) {
-    audio_event.iter().for_each(|_| {
-        audio.play(audio_state.lvlup.clone());
-    });
-}
+    audio_events.iter().for_each(|event| {
+        let sound = match event.audio_t {
+            AudioType::Hit => {
+                let sound_id = thread_rng().gen_range(0..audio_state.hits.len());
+                audio_state.hits[sound_id].clone()
+            }
+            AudioType::Coffee => {
+                let sound_id = thread_rng().gen_range(0..audio_state.drinks.len());
+                audio_state.drinks[sound_id].clone()
+            }
+            AudioType::Rust => audio_state.lvlup.clone(),
+            AudioType::FastShoot => audio_state.fast_shoot.clone(),
+            AudioType::Shoot => audio_state.shoot.clone(),
+            AudioType::DeadPlayer => audio_state.death.clone(),
+        };
 
-pub fn play_shoot_sfx(
-    audio: Res<Audio>,
-    audio_state: Res<AudioAssets>,
-    mut audio_event: EventReader<AudioShootEvent>,
-) {
-    audio_event.iter().for_each(|_| {
-        audio.play(audio_state.shoot.clone());
+        audio.play(sound);
     });
-}
-
-pub fn play_fast_shoot_sfx(
-    audio: Res<Audio>,
-    audio_state: Res<AudioAssets>,
-    mut audio_event: EventReader<AudioFastShootEvent>,
-) {
-    audio_event.iter().for_each(|_| {
-        audio.play(audio_state.fast_shoot.clone());
-    });
-}
-
-pub fn play_death_sfx(
-    audio: Res<Audio>,
-    audio_state: Res<AudioAssets>,
-    mut death_events: EventReader<AudioDeadPlayerEvent>,
-) {
-    for _ in death_events.iter() {
-        audio.play(audio_state.death.clone());
-    }
 }
 
 fn play_bg_music(audio: Res<Audio>, audio_state: Res<AudioAssets>) {
@@ -167,13 +150,17 @@ fn load_audio(mut commands: Commands, assets: Res<AssetServer>) {
     commands.insert_resource(AudioAssets {
         bg: assets.load("audio/background.ogg"),
         menu: assets.load("audio/menu.ogg"),
-        hit1: assets.load("audio/hit1.ogg"),
-        hit2: assets.load("audio/hit2.ogg"),
-        hit3: assets.load("audio/hit3.ogg"),
+        hits: vec![
+            assets.load("audio/hit1.ogg"),
+            assets.load("audio/hit2.ogg"),
+            assets.load("audio/hit3.ogg"),
+        ],
         death: assets.load("audio/death.ogg"),
-        drink1: assets.load("audio/drink1.ogg"),
-        drink2: assets.load("audio/drink2.ogg"),
-        drink3: assets.load("audio/drink3.ogg"),
+        drinks: vec![
+            assets.load("audio/drink1.ogg"),
+            assets.load("audio/drink2.ogg"),
+            assets.load("audio/drink3.ogg"),
+        ],
         shoot: assets.load("audio/shoot.ogg"),
         fast_shoot: assets.load("audio/fast_shoot.ogg"),
         lvlup: assets.load("audio/levelup.ogg"),

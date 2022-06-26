@@ -4,7 +4,7 @@ use bevy_rapier2d::prelude::*;
 use super::utils::*;
 use super::GameDirection;
 use crate::game::{
-    spawn_dynamic_object, AudioHitEvent, Bullet, Enemy, EnemyBullet, PlayersBullet, Wall,
+    spawn_dynamic_object, AudioEvent, AudioType, Bullet, Enemy, EnemyBullet, PlayersBullet, Wall,
 };
 use crate::GameTextures;
 
@@ -49,7 +49,11 @@ fn spawn_bullet(
     };
     let mut bullet_entity = spawn_dynamic_object(
         commands,
-        create_sprite_bundle(texture, (0.5, 0.2), (options.x + spawn_x, options.y, 0.0)),
+        create_sprite_bundle(
+            texture,
+            Vec2::new(0.5, 0.2),
+            Vec3::new(options.x + spawn_x, options.y, 0.0),
+        ),
         Some(vel_x),
         Some(0.0),
     );
@@ -111,16 +115,10 @@ pub fn destroy_bullet_on_contact(
 ) {
     for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-            match (
-                bullets.get(*ent1),
-                walls.get(*ent2),
-                bullets.get(*ent2),
-                walls.get(*ent1),
-            ) {
-                (Ok(bullet), Ok(_), _, _) | (_, _, Ok(bullet), Ok(_)) => {
-                    commands.entity(bullet).despawn_recursive()
-                }
-                _ => {}
+            let from_collision = get_both_proper_entities(ent1, ent2, &walls, &bullets);
+
+            if let Ok((_, bullet)) = from_collision {
+                commands.entity(bullet).despawn_recursive()
             }
         }
     }
@@ -130,23 +128,17 @@ pub fn kill_enemy(
     mut commands: Commands,
     bullets: Query<Entity, With<PlayersBullet>>,
     enemies: Query<Entity, With<Enemy>>,
-    mut collision_event: EventReader<CollisionEvent>,
-    mut send_audio_hit_event: EventWriter<AudioHitEvent>,
+    mut collision_events: EventReader<CollisionEvent>,
+    mut audio_event_sender: EventWriter<AudioEvent>,
 ) {
-    for collision_event in collision_event.iter() {
+    for collision_event in collision_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-            match (
-                bullets.get(*ent1),
-                enemies.get(*ent2),
-                bullets.get(*ent2),
-                enemies.get(*ent1),
-            ) {
-                (Ok(bullet), Ok(enemy), _, _) | (_, _, Ok(bullet), Ok(enemy)) => {
-                    send_audio_hit_event.send(AudioHitEvent);
-                    commands.entity(bullet).despawn_recursive();
-                    commands.entity(enemy).despawn_recursive();
-                }
-                _ => {}
+            let from_collision = get_both_proper_entities(ent1, ent2, &bullets, &enemies);
+
+            if let Ok((bullet, enemy)) = from_collision {
+                audio_event_sender.send(AudioEvent::new(AudioType::Hit));
+                commands.entity(bullet).despawn_recursive();
+                commands.entity(enemy).despawn_recursive();
             }
         }
     }

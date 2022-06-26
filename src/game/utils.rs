@@ -1,44 +1,52 @@
+use bevy::ecs::query::QueryEntityError;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 const GRAVITY_SCALE_DEFAULT: f32 = 0.4;
 const VELOCITY_DEFAULT: f32 = 0.0;
 
-pub fn create_sprite_bundle(
-    texture: Handle<Image>,
-    (x_size, y_size): (f32, f32),
-    (x_translation, y_translation, z_translation): (f32, f32, f32),
-) -> SpriteBundle {
+pub struct Point {
+    x: f32,
+    y: f32,
+}
+
+impl Point {
+    pub fn new(x: f32, y: f32) -> Self {
+        Self { x, y }
+    }
+}
+
+pub fn create_sprite_bundle(texture: Handle<Image>, size: Vec2, translation: Vec3) -> SpriteBundle {
     SpriteBundle {
         texture,
         sprite: Sprite {
-            custom_size: Some(Vec2::new(x_size, y_size)),
+            custom_size: Some(size),
             ..default()
         },
-        transform: Transform::from_xyz(x_translation, y_translation, z_translation),
+        transform: Transform::from_translation(translation),
         ..default()
     }
 }
 
 pub fn spawn_static_collider_object<T>(
     commands: &mut Commands,
-    left_down: (f32, f32),
-    right_up: (f32, f32),
+    left_down: Point,
+    right_up: Point,
     kind: T,
 ) -> Entity
 where
     T: Component,
 {
-    let width = right_up.0 - left_down.0;
+    let width = right_up.x - left_down.x;
     let half_width = width / 2.;
-    let height = right_up.1 - left_down.1;
+    let height = right_up.y - left_down.y;
     let half_height = height / 2.;
 
     commands
         .spawn()
         .insert(Transform::from_xyz(
-            left_down.0 + half_width,
-            left_down.1 + half_height,
+            left_down.x + half_width,
+            left_down.y + half_height,
             0.0,
         ))
         .insert(RigidBody::Fixed)
@@ -96,4 +104,40 @@ pub fn spawn_solid_collider(
         .insert(friction.unwrap_or_default())
         .insert(ActiveEvents::COLLISION_EVENTS)
         .id()
+}
+
+pub fn get_both_proper_entities<T1, T2>(
+    ent1: &Entity,
+    ent2: &Entity,
+    query1: &Query<Entity, With<T1>>,
+    query2: &Query<Entity, With<T2>>,
+) -> Result<(Entity, Entity), QueryEntityError>
+where
+    T1: Component,
+    T2: Component,
+{
+    query1
+        .get(*ent1)
+        .and_then(|e1| query2.get(*ent2).map(|e2| (e1, e2)))
+        .or_else(|_| {
+            query1
+                .get(*ent2)
+                .and_then(|e1| query2.get(*ent1).map(|e2| (e1, e2)))
+        })
+}
+
+pub fn get_entities_when_first_is_proper<T1, T2>(
+    ent1: &Entity,
+    ent2: &Entity,
+    query1: &Query<Entity, With<T1>>,
+    query2: &Query<Entity, With<T2>>,
+) -> Result<(Entity, Result<Entity, QueryEntityError>), QueryEntityError>
+where
+    T1: Component,
+    T2: Component,
+{
+    query1
+        .get(*ent1)
+        .map(|e1| (e1, query2.get(*ent2)))
+        .or_else(|_| query1.get(*ent2).map(|e1| (e1, query2.get(*ent2))))
 }

@@ -6,9 +6,8 @@ use bevy_rapier2d::prelude::*;
 use crate::game::bullets::{spawn_strong_bullet, spawn_weak_bullet, BulletOptions};
 use crate::game::monster::death_by_enemy;
 use crate::game::{
-    camera_follow_player, AudioAssets, AudioDeadPlayerEvent, AudioFastShootEvent, AudioShootEvent,
-    Bullet, FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, SimpleAudioEvent, Wall,
-    Weapon, COFFEE_DURATION, RUST_DURATION,
+    camera_follow_player, AudioEvent, AudioType, Bullet, FinishLine, GameDirection,
+    LastDespawnedEntity, PhantomEntity, Weapon, COFFEE_DURATION, RUST_DURATION,
 };
 use crate::GameTextures;
 
@@ -49,14 +48,18 @@ impl Player {
     pub fn spawn(commands: &mut Commands, game_textures: Res<GameTextures>) {
         let mut player_entity = spawn_dynamic_object(
             commands,
-            create_sprite_bundle(game_textures.player.clone(), (0.9, 0.9), (0.0, 2.0, 0.0)),
+            create_sprite_bundle(
+                game_textures.player.clone(),
+                Vec2::new(0.9, 0.9),
+                Vec3::new(0.0, 2.0, 0.0),
+            ),
             None,
             None,
         );
         player_entity = spawn_solid_collider(
             commands,
             player_entity,
-            Collider::round_cuboid(0.3, 0.3, 0.1),
+            Collider::round_cuboid(0.25, 0.3, 0.05),
             Some(Friction::coefficient(3.)),
         );
         commands
@@ -147,6 +150,7 @@ pub fn fire_controller(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
     positions: Query<(&mut Transform, &RigidBody, &mut Player, &mut Velocity), With<Player>>,
+    mut audio_event_sender: EventWriter<AudioEvent>,
     mut send_shoot_event: EventWriter<AudioShootEvent>,
     mut send_fast_shoot_event: EventWriter<AudioFastShootEvent>,
     mut audio_event: EventWriter<SimpleAudioEvent>,
@@ -166,10 +170,11 @@ pub fn fire_controller(
                     audio_event.send(SimpleAudioEvent {
                         audio_src: audio_assets.shoot.clone(),
                     });
+                    audio_event_sender.send(AudioEvent::new(AudioType::Shoot));
                     spawn_weak_bullet(&mut commands, &game_textures, options);
                 }
                 Weapon::StrongBullet => {
-                    send_fast_shoot_event.send(AudioFastShootEvent);
+                    audio_event_sender.send(AudioEvent::new(AudioType::FastShoot));
                     spawn_strong_bullet(&mut commands, &game_textures, options);
                 }
             }
@@ -197,34 +202,28 @@ pub fn jump_reset(
 fn handle_death(
     mut state: ResMut<State<AppState>>,
     mut dead_player_events: EventReader<DeadPlayerEvent>,
-    mut event_senders: EventWriter<AudioDeadPlayerEvent>,
+    mut audio_event_sender: EventWriter<AudioEvent>,
 ) {
     dead_player_events.iter().for_each(|_| {
         state
-            .set(AppState::FailMenu)
+            .replace(AppState::FailMenu)
             .expect("Could not set state to DeathMenu");
-        event_senders.send(AudioDeadPlayerEvent);
+        audio_event_sender.send(AudioEvent::new(AudioType::DeadPlayer));
     });
 }
 
 pub fn finish(
-    players: Query<(Entity, &mut Player)>,
-    lines: Query<(Entity, &mut FinishLine)>,
+    players: Query<Entity, With<Player>>,
+    lines: Query<Entity, With<FinishLine>>,
     mut contact_events: EventReader<CollisionEvent>,
     mut state: ResMut<State<AppState>>,
 ) {
     for contact_event in contact_events.iter() {
         if let CollisionEvent::Started(ent1, ent2, _) = contact_event {
-            match (
-                players.get(*ent1),
-                lines.get(*ent2),
-                players.get(*ent2),
-                lines.get(*ent1),
-            ) {
-                (Ok(_), Ok(_), _, _) | (_, _, Ok(_), Ok(_)) => {
-                    state.set(AppState::WinMenu).unwrap()
-                }
-                _ => {}
+            let from_collision = get_both_proper_entities(ent1, ent2, &players, &lines);
+
+            if from_collision.is_ok() {
+                state.replace(AppState::WinMenu).unwrap()
             }
         }
     }

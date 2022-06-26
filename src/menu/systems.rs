@@ -19,7 +19,7 @@ pub fn button_press_system(
                 MenuButton::NewGame => start_new_game(&mut state, &mut rng, &mut level),
                 MenuButton::Quit => exit.send(AppExit),
                 MenuButton::MainMenu => state
-                    .set(AppState::MainMenu)
+                    .replace(AppState::MainMenu)
                     .expect("Couldn't switch state to InGame"),
                 MenuButton::SeedGenerate => rng.new_random_seed(),
                 MenuButton::InputButton => {
@@ -33,6 +33,7 @@ pub fn button_press_system(
                 }
                 MenuButton::RestartLevel => start_game_for_level(&mut state, &mut rng, &mut level),
                 MenuButton::RestartGame => start_new_game(&mut state, &mut rng, &mut level),
+                MenuButton::Resume => state.pop().unwrap(),
             };
         }
     }
@@ -76,9 +77,9 @@ pub fn input_button_system(
 pub fn read_input_system(
     mut random: ResMut<Random>,
     keys: Res<Input<KeyCode>>,
-    mut char_evr: EventReader<ReceivedCharacter>,
+    mut char_received: EventReader<ReceivedCharacter>,
 ) {
-    for ev in char_evr.iter() {
+    for ev in char_received.iter() {
         if ev.char.is_alphanumeric() {
             random.add_char(ev.char);
         }
