@@ -19,7 +19,7 @@ pub fn button_press_system(
                 MenuButton::NewGame => start_new_game(&mut state, &mut rng, &mut level),
                 MenuButton::Quit => exit.send(AppExit),
                 MenuButton::MainMenu => state
-                    .set(AppState::MainMenu)
+                    .replace(AppState::MainMenu)
                     .expect("Couldn't switch state to InGame"),
                 MenuButton::SeedGenerate => rng.new_random_seed(),
                 MenuButton::InputButton => {
@@ -33,6 +33,7 @@ pub fn button_press_system(
                 }
                 MenuButton::RestartLevel => start_game_for_level(&mut state, &mut rng, &mut level),
                 MenuButton::RestartGame => start_new_game(&mut state, &mut rng, &mut level),
+                MenuButton::Resume => state.pop().unwrap(),
             };
         }
     }

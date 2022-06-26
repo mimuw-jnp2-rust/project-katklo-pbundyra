@@ -201,7 +201,7 @@ fn handle_death(
 ) {
     dead_player_events.iter().for_each(|_| {
         state
-            .set(AppState::FailMenu)
+            .replace(AppState::FailMenu)
             .expect("Could not set state to DeathMenu");
         audio_event_sender.send(AudioEvent::new(AudioType::DeadPlayer));
     });
@@ -218,7 +218,7 @@ pub fn finish(
             let from_collision = get_both_proper_entities(ent1, ent2, &players, &lines);
 
             if from_collision.is_ok() {
-                state.set(AppState::WinMenu).unwrap()
+                state.replace(AppState::WinMenu).unwrap()
             }
         }
     }

@@ -263,7 +263,7 @@ pub fn start_game_for_level(
     rng.make_generator_for_level(level.level);
 
     state
-        .set(AppState::InGame)
+        .replace(AppState::InGame)
         .expect("Couldn't switch state to InGame")
 }
 
