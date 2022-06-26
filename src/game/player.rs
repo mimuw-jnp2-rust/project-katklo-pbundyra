@@ -6,8 +6,8 @@ use bevy_rapier2d::prelude::*;
 use crate::game::bullets::{spawn_strong_bullet, spawn_weak_bullet, BulletOptions};
 use crate::game::monster::death_by_enemy;
 use crate::game::{
-    camera_follow_player, AudioEvent, AudioType, Bullet, FinishLine, GameDirection,
-    LastDespawnedEntity, PhantomEntity, Weapon, COFFEE_DURATION, RUST_DURATION,
+    camera_follow_player, AudioAssets, FinishLine, GameDirection, LastDespawnedEntity,
+    PhantomEntity, SimpleAudioEvent, Wall, Weapon, COFFEE_DURATION, RUST_DURATION,
 };
 use crate::GameTextures;
 
@@ -150,7 +150,8 @@ pub fn fire_controller(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
     positions: Query<(&mut Transform, &RigidBody, &mut Player, &mut Velocity), With<Player>>,
-    mut audio_event_sender: EventWriter<AudioEvent>,
+    mut audio_event_sender: EventWriter<SimpleAudioEvent>,
+    audio_assets: Res<AudioAssets>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Space) {
         for (pos, _, player, vel) in positions.iter() {
@@ -162,11 +163,15 @@ pub fn fire_controller(
             };
             match player.weapon {
                 Weapon::WeakBullet => {
-                    audio_event_sender.send(AudioEvent::new(AudioType::Shoot));
+                    audio_event_sender.send(SimpleAudioEvent {
+                        audio_src: audio_assets.shoot.clone(),
+                    });
                     spawn_weak_bullet(&mut commands, &game_textures, options);
                 }
                 Weapon::StrongBullet => {
-                    audio_event_sender.send(AudioEvent::new(AudioType::FastShoot));
+                    audio_event_sender.send(SimpleAudioEvent {
+                        audio_src: audio_assets.fast_shoot.clone(),
+                    });
                     spawn_strong_bullet(&mut commands, &game_textures, options);
                 }
             }
@@ -176,17 +181,14 @@ pub fn fire_controller(
 
 pub fn jump_reset(
     mut jumpers: Query<(Entity, &mut Jumper), With<Player>>,
-    bullets: Query<Entity, With<Bullet>>,
+    walls: Query<Entity, With<Wall>>,
     players: Query<Entity, With<Player>>,
     mut collision_events: EventReader<CollisionEvent>,
 ) {
     for collision_event in collision_events.iter() {
         if let Ok((_, mut jumper)) = jumpers.get_single_mut() {
             if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-                let proper_player_with_bullet =
-                    get_entities_when_first_is_proper(ent1, ent2, &players, &bullets);
-
-                if let Ok((_, Err(_))) = proper_player_with_bullet {
+                if get_both_proper_entities(ent1, ent2, &walls, &players).is_ok() {
                     jumper.is_jumping = false;
                 }
             }
@@ -197,13 +199,16 @@ pub fn jump_reset(
 fn handle_death(
     mut state: ResMut<State<AppState>>,
     mut dead_player_events: EventReader<DeadPlayerEvent>,
-    mut audio_event_sender: EventWriter<AudioEvent>,
+    mut audio_event_sender: EventWriter<SimpleAudioEvent>,
+    audio_assets: Res<AudioAssets>,
 ) {
     dead_player_events.iter().for_each(|_| {
         state
             .replace(AppState::FailMenu)
             .expect("Could not set state to DeathMenu");
-        audio_event_sender.send(AudioEvent::new(AudioType::DeadPlayer));
+        audio_event_sender.send(SimpleAudioEvent {
+            audio_src: audio_assets.death.clone(),
+        });
     });
 }
 

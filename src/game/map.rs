@@ -160,7 +160,7 @@ fn add_start_and_finish_line(
         game_textures.floor.clone(),
         start_x,
         start_y as i32,
-        (start_y + WALL_HEIGHT) as i32,
+        (start_y + (3 * MAP_WIDTH) as f32) as i32, // protect bullets from flying beyond map
     );
     add_column_of_tiles(
         commands,

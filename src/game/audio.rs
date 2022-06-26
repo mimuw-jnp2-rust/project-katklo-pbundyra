@@ -6,36 +6,25 @@ use crate::AppState;
 
 pub struct GameAudioPlugin;
 
-pub enum AudioType {
-    Hit,
-    Coffee,
-    Rust,
-    FastShoot,
-    Shoot,
-    DeadPlayer,
+pub struct SimpleAudioEvent {
+    pub audio_src: Handle<AudioSource>,
 }
 
-pub struct AudioEvent {
-    pub audio_t: AudioType,
-}
-
-impl AudioEvent {
-    pub fn new(audio_t: AudioType) -> Self {
-        Self { audio_t }
-    }
+pub struct ComplexAudioEvent {
+    pub audio_src: Vec<Handle<AudioSource>>,
 }
 
 pub struct AudioAssets {
-    bg: Handle<AudioSource>,
-    menu: Handle<AudioSource>,
-    hits: Vec<Handle<AudioSource>>,
-    death: Handle<AudioSource>,
-    drinks: Vec<Handle<AudioSource>>,
-    shoot: Handle<AudioSource>,
-    fast_shoot: Handle<AudioSource>,
-    lvlup: Handle<AudioSource>,
-    bg_channel: AudioChannel,
-    menu_channel: AudioChannel,
+    pub bg: Handle<AudioSource>,
+    pub menu: Handle<AudioSource>,
+    pub hits: Vec<Handle<AudioSource>>,
+    pub death: Handle<AudioSource>,
+    pub drinks: Vec<Handle<AudioSource>>,
+    pub shoot: Handle<AudioSource>,
+    pub fast_shoot: Handle<AudioSource>,
+    pub lvlup: Handle<AudioSource>,
+    pub bg_channel: AudioChannel,
+    pub menu_channel: AudioChannel,
 }
 
 impl Plugin for GameAudioPlugin {
@@ -44,34 +33,24 @@ impl Plugin for GameAudioPlugin {
             .add_startup_system_to_stage(StartupStage::PreStartup, load_audio)
             .add_system_set(SystemSet::on_enter(AppState::InGame).with_system(play_bg_music))
             .add_system_set(SystemSet::on_exit(AppState::InGame).with_system(play_menu_music))
-            .add_system(play_audio_for_event)
+            .add_system(play_simple_audio)
+            .add_system(play_complexed_audio)
             .add_startup_system(play_menu_music)
-            .add_event::<AudioEvent>();
+            .add_event::<SimpleAudioEvent>()
+            .add_event::<ComplexAudioEvent>();
     }
 }
 
-pub fn play_audio_for_event(
-    audio: Res<Audio>,
-    audio_state: Res<AudioAssets>,
-    mut audio_events: EventReader<AudioEvent>,
-) {
-    audio_events.iter().for_each(|event| {
-        let sound = match event.audio_t {
-            AudioType::Hit => {
-                let sound_id = thread_rng().gen_range(0..audio_state.hits.len());
-                audio_state.hits[sound_id].clone()
-            }
-            AudioType::Coffee => {
-                let sound_id = thread_rng().gen_range(0..audio_state.drinks.len());
-                audio_state.drinks[sound_id].clone()
-            }
-            AudioType::Rust => audio_state.lvlup.clone(),
-            AudioType::FastShoot => audio_state.fast_shoot.clone(),
-            AudioType::Shoot => audio_state.shoot.clone(),
-            AudioType::DeadPlayer => audio_state.death.clone(),
-        };
+pub fn play_simple_audio(audio: Res<Audio>, mut audio_event: EventReader<SimpleAudioEvent>) {
+    audio_event.iter().for_each(|event| {
+        audio.play(event.audio_src.clone());
+    });
+}
 
-        audio.play(sound);
+pub fn play_complex_audio(audio: Res<Audio>, mut audio_event: EventReader<ComplexAudioEvent>) {
+    audio_event.iter().for_each(|event| {
+        let sound_id = thread_rng().gen_range(0..event.audio_src.len());
+        audio.play(event.audio_src[sound_id].clone());
     });
 }
 
