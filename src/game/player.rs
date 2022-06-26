@@ -6,8 +6,8 @@ use bevy_rapier2d::prelude::*;
 use crate::game::bullets::{spawn_strong_bullet, spawn_weak_bullet, BulletOptions};
 use crate::game::monster::death_by_enemy;
 use crate::game::{
-    camera_follow_player, AudioEvent, AudioType, Bullet, FinishLine, GameDirection,
-    LastDespawnedEntity, PhantomEntity, Weapon, COFFEE_DURATION, RUST_DURATION,
+    camera_follow_player, AudioAssets, FinishLine, GameDirection, LastDespawnedEntity,
+    PhantomEntity, SimpleAudioEvent, Wall, Weapon, COFFEE_DURATION, RUST_DURATION,
 };
 use crate::GameTextures;
 
@@ -150,10 +150,7 @@ pub fn fire_controller(
     mut commands: Commands,
     game_textures: Res<GameTextures>,
     positions: Query<(&mut Transform, &RigidBody, &mut Player, &mut Velocity), With<Player>>,
-    mut audio_event_sender: EventWriter<AudioEvent>,
-    mut send_shoot_event: EventWriter<AudioShootEvent>,
-    mut send_fast_shoot_event: EventWriter<AudioFastShootEvent>,
-    mut audio_event: EventWriter<SimpleAudioEvent>,
+    mut audio_event_sender: EventWriter<SimpleAudioEvent>,
     audio_assets: Res<AudioAssets>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Space) {
@@ -166,15 +163,15 @@ pub fn fire_controller(
             };
             match player.weapon {
                 Weapon::WeakBullet => {
-                    // send_shoot_event.send(AudioShootEvent);
-                    audio_event.send(SimpleAudioEvent {
+                    audio_event_sender.send(SimpleAudioEvent {
                         audio_src: audio_assets.shoot.clone(),
                     });
-                    audio_event_sender.send(AudioEvent::new(AudioType::Shoot));
                     spawn_weak_bullet(&mut commands, &game_textures, options);
                 }
                 Weapon::StrongBullet => {
-                    audio_event_sender.send(AudioEvent::new(AudioType::FastShoot));
+                    audio_event_sender.send(SimpleAudioEvent {
+                        audio_src: audio_assets.fast_shoot.clone(),
+                    });
                     spawn_strong_bullet(&mut commands, &game_textures, options);
                 }
             }
@@ -202,13 +199,16 @@ pub fn jump_reset(
 fn handle_death(
     mut state: ResMut<State<AppState>>,
     mut dead_player_events: EventReader<DeadPlayerEvent>,
-    mut audio_event_sender: EventWriter<AudioEvent>,
+    mut audio_event_sender: EventWriter<SimpleAudioEvent>,
+    audio_assets: Res<AudioAssets>,
 ) {
     dead_player_events.iter().for_each(|_| {
         state
             .replace(AppState::FailMenu)
             .expect("Could not set state to DeathMenu");
-        audio_event_sender.send(AudioEvent::new(AudioType::DeadPlayer));
+        audio_event_sender.send(SimpleAudioEvent {
+            audio_src: audio_assets.death.clone(),
+        });
     });
 }
 
