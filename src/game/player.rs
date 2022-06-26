@@ -7,7 +7,7 @@ use crate::game::bullets::{spawn_strong_bullet, spawn_weak_bullet, BulletOptions
 use crate::game::monster::death_by_enemy;
 use crate::game::{
     camera_follow_player, AudioAssets, AudioDeadPlayerEvent, AudioFastShootEvent, AudioShootEvent,
-    Bullet, FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, SimpleAudioEvent,
+    Bullet, FinishLine, GameDirection, LastDespawnedEntity, PhantomEntity, SimpleAudioEvent, Wall,
     Weapon, COFFEE_DURATION, RUST_DURATION,
 };
 use crate::GameTextures;
@@ -179,19 +179,15 @@ pub fn fire_controller(
 
 pub fn jump_reset(
     mut jumpers: Query<(Entity, &mut Jumper), With<Player>>,
-    bullets: Query<Entity, With<Bullet>>,
+    walls: Query<Entity, With<Wall>>,
     players: Query<Entity, With<Player>>,
     mut collision_events: EventReader<CollisionEvent>,
 ) {
     for collision_event in collision_events.iter() {
         if let Ok((_, mut jumper)) = jumpers.get_single_mut() {
             if let CollisionEvent::Started(ent1, ent2, _) = collision_event {
-                match (players.get(*ent1), players.get(*ent2)) {
-                    (Ok(_), _) | (_, Ok(_)) => match (bullets.get(*ent1), bullets.get(*ent2)) {
-                        (Ok(_), _) | (_, Ok(_)) => jumper.is_jumping = true,
-                        _ => jumper.is_jumping = false,
-                    },
-                    _ => {}
+                if get_both_proper_entities(ent1, ent2, &walls, &players).is_ok() {
+                    jumper.is_jumping = false;
                 }
             }
         }
